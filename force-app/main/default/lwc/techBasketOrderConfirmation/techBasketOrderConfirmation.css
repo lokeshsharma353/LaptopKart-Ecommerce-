@@ -1,0 +1,278 @@
+:host {
+    display: block;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    background: #000;
+    min-height: 100vh;
+    color: #f5f5f7;
+}
+
+.tb-loading {
+    text-align: center;
+    padding: 5rem 1rem;
+    color: #86868b;
+    font-size: 15px;
+}
+
+.tb-confirmation {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+}
+
+.tb-header-block {
+    text-align: center;
+}
+
+/* ── Stat strip: the headline facts as a row of cards, up top ── */
+.tb-stat-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.tb-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 1rem 1.1rem;
+    text-align: left;
+}
+
+.tb-stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #86868b;
+}
+
+.tb-stat-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #f5f5f7;
+}
+
+/* ── Content grid: items on the left, payment + shipping stacked as
+   separate cards on the right — same colors/tokens as before, just
+   restructured. ── */
+.tb-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 1.5rem;
+    align-items: start;
+    text-align: left;
+}
+
+.tb-content-side {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+    .tb-stat-strip {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .tb-content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .tb-confirmation { padding: 1.75rem 0.85rem 3rem; }
+    .tb-heading { font-size: 21px; }
+    .tb-subheading { margin-bottom: 1.5rem; }
+    .tb-check-mark { width: 56px; height: 56px; font-size: 22px; margin-bottom: 1.1rem; }
+    .tb-stat-strip { gap: 0.6rem; margin-bottom: 1.25rem; }
+    .tb-stat { padding: 0.75rem 0.85rem; }
+    .tb-card { padding: 1.1rem; }
+    .tb-content-grid { gap: 1rem; }
+    .tb-actions-bar { flex-direction: column; align-items: stretch; }
+    .tb-btn-primary, .tb-btn-secondary { width: 100%; text-align: center; }
+}
+
+.tb-check-mark {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00c8ff, #7b2ff7);
+    color: #fff;
+    font-size: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.tb-check-mark-pending {
+    background: linear-gradient(135deg, #ff9f0a, #ff6b00);
+    animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.tb-heading {
+    font-size: 28px;
+    font-weight: 700;
+    color: #f5f5f7;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.025em;
+}
+
+.tb-subheading {
+    font-size: 14px;
+    color: #86868b;
+    margin: 0 0 2.5rem;
+}
+
+.tb-progress-section {
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 1rem 1.25rem 0.25rem;
+    margin-bottom: 2rem;
+}
+
+.tb-card {
+    text-align: left;
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 1.5rem;
+}
+
+.tb-section-heading {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f5f5f7;
+    margin: 0 0 1rem;
+    letter-spacing: -0.01em;
+}
+
+.tb-items-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tb-items-table th,
+.tb-items-table td {
+    text-align: left;
+    padding: 0.65rem 0;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: #d1d1d6;
+}
+
+.tb-items-table th {
+    color: #86868b;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.tb-items-table tfoot td {
+    border-bottom: none;
+    padding-top: 0.85rem;
+    color: #86868b;
+    font-weight: 600;
+}
+.tb-items-table tfoot tr:last-child td {
+    color: #f5f5f7;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.tb-detail-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #86868b;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.tb-detail-row:last-child { border-bottom: none; }
+
+.tb-detail-row-stacked {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+}
+.tb-detail-row-stacked .tb-detail-value {
+    text-align: left;
+    line-height: 1.5;
+}
+
+.tb-detail-value {
+    font-weight: 600;
+    color: #f5f5f7;
+}
+
+.tb-link-btn {
+    background: none;
+    border: none;
+    color: #00c8ff;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    padding: 0;
+    transition: opacity 0.2s;
+}
+.tb-link-btn:hover { opacity: 0.7; }
+
+.tb-actions-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+    .tb-actions-bar {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+}
+
+.tb-btn-primary {
+    width: auto;
+    background: #f5f5f7;
+    color: #000;
+    border: none;
+    border-radius: 980px;
+    padding: 0.75rem 1.75rem;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.2s;
+    box-sizing: border-box;
+}
+.tb-btn-primary:hover { background: #e0e0e2; }
+
+.tb-btn-secondary {
+    width: auto;
+    background: transparent;
+    color: #f5f5f7;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 980px;
+    padding: 0.75rem 1.75rem;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+.tb-btn-secondary:hover { border-color: #00c8ff; color: #00c8ff; }
+
+.tb-not-found {
+    text-align: center;
+    padding: 6rem 1rem;
+    color: #86868b;
+    font-size: 16px;
+}

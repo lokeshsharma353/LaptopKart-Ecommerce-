@@ -1,0 +1,48 @@
+<template>
+    <div class="tb-cart-page">
+        <h1 class="tb-page-title">Your Cart</h1>
+
+        <template if:true={hasItems}>
+            <p class="tb-item-count">{itemCountLabel}</p>
+
+            <div class="tb-cart-layout">
+                <div class="tb-cart-items">
+                    <template for:each={items} for:item="item">
+                        <c-tech-basket-cart-item
+                            key={item.productId}
+                            item={item}
+                            onquantitychange={handleQuantityChange}
+                            onremove={handleRemove}
+                        ></c-tech-basket-cart-item>
+                    </template>
+
+                    <div class="tb-cart-actions">
+                        <button class="tb-btn-secondary" onclick={handleContinueShopping}>Continue Shopping</button>
+                        <button class="tb-btn-danger" onclick={handleClearCartClick}>Clear Cart</button>
+                    </div>
+                </div>
+
+                <div class="tb-cart-summary">
+                    <c-tech-basket-order-summary items={items}></c-tech-basket-order-summary>
+                </div>
+            </div>
+        </template>
+
+        <template if:false={hasItems}>
+            <div class="tb-empty-cart">
+                <p>Your cart is empty.</p>
+                <button class="tb-btn-primary" onclick={handleContinueShopping}>Continue Shopping</button>
+            </div>
+        </template>
+
+        <c-tech-basket-modal
+            is-open={showClearConfirm}
+            title="Clear Cart"
+            message="Are you sure you want to clear your cart?"
+            confirm-label="Clear Cart"
+            cancel-label="Cancel"
+            oncancel={handleCancelClear}
+            onconfirm={handleConfirmClear}
+        ></c-tech-basket-modal>
+    </div>
+</template>

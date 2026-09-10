@@ -1,0 +1,85 @@
+<template>
+    <div class="tb-about-page">
+
+        <!-- HERO -->
+        <section class="tb-about-hero">
+            <span class="tb-hero-eyebrow">Our Story</span>
+            <h1 class="tb-hero-heading">About LaptopKart</h1>
+            <p class="tb-hero-subheading">Premium laptops, delivered with care since day one.</p>
+        </section>
+
+        <!-- STORY -->
+        <section class="tb-section tb-reveal">
+            <span class="tb-section-eyebrow">Who We Are</span>
+            <h2 class="tb-section-heading">Built for Tech Lovers</h2>
+            <p class="tb-body-text">
+                LaptopKart started with a simple idea: buying a laptop online should be
+                fast, transparent, and genuinely helpful. We curate the world's best laptops
+                from Apple, Dell, HP, Lenovo, ASUS, and Acer — and back every order with
+                real support, not just a tracking number.
+            </p>
+        </section>
+
+        <!-- STATS -->
+        <section class="tb-stats-section">
+            <div class="tb-stats-grid">
+                <template for:each={stats} for:item="stat">
+                    <div class="tb-stat-card tb-reveal" key={stat.label}>
+                        <div class="tb-stat-value">{stat.value}</div>
+                        <div class="tb-stat-label">{stat.label}</div>
+                    </div>
+                </template>
+            </div>
+        </section>
+
+        <!-- VALUES -->
+        <section class="tb-values-section">
+            <div class="tb-reveal">
+                <span class="tb-section-eyebrow">What We Stand For</span>
+                <h2 class="tb-section-heading">Our Values</h2>
+            </div>
+            <div class="tb-values-grid">
+                <template for:each={values} for:item="val">
+                    <div class="tb-value-card tb-reveal" key={val.title}>
+                        <span class="tb-value-icon">{val.icon}</span>
+                        <h3 class="tb-value-title">{val.title}</h3>
+                        <p class="tb-value-text">{val.text}</p>
+                    </div>
+                </template>
+            </div>
+        </section>
+
+        <!-- DEVELOPERS -->
+        <section class="tb-dev-section">
+            <div class="tb-reveal">
+                <span class="tb-section-eyebrow">The Team</span>
+                <h2 class="tb-section-heading">Meet the Developers</h2>
+            </div>
+            <div class="tb-dev-grid">
+                <template for:each={developers} for:item="dev">
+                    <div class="tb-dev-card tb-reveal" key={dev.id}>
+                        <div class="tb-dev-photo-ring">
+                            <img src={dev.photo} alt={dev.name} class="tb-dev-photo" />
+                        </div>
+                        <h3 class="tb-dev-name">{dev.name}</h3>
+                        <p class="tb-dev-role">{dev.role}</p>
+                        <button type="button" class="tb-dev-linkedin" data-url={dev.linkedin} onclick={handleLinkedInClick}>
+                            <svg viewBox="0 0 24 24" class="tb-dev-linkedin-icon" aria-hidden="true">
+                                <path fill="currentColor" d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"></path>
+                            </svg>
+                            <span>Connect on LinkedIn</span>
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="tb-cta-section tb-reveal">
+            <h2 class="tb-cta-heading">Ready to find your next upgrade?</h2>
+            <p class="tb-cta-sub">Browse 500+ laptops from the world's top brands.</p>
+            <button class="tb-btn-cta" onclick={handleShopNow}>Shop Now →</button>
+        </section>
+
+    </div>
+</template>

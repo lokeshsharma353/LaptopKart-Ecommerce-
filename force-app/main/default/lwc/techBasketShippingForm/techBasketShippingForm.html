@@ -1,0 +1,84 @@
+<template>
+    <div class="tb-form">
+        <h2 class="tb-form-heading">Shipping Address</h2>
+
+        <template if:true={hasSavedAddresses}>
+            <div class="tb-field">
+                <label for="savedAddress">Choose a saved address</label>
+                <select id="savedAddress" onchange={handleSelectSavedAddress}>
+                    <option value="">-- Enter a new address --</option>
+                    <template for:each={savedAddresses} for:item="addr">
+                        <option key={addr.id} value={addr.id}>{addr.optionLabel}</option>
+                    </template>
+                </select>
+            </div>
+        </template>
+
+        <div class="tb-field-row">
+            <div class="tb-field">
+                <label for="fullName">Full Name</label>
+                <input id="fullName" type="text" value={formData.fullName} data-field="fullName" oninput={handleInput} />
+                <template if:true={errors.fullName}><p class="tb-error">{errors.fullName}</p></template>
+            </div>
+            <div class="tb-field">
+                <label for="phone">Phone</label>
+                <input id="phone" type="tel" inputmode="numeric" maxlength="10" value={formData.phone} data-field="phone" oninput={handleInput} />
+                <template if:true={errors.phone}><p class="tb-error">{errors.phone}</p></template>
+            </div>
+        </div>
+
+        <div class="tb-field">
+            <label for="email">Email</label>
+            <input id="email" type="email" value={formData.email} data-field="email" oninput={handleInput} />
+            <template if:true={errors.email}><p class="tb-error">{errors.email}</p></template>
+        </div>
+
+        <div class="tb-field">
+            <label for="address1">Address Line 1</label>
+            <input id="address1" type="text" value={formData.address1} data-field="address1" oninput={handleInput} />
+            <template if:true={errors.address1}><p class="tb-error">{errors.address1}</p></template>
+        </div>
+
+        <div class="tb-field">
+            <label for="address2">Address Line 2</label>
+            <input id="address2" type="text" value={formData.address2} data-field="address2" oninput={handleInput} />
+        </div>
+
+        <div class="tb-field-row">
+            <div class="tb-field">
+                <label for="city">City</label>
+                <input id="city" type="text" value={formData.city} data-field="city" oninput={handleInput} />
+                <template if:true={errors.city}><p class="tb-error">{errors.city}</p></template>
+            </div>
+            <div class="tb-field">
+                <label for="state">State/Province</label>
+                <input id="state" type="text" value={formData.state} data-field="state" oninput={handleInput} />
+                <template if:true={errors.state}><p class="tb-error">{errors.state}</p></template>
+            </div>
+        </div>
+
+        <div class="tb-field-row">
+            <div class="tb-field">
+                <label for="postalCode">Postal Code</label>
+                <input id="postalCode" type="text" inputmode="numeric" maxlength="6" value={formData.postalCode} data-field="postalCode" oninput={handleInput} />
+                <template if:true={errors.postalCode}><p class="tb-error">{errors.postalCode}</p></template>
+            </div>
+            <div class="tb-field">
+                <label for="country">Country</label>
+                <input id="country" type="text" value={formData.country} data-field="country" oninput={handleInput} />
+                <template if:true={errors.country}><p class="tb-error">{errors.country}</p></template>
+            </div>
+        </div>
+
+        <div class="tb-checkbox-row">
+            <input type="checkbox" id="sameBilling" checked={formData.useSameForBilling} onchange={handleSameBillingChange} />
+            <label for="sameBilling">Use same address for billing</label>
+        </div>
+        <div class="tb-checkbox-row">
+            <input type="checkbox" id="saveAddress" checked={formData.saveAddress} onchange={handleSaveAddressChange} />
+            <label for="saveAddress">Save this address</label>
+        </div>
+
+        <button class="tb-btn-primary" onclick={handleNext} disabled={isInvalid}>Next</button>
+    </div>
+</template>

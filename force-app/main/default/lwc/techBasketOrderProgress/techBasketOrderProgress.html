@@ -1,0 +1,27 @@
+<template>
+    <template if:true={isCancelled}>
+        <div class="tb-progress-cancelled">
+            <span class="tb-progress-cancelled-icon">&#10005;</span>
+            <span>This order was cancelled.</span>
+        </div>
+    </template>
+
+    <template if:false={isCancelled}>
+        <div class="tb-progress-row">
+            <template for:each={steps} for:item="step">
+                <div key={step.key} class={step.cls}>
+                    <div class="tb-progress-dot">
+                        <span class="tb-progress-check">&#10003;</span>
+                    </div>
+                    <span class="tb-progress-label">{step.label}</span>
+                    <template if:true={step.subLabel}>
+                        <span class="tb-progress-sublabel">{step.subLabel}</span>
+                    </template>
+                    <template if:false={step.isLast}>
+                        <div class="tb-progress-line"></div>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </template>
+</template>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <rect width="240" height="240" rx="16" fill="#ffffff"/>
+  <rect x="12" y="12" width="216" height="216" rx="10" fill="none" stroke="#d0d0d0" stroke-width="2" stroke-dasharray="6 6"/>
+  <text x="120" y="112" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#333333">QR CODE</text>
+  <text x="120" y="134" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#777777">Placeholder — replace</text>
+  <text x="120" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#777777">PaymentQr.svg with your real UPI QR</text>
+</svg>

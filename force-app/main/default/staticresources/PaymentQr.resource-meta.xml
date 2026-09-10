@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StaticResource xmlns="http://soap.sforce.com/2006/04/metadata">
+    <cacheControl>Public</cacheControl>
+    <contentType>image/svg+xml</contentType>
+    <description>UPI payment QR code shown on the Online Payment step. Placeholder until the real QR image is uploaded — see DevLokesh.jpg/DevTanishq.png for how a real image static resource is set up in this project.</description>
+</StaticResource>

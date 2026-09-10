@@ -1,0 +1,119 @@
+:host {
+    display: block;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    color: #f5f5f7;
+}
+
+.tb-form {
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
+    padding: 1.75rem 1.75rem 2rem;
+}
+
+.tb-form-heading {
+    font-size: 20px;
+    font-weight: 700;
+    color: #f5f5f7;
+    margin: 0 0 1.5rem;
+    letter-spacing: -0.02em;
+}
+
+.tb-method-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.tb-method {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.tb-method:hover { border-color: rgba(0,200,255,0.4); }
+
+.tb-method-selected {
+    border-color: #00c8ff;
+    background: rgba(0,200,255,0.08);
+}
+
+.tb-method-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f5f5f7;
+}
+
+.tb-method-eta {
+    font-size: 13px;
+    color: #86868b;
+}
+
+.tb-method-price {
+    font-size: 14px;
+    font-weight: 700;
+    color: #f5f5f7;
+}
+
+.tb-form-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.tb-btn-primary {
+    background: #f5f5f7;
+    color: #000;
+    border: none;
+    border-radius: 980px;
+    padding: 0.75rem 1.75rem;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+}
+
+.tb-btn-primary:hover { background: #e0e0e2; transform: scale(1.01); }
+
+.tb-btn-secondary {
+    background: transparent;
+    color: #f5f5f7;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 980px;
+    padding: 0.75rem 1.75rem;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.tb-btn-secondary:hover { border-color: #00c8ff; color: #00c8ff; }
+
+@media (max-width: 600px) {
+    .tb-method {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+
+    .tb-form { padding: 1.25rem 1.1rem 1.5rem; border-radius: 14px; }
+    .tb-form-heading { font-size: 17px; margin-bottom: 1.1rem; }
+
+    /* Primary action (Next) on top, full width and thumb-reachable;
+       Back below it, matching the Billing step's mobile pattern —
+       the DOM already puts Back before Next, so column-reverse flips
+       the visual order without touching markup. */
+    .tb-form-actions { flex-direction: column-reverse; gap: 0.6rem; }
+    .tb-btn-primary, .tb-btn-secondary { width: 100%; text-align: center; }
+}

@@ -1,0 +1,420 @@
+:host {
+    display: block;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    background: #000;
+    min-height: 100vh;
+    color: #f5f5f7;
+}
+
+.tb-account-page {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+}
+
+.tb-page-title {
+    font-size: 30px;
+    font-weight: 700;
+    color: #f5f5f7;
+    margin: 0 0 1.75rem;
+    letter-spacing: -0.025em;
+}
+
+/* ═══════════════ Logged-out auth shell ═══════════════ */
+.tb-auth-shell {
+    max-width: 420px;
+    margin: 2.5rem auto 0;
+    text-align: center;
+}
+
+.tb-auth-brandmark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+.tb-auth-logo-img {
+    height: 260px;
+    width: auto;
+    display: block;
+    filter: drop-shadow(0 12px 24px rgba(0,0,0,0.5));
+}
+
+.tb-auth-title {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.5rem;
+    color: #f5f5f7;
+}
+
+.tb-auth-subtitle {
+    font-size: 14px;
+    color: #86868b;
+    margin: 0 0 2rem;
+    line-height: 1.5;
+}
+
+.tb-auth-card {
+    background: linear-gradient(180deg, #141414, #0d0d0d);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 1.85rem;
+    text-align: left;
+    box-shadow: 0 20px 48px rgba(0,0,0,0.45);
+}
+
+/* ═══════════════ Shared: tabs, forms, buttons ═══════════════ */
+.tb-tab-row {
+    display: flex;
+    gap: 0.5rem;
+    background: #1a1a1a;
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 1.5rem;
+}
+
+.tb-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 0;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #86868b;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+.tb-tab-active { background: #2c2c2e; color: #f5f5f7; }
+
+.tb-error-text {
+    color: #ff453a;
+    font-size: 13px;
+    margin: 0 0 1rem;
+}
+
+.tb-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.tb-field-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #86868b;
+    margin: 0.85rem 0 0.4rem;
+    display: block;
+}
+.tb-field-label:first-child { margin-top: 0; }
+
+.tb-input {
+    height: 44px;
+    width: 100%;
+    padding: 0 0.9rem;
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #f5f5f7;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.tb-input:focus { outline: none; border-color: rgba(255,255,255,0.5); box-shadow: 0 0 0 3px rgba(255,255,255,0.06); }
+.tb-input::placeholder { color: #55555a; }
+
+.tb-textarea {
+    height: auto;
+    min-height: 80px;
+    padding: 0.7rem 0.9rem;
+    resize: vertical;
+    line-height: 1.4;
+}
+
+/* Forgot password */
+.tb-forgot-link {
+    align-self: flex-end;
+    margin-top: 0.6rem;
+    font-size: 12px;
+    color: #86868b;
+    border: none;
+    background: none;
+    padding: 0;
+}
+.tb-forgot-link:hover { color: #f5f5f7; border-color: transparent; }
+
+.tb-forgot-intro {
+    font-size: 13px;
+    color: #86868b;
+    line-height: 1.6;
+    margin: 0 0 0.5rem;
+}
+
+.tb-forgot-confirmation { text-align: center; }
+.tb-forgot-confirmation-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #f5f5f7;
+    margin: 0 0 0.5rem;
+}
+
+.tb-btn-primary {
+    background: linear-gradient(180deg, #ffffff, #d4d4d9);
+    color: #0a0a0a;
+    border: none;
+    border-radius: 980px;
+    padding: 0.8rem 1.75rem;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: filter 0.2s, transform 0.15s, opacity 0.2s;
+}
+.tb-btn-primary:hover { filter: brightness(1.05); transform: scale(1.01); }
+.tb-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.tb-btn-secondary {
+    margin-top: 1rem;
+    background: rgba(255,255,255,0.05);
+    color: #f5f5f7;
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 980px;
+    padding: 0.65rem 1.5rem;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+.tb-btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.35); }
+
+.tb-btn-block { width: 100%; margin-top: 1.5rem; }
+
+/* ═══════════════ Dashboard shell ═══════════════ */
+.tb-dashboard {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+@media (max-width: 720px) {
+    .tb-dashboard { grid-template-columns: 1fr; }
+    .tb-sidebar { position: static; }
+}
+
+@media (max-width: 480px) {
+    .tb-account-page { padding: 1.5rem 0.85rem 3rem; }
+    .tb-page-title { font-size: 22px; margin-bottom: 1.25rem; }
+
+    .tb-auth-shell { margin-top: 1rem; }
+    .tb-auth-logo-img { height: 120px; }
+    .tb-auth-title { font-size: 21px; }
+    .tb-auth-card { padding: 1.25rem; }
+
+    .tb-sidebar { padding: 1rem; }
+    .tb-panel { padding: 1.1rem; }
+    .tb-panel-title { font-size: 16px; }
+
+    .tb-orders-table th, .tb-orders-table td { padding: 0.65rem 0.75rem; }
+    .tb-address-grid, .tb-wishlist-grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+}
+
+.tb-sidebar {
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 1.25rem;
+    position: sticky;
+    top: 1.5rem;
+}
+
+.tb-sidebar-identity {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0 0.5rem 1rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.tb-sidebar-avatar { font-size: 15px; font-weight: 700; color: #f5f5f7; }
+.tb-sidebar-email { font-size: 12px; color: #86868b; word-break: break-all; }
+
+.tb-nav { display: flex; flex-direction: column; gap: 2px; }
+
+.tb-nav-btn {
+    text-align: left;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    color: #a1a1a6;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.tb-nav-btn:hover { background: rgba(255,255,255,0.05); color: #f5f5f7; }
+.tb-nav-btn-active { background: #2c2c2e; color: #f5f5f7; font-weight: 600; }
+
+.tb-nav-btn-logout {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    color: #ff8a80;
+}
+.tb-nav-btn-logout:hover { background: rgba(255,69,58,0.08); color: #ff453a; }
+
+/* ═══════════════ Content panels ═══════════════ */
+.tb-panel {
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 1.75rem;
+}
+
+.tb-panel-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #f5f5f7;
+    margin: 0 0 1.25rem;
+    letter-spacing: -0.01em;
+}
+
+.tb-empty-text {
+    color: #86868b;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Profile */
+.tb-profile-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 14px;
+}
+.tb-profile-row:last-of-type { border-bottom: none; }
+.tb-profile-label { color: #86868b; }
+.tb-profile-value { font-weight: 600; color: #f5f5f7; }
+
+/* Orders table */
+.tb-table-wrap {
+    overflow-x: auto;
+    background: #0d0d0d;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+}
+
+.tb-orders-table { width: 100%; border-collapse: collapse; min-width: 480px; }
+
+.tb-orders-table th,
+.tb-orders-table td {
+    text-align: left;
+    padding: 0.85rem 1rem;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: #d1d1d6;
+}
+.tb-orders-table tr:last-child td { border-bottom: none; }
+.tb-orders-table th {
+    color: #86868b;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.tb-order-status { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 980px; }
+.tb-order-status-processing { background: rgba(255,159,10,0.15); color: #ff9f0a; }
+.tb-order-status-done { background: rgba(48,209,88,0.12); color: #30d158; }
+.tb-order-status-cancelled { background: rgba(255,69,58,0.12); color: #ff453a; }
+
+.tb-link-btn {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #86868b;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    transition: border-color 0.2s, color 0.2s;
+}
+.tb-link-btn:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
+.tb-link-danger { color: #ff8a80; }
+.tb-link-danger:hover { border-color: #ff453a; color: #ff453a; }
+
+/* Addresses */
+.tb-address-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.tb-address-card {
+    background: #0d0d0d;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    padding: 1rem;
+}
+
+.tb-address-line { font-size: 13px; color: #d1d1d6; margin: 0 0 0.3rem; }
+.tb-address-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+
+/* Wishlist */
+.tb-wishlist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.tb-wishlist-card {
+    background: #0d0d0d;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.tb-wishlist-name {
+    background: none;
+    border: none;
+    text-align: left;
+    color: #f5f5f7;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 0;
+}
+.tb-wishlist-name:hover { color: #d1d1d6; }
+.tb-wishlist-price { font-size: 13px; color: #86868b; }
+
+/* Settings */
+.tb-setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 14px;
+    color: #f5f5f7;
+}
+.tb-setting-row:last-of-type { border-bottom: none; }
+.tb-setting-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #f5f5f7;
+    cursor: pointer;
+}

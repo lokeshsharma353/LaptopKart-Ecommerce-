@@ -1,0 +1,125 @@
+:host {
+    --tb-primary: #0066cc;
+    --tb-text: #333333;
+    --tb-danger: #e74c3c;
+    --tb-white: #ffffff;
+    --tb-background: #f5f5f5;
+    --tb-muted: #666666;
+
+    display: block;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.tb-signup-page {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+}
+
+.tb-signup-card {
+    background: var(--tb-white);
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    padding: 2rem;
+}
+
+.tb-heading {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--tb-primary);
+    margin: 0 0 1.5rem;
+    text-align: center;
+}
+
+.tb-field {
+    margin-bottom: 1rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.tb-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tb-text);
+    margin-bottom: 0.4rem;
+}
+
+.tb-field input {
+    width: 100%;
+    height: 40px;
+    padding: 0 0.75rem;
+    border: 1px solid #dddddd;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.tb-field-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.tb-error {
+    color: var(--tb-danger);
+    font-size: 12px;
+    margin: 0.3rem 0 0;
+}
+
+.tb-submit-error {
+    margin-bottom: 1rem;
+}
+
+.tb-btn-primary {
+    width: 100%;
+    background: var(--tb-primary);
+    color: var(--tb-white);
+    border: none;
+    border-radius: 6px;
+    padding: 0.85rem;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.tb-btn-primary:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}
+
+.tb-login-link {
+    text-align: center;
+    font-size: 13px;
+    color: var(--tb-muted);
+    margin: 1.25rem 0 0;
+}
+
+.tb-link-btn {
+    background: none;
+    border: none;
+    color: var(--tb-primary);
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+}
+
+.tb-success {
+    text-align: center;
+}
+
+.tb-success p {
+    font-size: 14px;
+    color: var(--tb-text);
+    margin: 0 0 1.5rem;
+}
+
+@media (max-width: 600px) {
+    .tb-field-row {
+        flex-direction: column;
+        gap: 0;
+    }
+}

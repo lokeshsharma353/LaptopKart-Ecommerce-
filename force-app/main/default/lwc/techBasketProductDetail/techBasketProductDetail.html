@@ -1,0 +1,167 @@
+<template>
+    <template if:true={isLoading}>
+        <div class="tb-loading">
+            <div class="tb-skeleton-wrap">
+                <div class="tb-skel tb-skel-gallery"></div>
+                <div class="tb-skel-info">
+                    <div class="tb-skel tb-skel-title"></div>
+                    <div class="tb-skel tb-skel-price"></div>
+                    <div class="tb-skel tb-skel-btn"></div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template if:false={isLoading}>
+        <template if:true={product}>
+
+            <!-- Main detail layout -->
+            <div class="tb-detail">
+
+                <!-- LEFT: Gallery -->
+                <div class="tb-gallery">
+                    <div class="tb-main-image-wrap">
+                        <button class="tb-nav-arrow tb-nav-prev" onclick={handlePrevImage}>&#8592;</button>
+                        <div class="tb-main-image">
+                            <img src={activeImageUrl} alt={product.productName} class="tb-main-img" />
+                        </div>
+                        <button class="tb-nav-arrow tb-nav-next" onclick={handleNextImage}>&#8594;</button>
+                    </div>
+
+                    <!-- Dot indicators -->
+                    <div class="tb-dot-row">
+                        <template for:each={thumbnails} for:item="thumb">
+                            <button key={thumb.index} class={thumb.dotClass} data-index={thumb.index} onclick={handleThumbnailClick}></button>
+                        </template>
+                    </div>
+
+                    <!-- Thumbnail strip -->
+                    <div class="tb-thumbs">
+                        <template for:each={thumbnails} for:item="thumb">
+                            <button key={thumb.index} class={thumb.className} data-index={thumb.index} onclick={handleThumbnailClick}>
+                                <img src={thumb.url} alt="" class="tb-thumb-img" />
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Info -->
+                <div class="tb-info">
+                    <p class="tb-brand-label">{brandName}</p>
+                    <h1 class="tb-product-name">{product.productName}</h1>
+
+                    <div class="tb-price-block">
+                        <span class="tb-price">&#8377;{formattedPrice}</span>
+                        <span class="tb-price-note">Inclusive of all taxes</span>
+                    </div>
+
+                    <!-- Key specs strip -->
+                    <div class="tb-specs-strip">
+                        <div class="tb-spec-item">
+                            <span class="tb-spec-icon">&#9889;</span>
+                            <span class="tb-spec-text">Fast Delivery</span>
+                        </div>
+                        <div class="tb-spec-item">
+                            <span class="tb-spec-icon">&#128737;</span>
+                            <span class="tb-spec-text">1 Yr Warranty</span>
+                        </div>
+                        <div class="tb-spec-item">
+                            <span class="tb-spec-icon">&#8635;</span>
+                            <span class="tb-spec-text">7-Day Return</span>
+                        </div>
+                        <div class="tb-spec-item">
+                            <span class="tb-spec-icon">&#128274;</span>
+                            <span class="tb-spec-text">Secure Pay</span>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="tb-desc-block">
+                        <p class={descriptionClass}>{product.description}</p>
+                        <button class="tb-read-more" onclick={toggleDescription}>{descriptionToggleLabel}</button>
+                    </div>
+
+                    <!-- Quantity + Add to Cart -->
+                    <div class="tb-buy-row">
+                        <c-tech-basket-quantity-selector quantity={quantity} onchange={handleQuantityChange}></c-tech-basket-quantity-selector>
+                        <button class={addCartClass} onclick={handleAddToCart}>{addCartLabel}</button>
+                        <button class="tb-buy-now-btn" onclick={handleBuyNow}>Buy Now</button>
+                    </div>
+
+                    <!-- Wishlist + Share -->
+                    <div class="tb-actions-row">
+                        <button class={wishlistClass} onclick={handleToggleWishlist}>
+                            <span>{wishlistIcon}</span> {wishlistLabel}
+                        </button>
+                        <div class="tb-share-row">
+                            <a class="tb-share-pill" href={facebookShareUrl} target="_blank" rel="noopener noreferrer">Facebook</a>
+                            <a class="tb-share-pill" href={twitterShareUrl} target="_blank" rel="noopener noreferrer">Twitter</a>
+                            <button class="tb-share-pill" onclick={handleCopyLink}>Copy Link</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs section -->
+            <div class="tb-tabs-section">
+                <div class="tb-tab-bar">
+                    <template for:each={tabs} for:item="tab">
+                        <button key={tab.name} class={tab.className} data-tab={tab.name} onclick={handleTabClick}>{tab.label}</button>
+                    </template>
+                </div>
+
+                <div class="tb-tab-body">
+                    <template if:true={isDescriptionTab}>
+                        <p class="tb-tab-text">{product.description}</p>
+                    </template>
+
+                    <template if:true={isReviewsTab}>
+                        <div class="tb-reviews-grid">
+                            <template for:each={mockReviews} for:item="review">
+                                <div class="tb-review-card" key={review.id}>
+                                    <div class="tb-review-stars">
+                                        <template for:each={review.stars} for:item="s">
+                                            <span key={s} class="tb-star">&#9733;</span>
+                                        </template>
+                                    </div>
+                                    <p class="tb-review-comment">{review.comment}</p>
+                                    <p class="tb-review-author">{review.name}</p>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <template if:true={isFaqsTab}>
+                        <div class="tb-faq-list">
+                            <template for:each={mockFaqs} for:item="faq">
+                                <div class="tb-faq-item" key={faq.id}>
+                                    <p class="tb-faq-q">{faq.question}</p>
+                                    <p class="tb-faq-a">{faq.answer}</p>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Related products -->
+            <div class="tb-related">
+                <h2 class="tb-related-heading">You May Also Like</h2>
+                <div class="tb-related-grid">
+                    <template for:each={relatedProducts} for:item="related">
+                        <div key={related.productId}>
+                            <c-tech-basket-product-card product={related}></c-tech-basket-product-card>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+        </template>
+
+        <template if:false={product}>
+            <div class="tb-not-found">
+                <p>Product unavailable.</p>
+            </div>
+        </template>
+    </template>
+</template>

@@ -1,0 +1,446 @@
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
+<head>
+<meta charset="utf-8">
+<title>TechBasket - Project Documentation</title>
+<style>
+@page { size: A4; margin: 2cm; }
+body { font-family: 'Segoe UI', Calibri, sans-serif; font-size: 11pt; line-height: 1.5; color: #1a1a1a; }
+h1 { font-size: 26pt; color: #0066cc; border-bottom: 3px solid #0066cc; padding-bottom: 8px; margin-bottom: 4px; }
+h2 { font-size: 17pt; color: #0066cc; margin-top: 26px; border-bottom: 1px solid #cccccc; padding-bottom: 4px; }
+h3 { font-size: 13pt; color: #333333; margin-top: 18px; }
+h4 { font-size: 11.5pt; color: #444444; margin-top: 14px; margin-bottom: 4px; }
+table { border-collapse: collapse; width: 100%; margin: 10px 0 16px 0; font-size: 9.5pt; }
+th { background: #0066cc; color: #ffffff; text-align: left; padding: 6px 8px; border: 1px solid #0055aa; }
+td { padding: 5px 8px; border: 1px solid #cccccc; vertical-align: top; }
+tr:nth-child(even) td { background: #f5f8fc; }
+code { font-family: Consolas, monospace; background: #f0f0f0; padding: 1px 4px; font-size: 9.5pt; }
+.done { color: #007a4d; font-weight: bold; }
+.partial { color: #b8860b; font-weight: bold; }
+.todo { color: #b03030; font-weight: bold; }
+.blocker { background: #fff4f4; border-left: 4px solid #cc0000; padding: 10px 14px; margin: 12px 0; }
+.note { background: #f2f8ff; border-left: 4px solid #0066cc; padding: 10px 14px; margin: 12px 0; }
+.warn { background: #fffbea; border-left: 4px solid #d9a300; padding: 10px 14px; margin: 12px 0; }
+.meta { color: #666666; font-size: 10pt; margin-top: 0; }
+ul { margin-top: 4px; }
+li { margin-bottom: 3px; }
+</style>
+</head>
+<body>
+
+<h1>TechBasket</h1>
+<p class="meta">Salesforce Experience Cloud (LWR) E-Commerce Storefront<br>
+Connected to Enterprise Order Management &mdash; Project Documentation &amp; Status Report</p>
+
+<div class="note">
+<b>How to read this document.</b> Sections 1&ndash;8 describe what exists today and how it works.
+Section 9 lists confirmed bugs. Section 10 is the gap analysis for your new requirement list &mdash;
+this is your working checklist. Section 11 covers security decisions. Section 12 is what only
+you (as org admin) can do.
+</div>
+
+<h2>1. Executive Summary</h2>
+
+<p>TechBasket is a customer-facing laptop storefront built on Salesforce Experience Cloud using the
+<b>Build Your Own (LWR)</b> template. It is composed entirely of custom Lightning Web Components
+backed by custom Apex, and it writes into the organisation's existing Enterprise Order Management
+data model rather than a parallel one.</p>
+
+<table>
+<tr><th style="width:38%">Area</th><th style="width:16%">Status</th><th>Summary</th></tr>
+<tr><td>Frontend component library</td><td class="done">Complete</td><td>28 Lightning Web Components + 9 shared JavaScript service modules, all deployed</td></tr>
+<tr><td>Product catalogue (real data)</td><td class="done">Complete</td><td>Live Product2 / PricebookEntry data, filtered to 35 laptop products</td></tr>
+<tr><td>Checkout &rarr; CRM pipeline</td><td class="done">Verified working</td><td>Lead &rarr; Opportunity (Closed Won) &rarr; Order &rarr; Payment, tested end-to-end via Apex</td></tr>
+<tr><td>Authentication</td><td class="partial">Partial</td><td>Real Salesforce sign-up built; login uses Salesforce's standard page; custom login page not built</td></tr>
+<tr><td>Experience Cloud pages</td><td class="partial">Partial</td><td>13 pages created; Sign Up page access and site publishing still need attention</td></tr>
+<tr><td>Product imagery</td><td class="todo">Not started</td><td>Placeholder letter tiles only &mdash; no real product photographs</td></tr>
+<tr><td>Premium UI / animation</td><td class="todo">Not started</td><td>Clean but static design; no animated backgrounds or motion design</td></tr>
+<tr><td>Order cancellation, profile photo, brand browsing</td><td class="todo">Not started</td><td>New requirements from the latest specification</td></tr>
+</table>
+
+<h2>2. Technology Stack &amp; Architecture</h2>
+
+<table>
+<tr><th style="width:30%">Layer</th><th>Technology</th></tr>
+<tr><td>Platform</td><td>Salesforce Experience Cloud &mdash; Build Your Own (LWR) template</td></tr>
+<tr><td>UI framework</td><td>Lightning Web Components (LWC), HTML, CSS, JavaScript &mdash; no external frameworks</td></tr>
+<tr><td>Backend</td><td>Apex classes (<code>@AuraEnabled</code>), Apex triggers, existing handler/service classes</td></tr>
+<tr><td>Data</td><td>Standard objects (Account, Contact, Lead, Opportunity, Order, OrderItem, Product2, PricebookEntry) plus custom objects Payment__c and Order_Tracking__c</td></tr>
+<tr><td>Client-side state</td><td>Browser <code>localStorage</code> via shared JavaScript service modules (cart, checkout draft, wishlist)</td></tr>
+<tr><td>Deployment</td><td>Salesforce CLI (<code>sf project deploy start</code>) from a local SFDX project</td></tr>
+</table>
+
+<h3>Architectural principles applied</h3>
+<ul>
+<li><b>No SOQL or DML inside JavaScript.</b> All data access goes through Apex.</li>
+<li><b>Server-side pricing.</b> Checkout re-reads prices from PricebookEntry &mdash; prices sent from the browser cart are never trusted, preventing price tampering.</li>
+<li><b>Reuse over rewrite.</b> Existing Order/Payment/Tracking automation is triggered, not duplicated.</li>
+<li><b>No invented fields.</b> Every field referenced was verified against the org's actual schema first.</li>
+<li><b>Centralised logic.</b> Navigation, cart maths, and toast messaging each live in exactly one module.</li>
+</ul>
+
+<h2>3. Salesforce Data Model In Use</h2>
+
+<h3>3.1 Objects</h3>
+<table>
+<tr><th style="width:22%">Object</th><th style="width:14%">Type</th><th>Role in TechBasket</th></tr>
+<tr><td>Product2</td><td>Standard</td><td>Product catalogue source. 53 active products; 35 identified as laptops</td></tr>
+<tr><td>PricebookEntry</td><td>Standard</td><td>Authoritative pricing (Standard Price Book). 41 of 53 products are priced</td></tr>
+<tr><td>Lead</td><td>Standard</td><td>Created at checkout, then converted &mdash; entry point to the sales pipeline</td></tr>
+<tr><td>Account / Contact</td><td>Standard</td><td>Created by Lead conversion or reused if the customer already exists</td></tr>
+<tr><td>Opportunity / OpportunityLineItem</td><td>Standard</td><td>Cart becomes Opportunity line items; closing it Won generates the Order</td></tr>
+<tr><td>Order / OrderItem</td><td>Standard</td><td>The actual customer order, generated by existing OrderService automation</td></tr>
+<tr><td>Payment__c</td><td>Custom</td><td>Payment record; existing automation validates it and rolls totals up to the Order</td></tr>
+<tr><td>Order_Tracking__c</td><td>Custom</td><td>Delivery tracking; auto-created when an Order is activated</td></tr>
+</table>
+
+<h3>3.2 Key custom fields</h3>
+<table>
+<tr><th style="width:26%">Object</th><th style="width:30%">Field</th><th>Notes</th></tr>
+<tr><td>Order</td><td><code>Total_Paid__c</code> (Currency)</td><td>Maintained automatically by PaymentService</td></tr>
+<tr><td>Order</td><td><code>Payment_Status__c</code> (Picklist)</td><td>Unpaid / Partially Paid / Fully Paid &mdash; set automatically</td></tr>
+<tr><td>Payment__c</td><td><code>Order__c</code>, <code>Amount__c</code>, <code>Payment_Date__c</code>, <code>Payment_Status__c</code>, <code>Transaction_ID__c</code>, <code>Payment_Method__c</code></td><td>Full payment record</td></tr>
+<tr><td>Order_Tracking__c</td><td><code>Order__c</code>, <code>Tracking_NUmber__c</code>, <code>Delivery_Status__c</code>, <code>Delivery_Date__c</code></td><td>Note the unusual capitalisation in <code>Tracking_NUmber__c</code> &mdash; that is the real API name</td></tr>
+<tr><td>Account</td><td><code>Customer_Status__c</code>, <code>Total_Won_Amount__c</code>, <code>Last_Won_Date__c</code>, <code>Open_Opportunity_Count__c</code>, plus standard sample fields</td><td>No password field and no profile-image field currently exist</td></tr>
+</table>
+
+<h3>3.3 Verified field requirements (important for the Sign Up form)</h3>
+<p>You asked which fields are mandatory when creating these records. Verified directly against the org:</p>
+<table>
+<tr><th style="width:26%">Object</th><th style="width:26%">Truly required fields</th><th>Implication</th></tr>
+<tr><td>Account</td><td><code>Name</code> only</td><td>The sign-up form needs very few fields &mdash; a name is enough to create the Account</td></tr>
+<tr><td>Contact</td><td><code>LastName</code> only</td><td>First name, email, phone are all optional at database level</td></tr>
+<tr><td>Lead</td><td><code>LastName</code>, <code>Company</code>, and <code>Department__c</code></td><td><b>Department__c is a required custom picklist</b> (IT / HR / Finance / Sales). Checkout currently defaults it to "Sales"</td></tr>
+</table>
+
+<div class="warn">
+<b>Constraint discovered &mdash; payment methods.</b> <code>Payment__c.Payment_Method__c</code> currently accepts only
+<b>Cash</b>, <b>Card</b>, and <b>Net Banking</b>. Your requirement is <b>Credit/Debit Card</b>, <b>UPI</b>, and <b>COD</b>.
+Two of those three values do not exist yet and must be added to the picklist in Setup before payments using them can be saved.
+</div>
+
+<div class="warn">
+<b>Constraint discovered &mdash; delivery status.</b> <code>Order_Tracking__c.Delivery_Status__c</code> currently accepts only
+<b>Pending</b> and <b>Cancelled</b>. There is no "Shipped", "In Transit" or "Delivered" value, which limits how
+realistic order tracking can be until those values are added.
+</div>
+
+<h2>4. Backend &mdash; Apex Classes</h2>
+
+<h3>4.1 Built for TechBasket</h3>
+<table>
+<tr><th style="width:26%">Class</th><th style="width:16%">Status</th><th>Responsibility</th></tr>
+<tr><td><code>ProductCatalogController</code></td><td class="done">Deployed</td><td>Returns active, priced laptop products from PricebookEntry joined to Product2. Contains a curated list of 35 laptop product IDs</td></tr>
+<tr><td><code>CheckoutController</code></td><td class="done">Deployed &amp; tested</td><td>Runs the complete order pipeline, and provides <code>getOrders()</code> for Confirmation / History / Tracking pages</td></tr>
+<tr><td><code>RegistrationController</code></td><td class="done">Deployed</td><td>Creates a genuine Salesforce login via <code>Site.createExternalUser</code>, with duplicate-email handling</td></tr>
+</table>
+
+<h3>4.2 Pre-existing classes reused (not modified)</h3>
+<table>
+<tr><th style="width:30%">Class</th><th>Responsibility</th></tr>
+<tr><td><code>OrderService</code></td><td>Creates Order + OrderItems from a Closed Won Opportunity</td></tr>
+<tr><td><code>OrderTriggerHandler</code> / <code>OrderTrackingService</code></td><td>Creates Order_Tracking__c when an Order moves Draft &rarr; Activated</td></tr>
+<tr><td><code>PaymentTriggerHandler</code> / <code>PaymentService</code></td><td>Validates payments do not exceed the order total, and recalculates Total Paid / Payment Status</td></tr>
+<tr><td><code>OpportunityTriggerHandler</code></td><td>Detects Closed Won and calls OrderService</td></tr>
+<tr><td><code>OrderPaymentController</code></td><td>Powers the internal <code>orderPaymentDashboard</code> component used by staff inside Salesforce</td></tr>
+<tr><td><code>OrderPaymentReconciliationBatch</code> / <code>Scheduler</code></td><td>Batch recalculation of order payment totals (available; not scheduled)</td></tr>
+</table>
+
+<h2>5. Automation Chain</h2>
+
+<p>The single most important thing to understand about this project is that the storefront does not
+create Orders directly. It closes an Opportunity, and the organisation's <i>existing</i> automation
+does the rest. The full chain, verified in a live execution trace:</p>
+
+<table>
+<tr><th style="width:6%">#</th><th style="width:34%">Action</th><th>Automation that fires</th></tr>
+<tr><td>1</td><td>Lead inserted</td><td>Lead flows, validation, duplicate detection</td></tr>
+<tr><td>2</td><td>Lead converted</td><td>Account + Contact + Opportunity created by the platform</td></tr>
+<tr><td>3</td><td>Opportunity line items inserted</td><td>&mdash;</td></tr>
+<tr><td>4</td><td>Opportunity set to <b>Closed Won</b></td><td><code>OpportunityTrigger</code> &rarr; <code>OpportunityTriggerHandler</code> &rarr; <code>OrderService.createOrders()</code> &rarr; <b>Order + OrderItems created</b></td></tr>
+<tr><td>5</td><td>Order set to <b>Activated</b></td><td><code>OrderTrigger</code> &rarr; <code>OrderTriggerHandler</code> &rarr; <code>OrderTrackingService</code> &rarr; <b>Order_Tracking__c created</b></td></tr>
+<tr><td>6</td><td>Payment__c inserted</td><td><code>PaymentTrigger</code> &rarr; <code>PaymentService</code> &rarr; validates amount, <b>recalculates Order Total Paid / Payment Status</b></td></tr>
+</table>
+
+<div class="note">
+<b>Verified result of a live test run:</b> Order <code>00000133</code>, total <code>&#8377;110,000.00</code>,
+tracking number <code>TRK1788443170789</code>, estimated delivery <code>2026-09-08</code> &mdash;
+all six stages fired correctly in one transaction.
+</div>
+
+<h3>Other triggers in the org</h3>
+<table>
+<tr><th style="width:26%">Trigger</th><th style="width:14%">Status</th><th>Behaviour</th></tr>
+<tr><td><code>accountTrigger</code></td><td class="done">Active</td><td>Copies Billing Street to Shipping Street on insert/update</td></tr>
+<tr><td><code>OpportunityTrigger</code></td><td class="done">Active</td><td>Closed Won &rarr; create Order</td></tr>
+<tr><td><code>OrderTrigger</code></td><td class="done">Active</td><td>Status change &rarr; create/update Order_Tracking__c</td></tr>
+<tr><td><code>PaymentTrigger</code></td><td class="done">Active</td><td>Validate payment, roll up totals</td></tr>
+<tr><td><code>contactTrigger</code></td><td class="partial">Empty</td><td>Declared on Contact (after update) but contains no logic yet</td></tr>
+</table>
+
+<h2>6. Frontend &mdash; Component Inventory</h2>
+
+<h3>6.1 Page-level components</h3>
+<table>
+<tr><th style="width:28%">Component</th><th style="width:14%">Status</th><th>Purpose</th></tr>
+<tr><td><code>techBasketHome</code></td><td class="partial">Needs rework</td><td>Hero, categories, featured products, testimonials, newsletter</td></tr>
+<tr><td><code>techBasketProductCatalog</code></td><td class="done">Working</td><td>Filters, sorting, grid/list toggle, pagination (12 per page)</td></tr>
+<tr><td><code>techBasketProductDetail</code></td><td class="partial">No real images</td><td>Gallery, description, tabs, wishlist, share, related products</td></tr>
+<tr><td><code>techBasketCart</code></td><td class="done">Working</td><td>Line items, quantity control, clear-cart confirmation</td></tr>
+<tr><td><code>techBasketCheckout</code></td><td class="partial">See bug 9.1</td><td>Shipping &rarr; Billing &rarr; Shipping Method, with progress indicator</td></tr>
+<tr><td><code>techBasketPayment</code></td><td class="partial">See bug 9.1</td><td>Payment method + card form, submits the real order pipeline</td></tr>
+<tr><td><code>techBasketOrderConfirmation</code></td><td class="done">Working</td><td>Real order summary, tracking number, delivery estimate</td></tr>
+<tr><td><code>techBasketOrderHistory</code></td><td class="partial">Local ID list</td><td>Order table with View / Track / Return / Reorder actions</td></tr>
+<tr><td><code>techBasketOrderTracking</code></td><td class="done">Working</td><td>Tracking number, delivery status and date from Order_Tracking__c</td></tr>
+<tr><td><code>techBasketMyAccount</code></td><td class="partial">Mostly mock</td><td>Profile, addresses, payment methods, wishlist, reviews, settings</td></tr>
+<tr><td><code>techBasketContactUs</code></td><td class="partial">No delivery</td><td>Contact form, support details, FAQs, live chat button</td></tr>
+<tr><td><code>techBasketAboutUs</code></td><td class="done">Working</td><td>Brand story, statistics, values</td></tr>
+<tr><td><code>techBasketSignUp</code></td><td class="partial">Untested live</td><td>Registration form calling RegistrationController</td></tr>
+<tr><td><code>techBasketHeader</code> / <code>techBasketFooter</code></td><td class="done">Working</td><td>Site-wide navigation, search, cart badge, auth state, mobile drawer</td></tr>
+</table>
+
+<h3>6.2 Supporting components</h3>
+<table>
+<tr><th style="width:30%">Component</th><th>Purpose</th></tr>
+<tr><td><code>techBasketProductCard</code></td><td>Product tile with live add-to-cart / quantity stepper</td></tr>
+<tr><td><code>techBasketSearch</code></td><td>Reusable search box with autocomplete suggestions</td></tr>
+<tr><td><code>techBasketCategoryCard</code></td><td>Category tile (to be repurposed as brand tile)</td></tr>
+<tr><td><code>techBasketQuantitySelector</code></td><td>Reusable minus / value / plus control</td></tr>
+<tr><td><code>techBasketCartItem</code></td><td>Single cart row</td></tr>
+<tr><td><code>techBasketOrderSummary</code></td><td>Subtotal, shipping, tax, discount, total (shared by Cart and Checkout)</td></tr>
+<tr><td><code>techBasketShippingForm</code> / <code>techBasketBillingForm</code></td><td>Address capture with validation</td></tr>
+<tr><td><code>techBasketShippingMethod</code></td><td>Delivery option selection</td></tr>
+<tr><td><code>techBasketPaymentMethod</code></td><td>Payment option selection</td></tr>
+<tr><td><code>techBasketModal</code></td><td>Reusable confirmation dialog</td></tr>
+<tr><td><code>techBasketToast</code></td><td>Site-wide notification renderer</td></tr>
+<tr><td><code>techBasketRating</code></td><td>Star rating display (used by testimonials and reviews)</td></tr>
+</table>
+
+<h3>6.3 Shared JavaScript service modules</h3>
+<table>
+<tr><th style="width:26%">Module</th><th style="width:14%">Status</th><th>Purpose</th></tr>
+<tr><td><code>cartService</code></td><td class="done">In use</td><td>Cart state, localStorage persistence, subscribe/notify across components</td></tr>
+<tr><td><code>navigationService</code></td><td class="done">In use</td><td>Single source of truth for every Experience Builder page API name</td></tr>
+<tr><td><code>productDataService</code></td><td class="done">In use</td><td>Cached Apex product fetch plus pure search/filter helpers</td></tr>
+<tr><td><code>cartCalculations</code></td><td class="done">In use</td><td>Subtotal / tax / shipping / discount / total in one place</td></tr>
+<tr><td><code>orderService</code></td><td class="done">In use</td><td>Remembers placed Order IDs locally, fetches real orders via Apex</td></tr>
+<tr><td><code>checkoutService</code></td><td class="partial">See bug 9.1</td><td>Hands the checkout draft from the Checkout page to the Payment page</td></tr>
+<tr><td><code>toastService</code></td><td class="done">In use</td><td>Publish/subscribe for toast messages</td></tr>
+<tr><td><code>wishlistService</code></td><td class="done">In use</td><td>Wishlist IDs in localStorage</td></tr>
+<tr><td><code>authService</code> / <code>mockProductData</code></td><td class="todo">Obsolete</td><td>Superseded by real auth and real product data &mdash; safe to delete</td></tr>
+</table>
+
+<h2>7. Experience Cloud Site Configuration</h2>
+
+<p>Site name: <b>TechBasket</b> &nbsp;&bull;&nbsp; Template: <b>Build Your Own (LWR)</b> &nbsp;&bull;&nbsp; URL path prefix: <code>techbasketvforcesite</code></p>
+
+<h3>7.1 Page map</h3>
+<p>Page API names are auto-generated by Experience Builder and cannot be edited from the page
+properties panel. <code>navigationService.js</code> must match them exactly or navigation fails
+with "Invalid Page".</p>
+<table>
+<tr><th style="width:26%">Page</th><th style="width:26%">API Name</th><th>Component placed</th></tr>
+<tr><td>Home</td><td><code>Home</code></td><td>techBasketHome</td></tr>
+<tr><td>Product Catalog</td><td><code>Product_Catalog__c</code></td><td>techBasketProductCatalog</td></tr>
+<tr><td>Product Detail</td><td><code>Product_Detail__c</code></td><td>techBasketProductDetail</td></tr>
+<tr><td>Shopping Cart</td><td><code>Shopping_Cart__c</code></td><td>techBasketCart</td></tr>
+<tr><td>Checkout</td><td><code>Checkout__c</code></td><td>techBasketCheckout</td></tr>
+<tr><td>Payment</td><td><code>Payment__c</code></td><td>techBasketPayment</td></tr>
+<tr><td>Order Confirmation</td><td><code>Order_Confirmation__c</code></td><td>techBasketOrderConfirmation</td></tr>
+<tr><td>My Account</td><td><code>My_Account__c</code></td><td>techBasketMyAccount</td></tr>
+<tr><td>Order History</td><td><code>Order_History__c</code></td><td>techBasketOrderHistory</td></tr>
+<tr><td>Order Tracking</td><td><code>Order_Tracking__c</code></td><td>techBasketOrderTracking</td></tr>
+<tr><td>Contact Us</td><td><code>Contact_Us__c</code></td><td>techBasketContactUs</td></tr>
+<tr><td>About</td><td><code>About__c</code></td><td>techBasketAboutUs</td></tr>
+<tr><td>Sign Up</td><td><code>Sign_Up_c</code></td><td>techBasketSignUp</td></tr>
+</table>
+
+<h3>7.2 Access &amp; licensing</h3>
+<table>
+<tr><th style="width:34%">Item</th><th>Detail</th></tr>
+<tr><td>Member profile</td><td><b>Customer Community Login User</b> &mdash; added as a site member during this project (previously only System Administrator was a member, which made customer login impossible)</td></tr>
+<tr><td>License availability</td><td>Customer Community Login: 5 total, 0 used. Customer Community: 5 total, 0 used</td></tr>
+<tr><td>Guest profile</td><td>"TechBasket Profile" is the site's <i>Guest</i> profile (Guest User License) &mdash; it cannot be used for registered customers</td></tr>
+<tr><td>Self-registration flag</td><td><code>OptionsSelfRegistrationEnabled</code> is currently <b>false</b>; registration is handled by custom Apex instead</td></tr>
+<tr><td>Page access default</td><td>Most pages inherit "Requires Login". The Sign Up page <b>must be set to Public</b> or nobody can register</td></tr>
+</table>
+
+<h2>8. End-to-End Customer Flow</h2>
+<p>What happens in Salesforce when a customer places an order today:</p>
+<table>
+<tr><th style="width:32%">Customer action</th><th>System result</th></tr>
+<tr><td>Browses catalogue</td><td>ProductCatalogController reads Product2 + PricebookEntry (laptops only)</td></tr>
+<tr><td>Adds to cart</td><td>Stored in browser localStorage; header badge and all product cards update instantly</td></tr>
+<tr><td>Completes Checkout steps</td><td>Shipping / billing / delivery method saved to a local checkout draft</td></tr>
+<tr><td>Clicks Pay Now</td><td>CheckoutController runs the full six-stage pipeline in one transaction</td></tr>
+<tr><td>Sees Order Confirmation</td><td>Real Order number, tracking number, delivery estimate, itemised totals</td></tr>
+<tr><td>Opens Order History / Tracking</td><td>Live Order, OrderItem and Order_Tracking__c data read back through Apex</td></tr>
+<tr><td>Staff open the Order in Salesforce</td><td>The full record exists natively &mdash; Account, Opportunity, Order, Items, Payment, Tracking</td></tr>
+</table>
+
+<h2>9. Known Issues</h2>
+
+<h3>9.1 Cart empties between Checkout and Payment &mdash; <span class="todo">confirmed, blocking</span></h3>
+<p><b>Symptom:</b> Completing Checkout and moving to Payment shows "Your cart is empty".</p>
+<p><b>Root cause:</b> The browser's address bar changes domain between those two pages.
+<code>localStorage</code> is scoped per domain, so the cart and checkout draft written on one
+domain are invisible on the other.</p>
+<p><b>Fix path:</b> Publish the site so all recently added pages are served from the same
+domain, and test the whole journey from one canonical URL. If the split persists, the
+cart must move from localStorage into a server-side store, which is a larger change.</p>
+
+<h3>9.2 Payment method values do not match the picklist &mdash; <span class="todo">will fail</span></h3>
+<p>The UI sends internal keys (<code>card</code>, <code>upi</code>, <code>emi</code>&hellip;) into
+<code>Payment_Method__c</code>, which only defines <b>Cash</b>, <b>Card</b>, <b>Net Banking</b>.
+Values must be mapped properly and the required new values added.</p>
+
+<h3>9.3 Shipping and tax are not represented in Salesforce &mdash; <span class="partial">by design, needs decision</span></h3>
+<p><code>Order.TotalAmount</code> is a roll-up of OrderItems only. Shipping and tax shown on the
+website have no line-item representation, so the Payment record is deliberately created for the
+product subtotal only. Website total and Salesforce total therefore differ.</p>
+
+<h3>9.4 Order History relies on browser memory &mdash; <span class="partial">temporary</span></h3>
+<p>Order History shows orders whose IDs this browser remembers, not orders belonging to the
+logged-in customer. Now that real login exists, this should query by the authenticated Contact.</p>
+
+<h3>9.5 Smaller gaps</h3>
+<ul>
+<li>Sign-up and login have not been verified in a live browser session.</li>
+<li><code>contactTrigger</code> is an empty shell.</li>
+<li><code>authService</code> and <code>mockProductData</code> are dead code.</li>
+<li>Ratings, stock levels and discounts were removed from product pages because no such fields exist on Product2.</li>
+</ul>
+
+<h2>10. New Requirements &mdash; Gap Analysis</h2>
+<p>Your latest specification, broken into work items with current state and what each needs.</p>
+
+<h3>10.1 Login</h3>
+<table>
+<tr><th style="width:32%">Requirement</th><th style="width:14%">Now</th><th>What is needed</th></tr>
+<tr><td>Custom login page with email + password</td><td class="todo">Not built</td><td>New LWC login page; currently Salesforce's standard login page is used</td></tr>
+<tr><td>Validate against a password field on Account</td><td class="todo">Not built</td><td><b>See Section 11 &mdash; this carries a serious security risk and an alternative is recommended</b></td></tr>
+<tr><td>Redirect to Home after login</td><td class="partial">Default</td><td>Configure the login redirect target</td></tr>
+<tr><td>Welcome pop-up after login</td><td class="todo">Not built</td><td>Reuse <code>techBasketModal</code>, triggered once per session</td></tr>
+<tr><td>Forgot Password button, pop-up, email</td><td class="partial">Standard only</td><td>Salesforce's built-in page already offers this; a custom pop-up needs <code>Site.forgotPassword()</code></td></tr>
+</table>
+
+<h3>10.2 Sign Up</h3>
+<table>
+<tr><th style="width:32%">Requirement</th><th style="width:14%">Now</th><th>What is needed</th></tr>
+<tr><td>Sign-up form capturing customer details</td><td class="done">Built</td><td>Deployed, but not yet verified live</td></tr>
+<tr><td>Include all required standard-object fields</td><td class="done">Satisfied</td><td>Only Account.Name and Contact.LastName are mandatory &mdash; both captured</td></tr>
+<tr><td>Store into Account and Contact via Apex</td><td class="done">Built</td><td><code>RegistrationController</code> creates both</td></tr>
+<tr><td>Block duplicate email addresses</td><td class="done">Built</td><td>Blocks if a User exists; reuses an admin-created Contact if one exists without a login</td></tr>
+<tr><td>Confirmation email after sign-up</td><td class="todo">Not built</td><td>Add an email send (or enable the standard welcome email on the profile)</td></tr>
+</table>
+
+<h3>10.3 Home page</h3>
+<table>
+<tr><th style="width:32%">Requirement</th><th style="width:14%">Now</th><th>What is needed</th></tr>
+<tr><td>Remove the navigation bar</td><td class="todo">Present</td><td>Strip nav links from the header; keep only key actions</td></tr>
+<tr><td>Only key buttons: Account, Search, About, Cart</td><td class="todo">Not done</td><td>Header redesign</td></tr>
+<tr><td>Animated 4K/8K Salesforce-themed background</td><td class="todo">Not built</td><td>Requires licensed high-resolution imagery plus CSS/JS animation. Images must be sourced legally &mdash; see Section 11.2</td></tr>
+<tr><td>Premium look and motion design</td><td class="todo">Not started</td><td>Full visual redesign pass</td></tr>
+</table>
+
+<h3>10.4 Brands &amp; products</h3>
+<table>
+<tr><th style="width:32%">Requirement</th><th style="width:14%">Now</th><th>What is needed</th></tr>
+<tr><td>Replace categories with "Select Your Brand"</td><td class="todo">Categories</td><td>Repurpose <code>techBasketCategoryCard</code>; needs a brand value on Product2</td></tr>
+<tr><td>10&ndash;15 real laptop brands</td><td class="todo">Not built</td><td>Currently only 4 brands exist in data (Apple, Dell, Asus, Lenovo). New products must be created for other brands</td></tr>
+<tr><td>Laptops only</td><td class="done">Done</td><td>Catalogue filtered to 35 laptops</td></tr>
+<tr><td>4&ndash;5 real photos per product</td><td class="todo">Not built</td><td>No image field exists on Product2, and no images are stored. Needs a field/attachment strategy plus legally usable photography</td></tr>
+<tr><td>Zoom and auto-changing image animation</td><td class="todo">Not built</td><td>Depends on real images existing first</td></tr>
+<tr><td>Testimonials from real accounts</td><td class="todo">Mock</td><td>No review object exists; would need one</td></tr>
+</table>
+
+<h3>10.5 Cart, address &amp; checkout</h3>
+<table>
+<tr><th style="width:32%">Requirement</th><th style="width:14%">Now</th><th>What is needed</th></tr>
+<tr><td>Fix the add-to-cart &rarr; order cycle errors</td><td class="todo">Bug 9.1</td><td>Resolve the domain/publishing issue first</td></tr>
+<tr><td>Improve cart colours and animation</td><td class="todo">Not started</td><td>Visual pass</td></tr>
+<tr><td>Save shipping address to Account and Contact</td><td class="todo">Not built</td><td>Extend CheckoutController, or add a trigger/flow</td></tr>
+<tr><td>Reuse saved address on later orders</td><td class="todo">Not built</td><td>Read the address back from Contact/Account at checkout</td></tr>
+<tr><td>Reduce address fields to two or three</td><td class="todo">Nine fields</td><td>Simplify <code>techBasketShippingForm</code></td></tr>
+<tr><td>Only Standard and Express delivery</td><td class="todo">Three options</td><td>Remove Overnight from <code>techBasketShippingMethod</code></td></tr>
+<tr><td>Real-time, correct totals</td><td class="partial">Partly</td><td>Shipping cost is not currently passed into the Cart page summary; discount reset behaviour needs review</td></tr>
+</table>
+
+<h3>10.6 Payment &amp; orders</h3>
+<table>
+<tr><th style="width:32%">Requirement</th><th style="width:14%">Now</th><th>What is needed</th></tr>
+<tr><td>Only Card, UPI and COD</td><td class="todo">Five options</td><td>Trim the UI <b>and</b> add UPI/COD to the picklist (see 9.2)</td></tr>
+<tr><td>Generate Order ID and redirect on success</td><td class="done">Working</td><td>Already creates a real Order and redirects to confirmation</td></tr>
+<tr><td>Order list with View Detail</td><td class="done">Working</td><td>Order History has View / Track / Return / Reorder</td></tr>
+<tr><td>Cancel order with a reason</td><td class="todo">Not built</td><td>Needs a cancellation reason field and an Apex method; "Cancelled" already exists as a delivery status</td></tr>
+<tr><td>Completely error-free flow</td><td class="partial">In progress</td><td>Depends on 9.1 and 9.2</td></tr>
+</table>
+
+<h3>10.7 Account &amp; search</h3>
+<table>
+<tr><th style="width:32%">Requirement</th><th style="width:14%">Now</th><th>What is needed</th></tr>
+<tr><td>Profile picture on the account</td><td class="todo">Not built</td><td>No image field exists; needs a field or ContentDocument approach plus upload UI</td></tr>
+<tr><td>Search by brand name returns all that brand's products</td><td class="partial">Partial</td><td>Search matches product name and category. Because every product is now categorised "Laptops", brand search only works where the brand appears in the product name &mdash; a proper brand field would fix this</td></tr>
+<tr><td>Search by full product name</td><td class="done">Working</td><td>Already supported</td></tr>
+</table>
+
+<h2>11. Security &amp; Compliance Notes</h2>
+
+<h3>11.1 Storing passwords on the Account object</h3>
+<div class="blocker">
+<p><b>This requirement should not be implemented as specified.</b> Storing a customer password in a
+custom field &mdash; even one hidden from most profiles &mdash; means the password is held in plain text.
+It would be readable through the API, reports, debug logs, data exports, backups, and by any Apex
+running in system context. Field-level security does not prevent any of that. A single exported
+report or log file would expose every customer's password, and because people reuse passwords, the
+damage would extend beyond this site.</p>
+<p><b>Recommended instead:</b> Salesforce's own Experience Cloud authentication, which is already
+partially in place. It stores passwords hashed and salted, never exposes them to anyone including
+administrators, and provides password reset, lockout policies and expiry for free. Administrators
+still see the customer as an ordinary Contact/Account record, which is the visibility you wanted.
+The only capability genuinely lost is an administrator being able to read a customer's password &mdash;
+which is precisely the property that makes it safe.</p>
+</div>
+
+<h3>11.2 Product and background imagery</h3>
+<p>The requirement asks for real product photographs and high-resolution background images taken
+from the internet. Images found online are usually copyrighted. Before publishing, images should
+come from one of: official brand/manufacturer media kits with permission, a licensed stock library,
+or photographs you own. This matters more once the site is publicly published.</p>
+
+<h3>11.3 Payment handling</h3>
+<p>Card number and CVV are currently held only in component memory during entry, are never sent to
+Apex, and are never stored or logged. This is correct and should be preserved. Real payment
+processing still requires a payment gateway integration; the current flow simulates authorisation.</p>
+
+<h2>12. Actions Required From You (Administrator)</h2>
+<table>
+<tr><th style="width:6%">#</th><th style="width:34%">Action</th><th>Why</th></tr>
+<tr><td>1</td><td><b>Publish the site</b> in Experience Builder</td><td>Most likely fix for the empty-cart bug (9.1); also activates recently added pages</td></tr>
+<tr><td>2</td><td>Set the <b>Sign Up page access to Public</b></td><td>Otherwise no visitor can reach the registration form</td></tr>
+<tr><td>3</td><td>Add <b>UPI</b> and <b>COD</b> to <code>Payment__c.Payment_Method__c</code></td><td>Required before those payment options can be saved</td></tr>
+<tr><td>4</td><td>Add delivery statuses (Shipped, In Transit, Delivered) to <code>Order_Tracking__c</code></td><td>Enables realistic order tracking</td></tr>
+<tr><td>5</td><td>Decide on Home page access (Public vs Requires Login)</td><td>Determines whether login is the first screen visitors see</td></tr>
+<tr><td>6</td><td>Create a <b>Brand</b> field on Product2, or populate <code>Family</code></td><td>Required for brand browsing and brand search; <code>Family</code> is currently empty on all 53 products</td></tr>
+<tr><td>7</td><td>Decide the product image approach</td><td>No image field exists on Product2 today</td></tr>
+<tr><td>8</td><td>Confirm the decision on password storage (Section 11.1)</td><td>Blocks the custom login page design</td></tr>
+</table>
+
+<h2>13. Suggested Delivery Order</h2>
+<table>
+<tr><th style="width:10%">Phase</th><th style="width:34%">Focus</th><th>Contents</th></tr>
+<tr><td><b>1</b></td><td>Make the existing journey error-free</td><td>Fix 9.1 (publish/domain), fix 9.2 (payment picklist mapping), trim delivery to two options and payment to three, verify totals recalculate correctly</td></tr>
+<tr><td><b>2</b></td><td>Complete the account layer</td><td>Live-test sign-up and login, welcome pop-up, forgot-password flow, order history by logged-in customer, confirmation email</td></tr>
+<tr><td><b>3</b></td><td>Data foundation</td><td>Brand field on Product2, additional brands, product image strategy, address sync to Account/Contact with reuse</td></tr>
+<tr><td><b>4</b></td><td>Order lifecycle</td><td>Cancel with reason, richer delivery statuses, profile picture</td></tr>
+<tr><td><b>5</b></td><td>Premium experience</td><td>Home redesign, animated backgrounds, brand selector, product image galleries with motion, cart visual polish</td></tr>
+</table>
+
+<div class="note">
+<b>Recommended sequencing note.</b> Phases 1 and 2 make the site trustworthy; Phase 3 unblocks
+several later items (brand browsing, brand search and product galleries all depend on the data
+foundation). The visual work in Phase 5 is deliberately last because it is the most expensive to
+redo if underlying structures change.
+</div>
+
+</body>
+</html>

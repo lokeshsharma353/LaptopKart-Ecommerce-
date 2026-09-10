@@ -1,0 +1,243 @@
+<template>
+    <c-tech-basket-welcome-popup></c-tech-basket-welcome-popup>
+    <div class="tb-home">
+
+        <!-- HERO -->
+        <section class="tb-hero">
+            <div class="tb-hero-slides">
+                <template for:each={heroSlides} for:item="slide">
+                    <div key={slide.id} class={slide.cls} style={slide.style}></div>
+                </template>
+            </div>
+            <!-- Mobile-only: a single static, blurred background (hidden on
+                 desktop/tablet, where the slideshow above still runs). -->
+            <div class="tb-hero-mobile-bg" style={mobileHeroStyle}></div>
+            <!-- Ambient glow orbs -->
+            <div class="tb-orb tb-orb-1"></div>
+            <div class="tb-orb tb-orb-2"></div>
+            <div class="tb-orb tb-orb-3"></div>
+            <div class="tb-hero-overlay"></div>
+
+            <div class="tb-hero-content">
+                <span class="tb-hero-eyebrow">Premium Laptop Store</span>
+                <h1 class="tb-hero-heading">
+                    <span>The World's Best</span>
+                    <span>Laptops. One Place.</span>
+                </h1>
+                <p class="tb-hero-sub">
+                    Apple, Dell, HP, Lenovo, ASUS &amp; Acer — every top brand, every budget.<br/>
+                    Free delivery. Official warranty. Expert support.
+                </p>
+                <div class="tb-hero-actions">
+                    <button class="tb-btn-primary" onclick={handleShopNow}>Shop Now</button>
+                    <button class="tb-btn-outline" onclick={handleLearnMore}>About Us</button>
+                    <button class="tb-btn-outline" onclick={handleGoSearch}>Search Laptops</button>
+                </div>
+            </div>
+
+            <div class="tb-scroll-hint">
+                <div class="tb-scroll-line"></div>
+                <span>Scroll</span>
+            </div>
+
+            <div class="tb-slide-dots">
+                <template for:each={slideDots} for:item="dot">
+                    <span key={dot.id} class={dot.cls}></span>
+                </template>
+            </div>
+        </section>
+
+        <!-- STATS -->
+        <div class="tb-stats-bar tb-reveal">
+            <div class="tb-stat">
+                <span class="tb-stat-number">100+</span>
+                <span class="tb-stat-label">Happy Customers</span>
+            </div>
+            <div class="tb-stat-divider"></div>
+            <div class="tb-stat">
+                <span class="tb-stat-number">6</span>
+                <span class="tb-stat-label">Premium Brands</span>
+            </div>
+            <div class="tb-stat-divider"></div>
+            <div class="tb-stat">
+                <span class="tb-stat-number">50+</span>
+                <span class="tb-stat-label">Laptop Models</span>
+            </div>
+            <div class="tb-stat-divider"></div>
+            <div class="tb-stat">
+                <span class="tb-stat-number">24/7</span>
+                <span class="tb-stat-label">Expert Support</span>
+            </div>
+        </div>
+
+        <!-- BRANDS -->
+        <section class="tb-brands-section">
+            <div class="tb-section-header tb-reveal">
+                <span class="tb-eyebrow">Top Brands</span>
+                <h2 class="tb-section-heading">
+                    <span class="tb-word">Choose</span><span class="tb-word">Your</span><span class="tb-word">Brand</span>
+                </h2>
+                <p class="tb-section-sub">Shop by manufacturer — every laptop is genuine with official warranty</p>
+            </div>
+
+            <div class="tb-brands-grid tb-reveal tb-reveal-delay-2">
+                <template for:each={brands} for:item="brand">
+                    <button key={brand.id} class={brand.cardClass} data-brand={brand.name} onclick={handleBrandSelect}>
+                        <span class="tb-brand-name">{brand.name}</span>
+                    </button>
+                </template>
+            </div>
+        </section>
+
+        <!-- CATEGORIES -->
+        <section class="tb-categories-section">
+            <div class="tb-section-header tb-reveal">
+                <span class="tb-eyebrow">Shop by Use</span>
+                <h2 class="tb-section-heading">
+                    <span class="tb-word">Find</span><span class="tb-word">Your</span><span class="tb-word">Fit</span>
+                </h2>
+                <p class="tb-section-sub">From gaming rigs to boardroom ultrabooks — pick what you need it for</p>
+            </div>
+
+            <div class="tb-categories-grid tb-reveal tb-reveal-delay-2">
+                <template for:each={categories} for:item="cat">
+                    <button key={cat.id} class="tb-category-card" data-category={cat.name} onclick={handleCategorySelect}>
+                        <span class="tb-category-icon">{cat.icon}</span>
+                        <span class="tb-category-name">{cat.name}</span>
+                    </button>
+                </template>
+            </div>
+        </section>
+
+        <!-- FEATURED PRODUCTS -->
+        <section class="tb-featured-section">
+            <div class="tb-section-header tb-reveal">
+                <span class="tb-eyebrow">Featured</span>
+                <h2 class="tb-section-heading">
+                    <span class="tb-word">Top</span><span class="tb-word">Picks</span><span class="tb-word">This</span><span class="tb-word">Week</span>
+                </h2>
+                <p class="tb-section-sub">Hand-picked for performance, value, and build quality</p>
+            </div>
+
+            <template if:true={isLoading}>
+                <div class="tb-loading-grid">
+                    <div class="tb-skeleton-card"></div>
+                    <div class="tb-skeleton-card"></div>
+                    <div class="tb-skeleton-card"></div>
+                    <div class="tb-skeleton-card"></div>
+                </div>
+            </template>
+
+            <template if:false={isLoading}>
+                <div class="tb-product-grid">
+                    <template for:each={featuredProducts} for:item="product">
+                        <div key={product.productId} class="tb-product-grid-item">
+                            <c-tech-basket-product-card product={product}></c-tech-basket-product-card>
+                        </div>
+                    </template>
+                </div>
+                <!-- No tb-reveal here on purpose: this whole block only exists in
+                     the DOM once product data has loaded, but the scroll-reveal
+                     IntersectionObserver is wired up once on the very first render
+                     (while still loading) and never re-scans afterward — so a
+                     tb-reveal element here would never get its tb-visible class
+                     and would stay stuck at opacity:0 (invisible but still
+                     clickable) forever. -->
+                <div class="tb-view-all-wrap">
+                    <button class="tb-btn-view-all" onclick={handleShopNow}>
+                        Explore Other Laptops <span class="tb-btn-arrow">→</span>
+                    </button>
+                </div>
+            </template>
+        </section>
+
+        <!-- WHY TECHBASKET -->
+        <section class="tb-why-section">
+            <div class="tb-why-content">
+                <div class="tb-section-header tb-reveal">
+                    <span class="tb-eyebrow">Why LaptopKart</span>
+                    <h2 class="tb-section-heading">
+                        <span class="tb-word">Built</span><span class="tb-word">Around</span><span class="tb-word">You</span>
+                    </h2>
+                </div>
+                <div class="tb-why-grid">
+                    <div class="tb-why-card tb-reveal tb-reveal-delay-1">
+                        <span class="tb-why-icon">⚡</span>
+                        <h3>Next-Day Delivery</h3>
+                        <p>Order before 6 PM and receive your laptop the very next business day, anywhere in India.</p>
+                    </div>
+                    <div class="tb-why-card tb-reveal tb-reveal-delay-2">
+                        <span class="tb-why-icon">✓</span>
+                        <h3>100% Genuine</h3>
+                        <p>Every product is sourced directly from authorised distributors with full manufacturer warranty.</p>
+                    </div>
+                    <div class="tb-why-card tb-reveal tb-reveal-delay-3">
+                        <span class="tb-why-icon">₹</span>
+                        <h3>Best Price Promise</h3>
+                        <p>Found it cheaper elsewhere? We'll match the price — no questions asked.</p>
+                    </div>
+                    <div class="tb-why-card tb-reveal tb-reveal-delay-4">
+                        <span class="tb-why-icon">◎</span>
+                        <h3>Expert Guidance</h3>
+                        <p>Not sure which laptop to buy? Our tech specialists are available 24/7 to help you decide.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TESTIMONIALS -->
+        <section class="tb-testimonials-section">
+            <div class="tb-section-header tb-reveal">
+                <span class="tb-eyebrow">Customer Reviews</span>
+                <h2 class="tb-section-heading">
+                    <span class="tb-word">Trusted</span><span class="tb-word">by</span><span class="tb-word">Thousands</span>
+                </h2>
+            </div>
+            <div class="tb-testimonial-row">
+                <template for:each={testimonials} for:item="t">
+                    <div class="tb-testimonial-card" key={t.id}>
+                        <div class="tb-testimonial-stars">★★★★★</div>
+                        <p class="tb-testimonial-quote">"{t.quote}"</p>
+                        <div class="tb-testimonial-author">
+                            <div class="tb-author-avatar">{t.initial}</div>
+                            <div>
+                                <div class="tb-author-name">{t.name}</div>
+                                <div class="tb-author-product">{t.product}</div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </section>
+
+        <!-- NEWSLETTER -->
+        <section class="tb-newsletter">
+            <div class="tb-newsletter-inner tb-reveal">
+                <div class="tb-newsletter-text-col">
+                    <h2 class="tb-newsletter-heading">Stay in the Loop</h2>
+                    <p class="tb-newsletter-sub">New arrivals, exclusive deals, and tech news — straight to your inbox.</p>
+                </div>
+                <div class="tb-newsletter-form-col">
+                    <div class="tb-newsletter-form">
+                        <input
+                            type="email"
+                            class="tb-newsletter-input"
+                            placeholder="Your email address"
+                            value={email}
+                            oninput={handleEmailInput}
+                            aria-label="Email address"
+                        />
+                        <button class="tb-newsletter-btn" onclick={handleSubscribe}>Subscribe</button>
+                    </div>
+                    <template if:true={emailError}>
+                        <p class="tb-newsletter-error">{emailError}</p>
+                    </template>
+                    <template if:true={subscribed}>
+                        <p class="tb-newsletter-success">✓ Subscribed! Welcome to LaptopKart.</p>
+                    </template>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</template>

@@ -1,0 +1,62 @@
+<template>
+    <div class={cardClass}
+         onmouseenter={handleMouseEnter}
+         onmouseleave={handleMouseLeave}>
+
+        <div class="tb-card-glow"></div>
+
+        <!-- Wishlist heart -->
+        <button class={wishlistBtnClass} onclick={handleWishlist} title={wishlistTitle}>
+            {wishlistIcon}
+        </button>
+
+        <!-- Image area: photo sits inset in its own framed panel rather than
+             bleeding to the card's edges, for a "mounted product" gallery look. -->
+        <button class="tb-image-btn" onclick={handleViewProduct} aria-label={product.productName}>
+            <div class="tb-image-frame">
+                <div class="tb-image-wrap">
+                    <img src={activeImage} alt={product.productName} class="tb-product-img" loading="lazy" />
+                    <div class="tb-image-overlay"></div>
+                </div>
+            </div>
+            <span class="tb-category-tag">{product.category}</span>
+            <div class="tb-img-dots">
+                <template for:each={imageDots} for:item="dot">
+                    <span key={dot.index} class={dot.cls}></span>
+                </template>
+            </div>
+            <div class="tb-quick-view">Quick View →</div>
+        </button>
+
+        <!-- Info -->
+        <div class="tb-card-body">
+            <span class="tb-brand-eyebrow">{brandName}</span>
+            <button class="tb-product-name" onclick={handleViewProduct}>{product.productName}</button>
+
+            <div class="tb-price-block">
+                <span class="tb-price-label">Price</span>
+                <span class="tb-price">&#8377;{product.price}</span>
+            </div>
+
+            <div class="tb-card-divider"></div>
+
+            <div class="tb-actions-row">
+                <template if:false={inCart}>
+                    <button class={addToCartClass} onclick={handleAddToCart}>
+                        {addToCartLabel}
+                    </button>
+                </template>
+
+                <template if:true={inCart}>
+                    <div class="tb-qty-stepper">
+                        <button class="tb-qty-btn" onclick={handleDecrease} aria-label="Decrease">&#8722;</button>
+                        <span class="tb-qty-value">{cartQuantity}</span>
+                        <button class="tb-qty-btn" onclick={handleIncrease} aria-label="Increase">+</button>
+                    </div>
+                </template>
+
+                <button class="tb-buy-now" onclick={handleBuyNow}>Buy Now</button>
+            </div>
+        </div>
+    </div>
+</template>

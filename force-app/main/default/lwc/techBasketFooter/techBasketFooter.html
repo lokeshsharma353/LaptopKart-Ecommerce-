@@ -1,0 +1,53 @@
+<template>
+    <footer class="tb-footer">
+        <div class="tb-footer-grid">
+
+            <div class="tb-footer-col">
+                <img src={logoUrl} class="tb-footer-logo-img" alt="LaptopKart" />
+                <p class="tb-footer-text">
+                    Your trusted destination for premium electronics and
+                    accessories, delivered fast and backed by real support.
+                </p>
+                <p class="tb-footer-text tb-footer-address">
+                    Codleo, Salesforce Partner<br/>Noida, Uttar Pradesh, India
+                </p>
+            </div>
+
+            <div class="tb-footer-col">
+                <h3 class="tb-footer-heading">Quick Links</h3>
+                <ul class="tb-footer-list">
+                    <li><button class="tb-footer-link" onclick={goHome}>Home</button></li>
+                    <li><button class="tb-footer-link" onclick={goShop}>Shop</button></li>
+                    <li><button class="tb-footer-link" onclick={goShop}>Categories</button></li>
+                    <li><button class="tb-footer-link" onclick={goAbout}>About Us</button></li>
+                    <li><button class="tb-footer-link" onclick={goContact}>Contact Us</button></li>
+                </ul>
+            </div>
+
+            <div class="tb-footer-col">
+                <h3 class="tb-footer-heading">Customer Service</h3>
+                <ul class="tb-footer-list">
+                    <li><button class="tb-footer-link" onclick={goOrderTracking}>Track Order</button></li>
+                    <li><button class="tb-footer-link" onclick={goAccount}>My Account</button></li>
+                    <li><button class="tb-footer-link" onclick={goContact}>Returns &amp; Refunds</button></li>
+                    <li><button class="tb-footer-link" onclick={goContact}>Shipping Info</button></li>
+                </ul>
+            </div>
+
+            <div class="tb-footer-col">
+                <h3 class="tb-footer-heading">Follow Us</h3>
+                <div class="tb-social-row">
+                    <a class="tb-social-link" href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">f</a>
+                    <a class="tb-social-link" href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">t</a>
+                    <a class="tb-social-link" href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">i</a>
+                    <a class="tb-social-link" href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">in</a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="tb-footer-bottom">
+            <p>&copy; {currentYear} LaptopKart. All rights reserved.</p>
+        </div>
+    </footer>
+</template>

@@ -1,0 +1,49 @@
+<template>
+    <div class="tb-tracking-page">
+        <h1 class="tb-page-title">Order Tracking</h1>
+
+        <template if:true={isLoading}>
+            <div class="tb-loading">
+                <p>Loading tracking details...</p>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+        <template if:true={order}>
+            <div class="tb-tracking-card">
+                <c-tech-basket-order-progress order={order}></c-tech-basket-order-progress>
+
+                <div class="tb-tracking-row">
+                    <span class="tb-tracking-label">Order Number</span>
+                    <span class="tb-tracking-value">{order.orderNumber}</span>
+                </div>
+                <div class="tb-tracking-row">
+                    <span class="tb-tracking-label">Tracking Number</span>
+                    <span class="tb-tracking-value">{order.trackingNumber}</span>
+                </div>
+                <div class="tb-tracking-row">
+                    <span class="tb-tracking-label">Delivery Status</span>
+                    <span class="tb-status-badge">{order.deliveryStatus}</span>
+                </div>
+                <div class="tb-tracking-row">
+                    <span class="tb-tracking-label">Estimated Delivery</span>
+                    <span class="tb-tracking-value">{order.deliveryDate}</span>
+                </div>
+            </div>
+        </template>
+
+        <template if:false={order}>
+            <div class="tb-lookup-card">
+                <p class="tb-lookup-text">Enter your order number to check its status.</p>
+                <div class="tb-lookup-row">
+                    <input type="text" class="tb-lookup-input" placeholder="e.g. 00000123" value={lookupValue} oninput={handleLookupInput} />
+                    <button class="tb-btn-primary" onclick={handleLookup}>Track Order</button>
+                </div>
+                <template if:true={notFound}>
+                    <p class="tb-not-found">No order found with that number.</p>
+                </template>
+            </div>
+        </template>
+        </template>
+    </div>
+</template>

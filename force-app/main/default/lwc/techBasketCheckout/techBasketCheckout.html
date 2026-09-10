@@ -1,0 +1,52 @@
+<template>
+    <div class="tb-checkout">
+        <h1 class="tb-page-title">Checkout</h1>
+
+        <div class="tb-progress">
+            <template for:each={progressSteps} for:item="step">
+                <div class={step.className} key={step.label}>
+                    <span class="tb-progress-dot">{step.icon}</span>
+                    <span class="tb-progress-label">{step.label}</span>
+                </div>
+            </template>
+        </div>
+
+        <template if:true={isLoggedOut}>
+            <div class="tb-empty-notice">
+                <p>Please log in or create an account to continue checkout — this lets us tie your order to your account and save your address for next time.</p>
+                <button class="tb-btn-primary" onclick={handleGoToLogin}>Log In / Sign Up</button>
+            </div>
+        </template>
+
+        <template if:false={isLoggedOut}>
+        <template if:true={isEmptyCart}>
+            <div class="tb-empty-notice">
+                <p>Your cart is empty. Add items before checking out.</p>
+                <button class="tb-btn-primary" onclick={handleContinueShopping}>Continue Shopping</button>
+            </div>
+        </template>
+
+        <template if:false={isEmptyCart}>
+            <div class="tb-checkout-layout">
+                <div class="tb-checkout-steps">
+                    <template if:true={isShippingStep}>
+                        <c-tech-basket-shipping-form onnext={handleShippingNext}></c-tech-basket-shipping-form>
+                    </template>
+
+                    <template if:true={isBillingStep}>
+                        <c-tech-basket-billing-form onback={handleBillingBack} onnext={handleBillingNext}></c-tech-basket-billing-form>
+                    </template>
+
+                    <template if:true={isShippingMethodStep}>
+                        <c-tech-basket-shipping-method onback={handleShippingMethodBack} onnext={handleShippingMethodNext}></c-tech-basket-shipping-method>
+                    </template>
+                </div>
+
+                <div class="tb-checkout-summary">
+                    <c-tech-basket-order-summary items={items} hide-checkout-button></c-tech-basket-order-summary>
+                </div>
+            </div>
+        </template>
+        </template>
+    </div>
+</template>

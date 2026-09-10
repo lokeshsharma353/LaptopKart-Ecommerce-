@@ -1,0 +1,25 @@
+<template>
+    <div class="tb-form">
+        <h2 class="tb-form-heading">Shipping Method</h2>
+
+        <div class="tb-method-list">
+            <template for:each={methods} for:item="method">
+                <button
+                    key={method.id}
+                    class={method.className}
+                    data-id={method.id}
+                    onclick={handleSelect}
+                >
+                    <span class="tb-method-name">{method.name}</span>
+                    <span class="tb-method-eta">{method.eta}</span>
+                    <span class="tb-method-price">{method.priceLabel}</span>
+                </button>
+            </template>
+        </div>
+
+        <div class="tb-form-actions">
+            <button class="tb-btn-secondary" onclick={handleBack}>Back</button>
+            <button class="tb-btn-primary" onclick={handleNext}>Next</button>
+        </div>
+    </div>
+</template>

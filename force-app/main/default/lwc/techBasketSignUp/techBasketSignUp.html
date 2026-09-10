@@ -1,0 +1,64 @@
+<template>
+    <div class="tb-signup-page">
+        <div class="tb-signup-card">
+            <h1 class="tb-heading">Create Your LaptopKart Account</h1>
+
+            <template if:false={submitted}>
+                <div class="tb-field-row">
+                    <div class="tb-field">
+                        <label for="firstName">First Name</label>
+                        <input id="firstName" type="text" value={formData.firstName} data-field="firstName" oninput={handleInput} />
+                        <template if:true={errors.firstName}><p class="tb-error">{errors.firstName}</p></template>
+                    </div>
+                    <div class="tb-field">
+                        <label for="lastName">Last Name</label>
+                        <input id="lastName" type="text" value={formData.lastName} data-field="lastName" oninput={handleInput} />
+                        <template if:true={errors.lastName}><p class="tb-error">{errors.lastName}</p></template>
+                    </div>
+                </div>
+
+                <div class="tb-field">
+                    <label for="email">Email</label>
+                    <input id="email" type="email" value={formData.email} data-field="email" oninput={handleInput} />
+                    <template if:true={errors.email}><p class="tb-error">{errors.email}</p></template>
+                </div>
+
+                <div class="tb-field">
+                    <label for="phone">Phone</label>
+                    <input id="phone" type="tel" inputmode="numeric" maxlength="10" value={formData.phone} data-field="phone" oninput={handleInput} />
+                    <template if:true={errors.phone}><p class="tb-error">{errors.phone}</p></template>
+                </div>
+
+                <div class="tb-field">
+                    <label for="password">Password</label>
+                    <input id="password" type="password" value={formData.password} data-field="password" oninput={handleInput} />
+                    <template if:true={errors.password}><p class="tb-error">{errors.password}</p></template>
+                </div>
+
+                <div class="tb-field">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input id="confirmPassword" type="password" value={formData.confirmPassword} data-field="confirmPassword" oninput={handleInput} />
+                    <template if:true={errors.confirmPassword}><p class="tb-error">{errors.confirmPassword}</p></template>
+                </div>
+
+                <template if:true={submitError}>
+                    <p class="tb-error tb-submit-error">{submitError}</p>
+                </template>
+
+                <button class="tb-btn-primary" onclick={handleSubmit} disabled={isSubmitting}>{submitLabel}</button>
+
+                <p class="tb-login-link">
+                    Already have an account?
+                    <button class="tb-link-btn" onclick={handleGoToLogin}>Log In</button>
+                </p>
+            </template>
+
+            <template if:true={submitted}>
+                <div class="tb-success">
+                    <p>Your account has been created.</p>
+                    <button class="tb-btn-primary" onclick={handleGoToLogin}>Log In Now</button>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

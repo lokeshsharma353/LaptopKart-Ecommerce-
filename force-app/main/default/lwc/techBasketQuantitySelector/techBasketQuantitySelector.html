@@ -1,0 +1,7 @@
+<template>
+    <div class="tb-qty-selector">
+        <button class="tb-qty-btn" onclick={handleDecrease} disabled={atMin} aria-label="Decrease quantity">-</button>
+        <span class="tb-qty-value">{quantity}</span>
+        <button class="tb-qty-btn" onclick={handleIncrease} disabled={atMax} aria-label="Increase quantity">+</button>
+    </div>
+</template>

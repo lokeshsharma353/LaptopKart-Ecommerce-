@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>Website Order Field Access</label>
+    <description>FLS on Order.Website_Order__c for admin visibility in Setup/Reports/List Views (checkout itself uses SYSTEM_MODE, so it doesn't need this).</description>
+    <fieldPermissions>
+        <field>Order.Website_Order__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <hasActivationRequired>false</hasActivationRequired>
+</PermissionSet>

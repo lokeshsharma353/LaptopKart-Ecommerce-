@@ -1,0 +1,26 @@
+<template>
+    <div class="tb-summary">
+        <h2 class="tb-summary-heading">Order Summary</h2>
+
+        <div class="tb-summary-row">
+            <span>Subtotal</span>
+            <span>₹{totals.subtotal}</span>
+        </div>
+        <div class="tb-summary-row">
+            <span>Shipping</span>
+            <span>₹{totals.shipping}</span>
+        </div>
+        <div class="tb-summary-row">
+            <span>Tax</span>
+            <span>₹{totals.tax}</span>
+        </div>
+        <div class="tb-summary-row tb-summary-total">
+            <span>Total</span>
+            <span>₹{totals.total}</span>
+        </div>
+
+        <template if:false={hideCheckoutButton}>
+            <button class="tb-checkout-btn" onclick={handleCheckout}>Proceed to Checkout</button>
+        </template>
+    </div>
+</template>

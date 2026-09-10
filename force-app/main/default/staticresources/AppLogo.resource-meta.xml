@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StaticResource xmlns="http://soap.sforce.com/2006/04/metadata">
+    <cacheControl>Public</cacheControl>
+    <contentType>image/png</contentType>
+    <description>LaptopKart brand logo (LK monogram + wordmark) — used across the site header, footer, and account/login page.</description>
+</StaticResource>

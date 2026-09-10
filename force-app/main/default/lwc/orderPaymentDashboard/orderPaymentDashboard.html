@@ -1,0 +1,138 @@
+<template>
+
+    <lightning-card title="Order Payment Dashboard">
+
+        <div class="slds-p-around_medium">
+
+            <!-- Order Details -->
+            <template if:true={order}>
+
+                <div class="slds-grid slds-wrap slds-gutters order-summary">
+
+                    <div class="slds-col slds-size_1-of-2 detail-item">
+                        <span class="detail-label">Order Number</span>
+                        <p class="detail-value">{order.orderNumber}</p>
+                    </div>
+
+                    <div class="slds-col slds-size_1-of-2 detail-item">
+                        <span class="detail-label">Account</span>
+                        <p class="detail-value">{order.accountName}</p>
+                    </div>
+
+                    <div class="slds-col slds-size_1-of-2 detail-item">
+                        <span class="detail-label">Order Date</span>
+                        <p class="detail-value">
+                            <lightning-formatted-date-time value={order.orderDate}></lightning-formatted-date-time>
+                        </p>
+                    </div>
+
+                    <div class="slds-col slds-size_1-of-2 detail-item">
+                        <span class="detail-label">Order Status</span>
+                        <p class="detail-value">{order.orderStatus}</p>
+                    </div>
+
+                    <div class="slds-col slds-size_1-of-2 detail-item">
+                        <span class="detail-label">Order Amount</span>
+                        <p class="detail-value">
+                            <lightning-formatted-number
+                                value={order.orderAmount}
+                                format-style="currency"
+                                currency-code="INR">
+                            </lightning-formatted-number>
+                        </p>
+                    </div>
+
+                    <div class="slds-col slds-size_1-of-2 detail-item">
+                        <span class="detail-label">Total Paid</span>
+                        <p class="detail-value">
+                            <lightning-formatted-number
+                                value={order.totalPaid}
+                                format-style="currency"
+                                currency-code="INR">
+                            </lightning-formatted-number>
+                        </p>
+                    </div>
+
+                    <div class="slds-col slds-size_1-of-2 detail-item">
+                        <span class="detail-label">Outstanding Amount</span>
+                        <p class={outstandingAmountClass}>
+                            <lightning-formatted-number
+                                value={outstandingAmount}
+                                format-style="currency"
+                                currency-code="INR">
+                            </lightning-formatted-number>
+                        </p>
+                    </div>
+
+                    <div class="slds-col slds-size_1-of-2 detail-item">
+                        <span class="detail-label">Payment Status</span>
+                        <p class="detail-value">
+                            <span class={paymentStatusClass}>{order.paymentStatus}</span>
+                        </p>
+                    </div>
+
+                    <div class="slds-col slds-size_1-of-2 detail-item">
+                        <span class="detail-label">Delivery Status</span>
+                        <p class="detail-value">{order.deliveryStatus}</p>
+                    </div>
+
+                    <template if:true={hasTracking}>
+                        <div class="slds-col slds-size_1-of-2 detail-item">
+                            <span class="detail-label">Tracking Number</span>
+                            <p class="detail-value">{order.trackingNumber}</p>
+                        </div>
+
+                        <div class="slds-col slds-size_1-of-2 detail-item">
+                            <span class="detail-label">Estimated Delivery</span>
+                            <p class="detail-value">
+                                <lightning-formatted-date-time value={order.estimatedDelivery}></lightning-formatted-date-time>
+                            </p>
+                        </div>
+                    </template>
+
+                </div>
+
+            </template>
+
+
+            <!-- Actions -->
+            <div class="slds-m-top_medium">
+                <lightning-button
+                    label="View Invoice PDF"
+                    variant="brand"
+                    onclick={handleViewInvoice}>
+                </lightning-button>
+            </div>
+
+
+            <!-- Payment Table — only shown once this Order actually has a payment -->
+            <template if:true={hasPayments}>
+                <div class="slds-m-top_large payments-section">
+
+                    <h2 class="slds-text-heading_medium slds-m-bottom_small">
+                        Payments
+                    </h2>
+
+                    <div class="payments-table-wrapper">
+                        <lightning-datatable
+                            key-field="id"
+                            data={payments}
+                            columns={columns}
+                            hide-checkbox-column>
+                        </lightning-datatable>
+                    </div>
+
+                </div>
+            </template>
+
+            <template if:false={hasPayments}>
+                <div class="slds-m-top_large no-payments-notice">
+                    No payment has been recorded for this order yet.
+                </div>
+            </template>
+
+        </div>
+
+    </lightning-card>
+
+</template>

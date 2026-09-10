@@ -1,0 +1,176 @@
+<apex:page controller="OrderInvoiceController" renderAs="pdf" showHeader="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false" cache="false">
+<html>
+<head>
+<style type="text/css">
+    @page { size: A4; margin: 22mm 18mm; }
+    body { font-family: Helvetica, Arial, sans-serif; color: #111111; font-size: 10.5pt; }
+    table { border-collapse: collapse; width: 100%; }
+    .header-table td { vertical-align: top; }
+    .brand { font-size: 22pt; font-weight: bold; letter-spacing: -0.5pt; color: #000000; }
+    .brand .accent { color: #555555; }
+    .invoice-title { font-size: 13pt; font-weight: bold; text-align: right; letter-spacing: 2pt; color: #000000; }
+    .meta-label { color: #666666; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.5pt; }
+    .meta-value { font-size: 10.5pt; color: #000000; font-weight: bold; }
+    .divider { border-top: 1.5pt solid #000000; margin: 14pt 0; }
+    .thin-divider { border-top: 0.75pt solid #cccccc; margin: 10pt 0; }
+    .section-label { font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.5pt; color: #666666; margin-bottom: 4pt; }
+    .address-block { font-size: 10pt; line-height: 1.5; color: #111111; }
+    .sku-label { font-size: 8pt; color: #999999; }
+    .items-table { margin-top: 6pt; }
+    .items-table th { text-align: left; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.4pt; color: #666666; border-bottom: 1.25pt solid #000000; padding: 6pt 4pt; }
+    .items-table td { font-size: 10pt; padding: 7pt 4pt; border-bottom: 0.5pt solid #dddddd; color: #111111; }
+    .items-table .num { text-align: right; }
+    .totals-table td { font-size: 10pt; padding: 3pt 4pt; }
+    .totals-table .label { color: #555555; text-align: right; padding-right: 14pt; white-space: nowrap; width: 110pt; }
+    .totals-table .value { text-align: right; width: 100pt; }
+    .totals-table .grand-label { color: #000000; font-weight: bold; font-size: 12pt; padding-top: 8pt; white-space: nowrap; }
+    .totals-table .grand-value { color: #000000; font-weight: bold; font-size: 12pt; padding-top: 8pt; }
+    .footer-note { font-size: 8.5pt; color: #777777; text-align: center; margin-top: 26pt; line-height: 1.6; }
+    .status-pill { display: inline; font-size: 8.5pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.4pt; border: 1pt solid #000000; padding: 2pt 8pt; }
+    .cod-notice { background: #fdf6e3; border: 1pt solid #e6c469; border-radius: 4pt; padding: 8pt 12pt; margin-top: 12pt; font-size: 9.5pt; color: #7a5c00; }
+</style>
+</head>
+<body>
+
+    <apex:outputPanel rendered="{!hasOrder}">
+
+        <table class="header-table">
+            <tr>
+                <td style="width:60%;">
+                    <div class="brand">LaptopKart</div>
+                    <div style="font-size:8.5pt; color:#666666; margin-top:2pt;">Premium Laptops, Delivered With Care</div>
+                </td>
+                <td style="width:40%;">
+                    <div class="invoice-title">INVOICE</div>
+                    <div style="text-align:right; margin-top:4pt;">
+                        <span class="status-pill">{!ord.Status}</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="divider"></div>
+
+        <table class="header-table">
+            <tr>
+                <td style="width:33%;">
+                    <div class="meta-label">Invoice Number</div>
+                    <div class="meta-value">#{!ord.OrderNumber}</div>
+                </td>
+                <td style="width:33%;">
+                    <div class="meta-label">Invoice Date</div>
+                    <div class="meta-value"><apex:outputText value="{0,date,dd MMM yyyy}"><apex:param value="{!invoiceDate}" /></apex:outputText></div>
+                </td>
+                <td style="width:34%;">
+                    <div class="meta-label">Payment Status</div>
+                    <div class="meta-value">{!ord.Payment_Status__c}</div>
+                </td>
+            </tr>
+        </table>
+
+        <apex:outputPanel rendered="{!isCashOnDelivery}">
+            <div class="cod-notice">
+                <strong>Cash on Delivery</strong> &#8212; please keep &#8377;
+                <apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!balanceDue}" /></apex:outputText>
+                ready to pay at the time of delivery.
+            </div>
+        </apex:outputPanel>
+
+        <table class="header-table" style="margin-top:16pt;">
+            <tr>
+                <td style="width:50%;">
+                    <div class="section-label">Bill To / Ship To</div>
+                    <div class="address-block">
+                        <apex:outputText value="{!customerName}" escape="false" /><br/>
+                        <apex:outputText value="{!shippingAddress}" />
+                        <apex:outputPanel rendered="{!customerContact.Phone != null}" layout="block">
+                            Phone: {!customerContact.Phone}
+                        </apex:outputPanel>
+                    </div>
+                </td>
+                <td style="width:50%;">
+                    <apex:outputPanel rendered="{!payment != null}">
+                        <div class="section-label">Payment</div>
+                        <div class="address-block">
+                            <apex:outputPanel rendered="{!isCashOnDelivery}">
+                                Method: Cash on Delivery<br/>
+                                Status: Payable on delivery
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!isOnlinePayment}">
+                                Method: Online (UPI)<br/>
+                                Transaction / UTR Ref: {!payment.Transaction_ID__c}<br/>
+                                Status: {!paymentStatusLabel}
+                            </apex:outputPanel>
+                        </div>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!tracking != null}">
+                        <div class="section-label" style="margin-top:8pt;">Delivery</div>
+                        <div class="address-block">
+                            Status: {!tracking.Delivery_Status__c}<br/>
+                            Tracking Number: {!tracking.Tracking_NUmber__c}<br/>
+                            <apex:outputPanel rendered="{!tracking.Delivery_Date__c != null}">
+                                Estimated Delivery:&#160;<apex:outputText value="{0,date,dd MMM yyyy}"><apex:param value="{!tracking.Delivery_Date__c}" /></apex:outputText>
+                            </apex:outputPanel>
+                        </div>
+                    </apex:outputPanel>
+                </td>
+            </tr>
+        </table>
+
+        <table class="items-table">
+            <tr>
+                <th style="width:52%;">Product</th>
+                <th class="num" style="width:14%;">Qty</th>
+                <th class="num" style="width:17%;">Unit Price</th>
+                <th class="num" style="width:17%;">Amount</th>
+            </tr>
+            <apex:repeat value="{!lineItems}" var="line">
+                <tr>
+                    <td>
+                        {!line.productName}
+                        <apex:outputPanel rendered="{!line.productCode != null}" layout="block">
+                            <span class="sku-label">SKU: {!line.productCode}</span>
+                        </apex:outputPanel>
+                    </td>
+                    <td class="num"><apex:outputText value="{0,number,#,##0}"><apex:param value="{!line.quantity}" /></apex:outputText></td>
+                    <td class="num">&#8377; <apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!line.unitPrice}" /></apex:outputText></td>
+                    <td class="num">&#8377; <apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!line.totalPrice}" /></apex:outputText></td>
+                </tr>
+            </apex:repeat>
+        </table>
+
+        <table class="totals-table" style="margin-top:10pt;">
+            <tr>
+                <td style="width:66%;"></td>
+                <td class="label">Total Amount</td>
+                <td class="value">&#8377; <apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!ord.TotalAmount}" /></apex:outputText></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td class="label">Amount Paid</td>
+                <td class="value">&#8377; <apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!ord.Total_Paid__c}" /></apex:outputText></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td class="grand-label">Balance Due</td>
+                <td class="grand-value">&#8377; <apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!balanceDue}" /></apex:outputText></td>
+            </tr>
+        </table>
+
+        <div class="thin-divider"></div>
+
+        <div class="footer-note">
+            Thank you for shopping with LaptopKart.<br/>
+            Codleo, Salesforce Partner, Noida, Uttar Pradesh, India &#8226; support@laptopkart.example &#8226; +91 98765 43210<br/>
+            This is a system-generated invoice and does not require a signature.
+        </div>
+
+    </apex:outputPanel>
+
+    <apex:outputPanel rendered="{!!hasOrder}">
+        <p>Order not found.</p>
+    </apex:outputPanel>
+
+</body>
+</html>
+</apex:page>

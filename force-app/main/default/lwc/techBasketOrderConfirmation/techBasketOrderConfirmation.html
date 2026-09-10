@@ -1,0 +1,137 @@
+<template>
+    <template if:true={isLoading}>
+        <div class="tb-loading">
+            <p>Loading your order...</p>
+        </div>
+    </template>
+
+    <template if:false={isLoading}>
+    <template if:true={order}>
+        <div class="tb-confirmation">
+
+            <!-- Actions: top-right toolbar above the header -->
+            <div class="tb-actions-bar">
+                <button class="tb-btn-secondary" onclick={handleViewOrder}>View All Orders</button>
+                <button class="tb-btn-secondary" onclick={handleContinueShopping}>Continue Shopping</button>
+                <button class="tb-btn-primary" onclick={handleDownloadInvoice}>Download Invoice</button>
+            </div>
+
+            <div class="tb-header-block">
+                <div class={confirmationIconClass}>{confirmationIcon}</div>
+                <h1 class="tb-heading">{confirmationHeading}</h1>
+                <p class="tb-subheading">{confirmationSubheading}</p>
+            </div>
+
+            <!-- Stat strip: the four headline facts about this order, up front -->
+            <div class="tb-stat-strip">
+                <div class="tb-stat">
+                    <span class="tb-stat-label">Order Number</span>
+                    <span class="tb-stat-value">{order.orderNumber}</span>
+                </div>
+                <div class="tb-stat">
+                    <span class="tb-stat-label">Order Date</span>
+                    <span class="tb-stat-value">{order.orderDate}</span>
+                </div>
+                <div class="tb-stat">
+                    <span class="tb-stat-label">Order Status</span>
+                    <span class="tb-stat-value">{order.status}</span>
+                </div>
+                <div class="tb-stat">
+                    <span class="tb-stat-label">Payment Status</span>
+                    <span class="tb-stat-value">{order.paymentStatus}</span>
+                </div>
+            </div>
+
+            <div class="tb-progress-section">
+                <c-tech-basket-order-progress order={order}></c-tech-basket-order-progress>
+            </div>
+
+            <div class="tb-content-grid">
+
+                <!-- MAIN: order items, with totals folded into the same card -->
+                <div class="tb-content-main">
+                    <div class="tb-card">
+                        <h2 class="tb-section-heading">Order Summary</h2>
+                        <table class="tb-items-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={order.items} for:item="item">
+                                    <tr key={item.productId}>
+                                        <td>{item.productName}</td>
+                                        <td>{item.quantity}</td>
+                                        <td>₹{item.unitPrice}</td>
+                                        <td>₹{item.lineTotal}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3">Total Amount</td>
+                                    <td>₹{order.totalAmount}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3">Total Paid</td>
+                                    <td>₹{order.totalPaid}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SIDE: payment and shipping split into their own cards -->
+                <div class="tb-content-side">
+                    <div class="tb-card">
+                        <h2 class="tb-section-heading">Payment</h2>
+                        <template if:true={order.paymentMethod}>
+                            <div class="tb-detail-row">
+                                <span>Method</span>
+                                <span class="tb-detail-value">{order.paymentMethod}</span>
+                            </div>
+                        </template>
+                        <div class="tb-detail-row">
+                            <span>Status</span>
+                            <span class="tb-detail-value">{order.paymentStatus}</span>
+                        </div>
+                        <template if:true={order.transactionId}>
+                            <div class="tb-detail-row">
+                                <span>Transaction / UTR</span>
+                                <span class="tb-detail-value">{order.transactionId}</span>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="tb-card">
+                        <h2 class="tb-section-heading">Shipping &amp; Delivery</h2>
+                        <div class="tb-detail-row tb-detail-row-stacked">
+                            <span>Address</span>
+                            <span class="tb-detail-value">{order.shippingAddressLine}</span>
+                        </div>
+                        <div class="tb-detail-row">
+                            <span>Estimated Delivery</span>
+                            <span class="tb-detail-value">{order.deliveryDate}</span>
+                        </div>
+                        <div class="tb-detail-row">
+                            <span>Tracking</span>
+                            <button class="tb-link-btn" onclick={handleTrackOrder}>{order.trackingNumber}</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </template>
+
+    <template if:false={order}>
+        <div class="tb-not-found">
+            <p>We couldn't find that order.</p>
+        </div>
+    </template>
+    </template>
+</template>

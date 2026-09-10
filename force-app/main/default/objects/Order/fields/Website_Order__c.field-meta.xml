@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Website_Order__c</fullName>
+    <label>Website Order</label>
+    <type>Checkbox</type>
+    <defaultValue>false</defaultValue>
+    <description>True when this Order was created through the TechBasket/LaptopKart website checkout flow. Used as the criteria field for the Guest User Sharing Rule that lets the site's Guest User read Orders it creates during checkout.</description>
+</CustomField>

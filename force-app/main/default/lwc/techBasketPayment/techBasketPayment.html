@@ -1,0 +1,48 @@
+<template>
+    <div class="tb-form">
+        <h2 class="tb-form-heading">Payment</h2>
+        <p class="tb-amount-due">Amount Due: <span>₹{totals.total}</span></p>
+
+        <template if:true={showMethodStep}>
+            <c-tech-basket-payment-method selected-id={methodId} onmethodselect={handleMethodSelect}></c-tech-basket-payment-method>
+
+            <p class="tb-non-card-note">
+                <template if:true={methodId}>You'll pay via {methodLabel}. Click Place Order to confirm.</template>
+            </p>
+
+            <template if:true={paymentError}>
+                <p class="tb-payment-error">{paymentError}</p>
+            </template>
+
+            <div class="tb-form-actions">
+                <button class="tb-btn-secondary" onclick={handleBack} disabled={isProcessing}>Back</button>
+                <button class="tb-btn-pay" onclick={handlePayNow} disabled={payDisabled}>{payButtonLabel}</button>
+            </div>
+        </template>
+
+        <template if:true={showQrStep}>
+            <div class="tb-qr-step">
+                <p class="tb-qr-instructions">Scan the QR code below with any UPI app (Google Pay, PhonePe, Paytm, etc.) and pay <strong>₹{totals.total}</strong>. Once paid, enter the transaction reference (UTR) your app gave you.</p>
+
+                <div class="tb-qr-image-wrap">
+                    <img src={qrImageUrl} alt="Scan to pay via UPI" class="tb-qr-image" />
+                </div>
+
+                <div class="tb-field">
+                    <label for="utrNumber">UTR / Transaction Reference Number</label>
+                    <input id="utrNumber" type="text" value={utrNumber} oninput={handleUtrInput} placeholder="e.g. 123456789012" disabled={isProcessing} />
+                    <template if:true={utrError}><p class="tb-error">{utrError}</p></template>
+                </div>
+
+                <template if:true={paymentError}>
+                    <p class="tb-payment-error">{paymentError}</p>
+                </template>
+
+                <div class="tb-form-actions">
+                    <button class="tb-btn-secondary" onclick={handleBackFromQr} disabled={isProcessing}>Back</button>
+                    <button class="tb-btn-pay" onclick={handleConfirmPayment} disabled={payDisabled}>{confirmButtonLabel}</button>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

@@ -1,0 +1,28 @@
+<template>
+    <div class="tb-search-wrap">
+        <input
+            type="text"
+            class="tb-search-input"
+            placeholder={placeholder}
+            value={searchTerm}
+            oninput={handleInput}
+            onkeydown={handleKeydown}
+            aria-label="Search products"
+        />
+        <template if:true={showSuggestions}>
+            <ul class="tb-suggestions">
+                <template for:each={suggestions} for:item="item">
+                    <li key={item.productId}>
+                        <button class="tb-suggestion-item" onclick={handleSuggestionClick} data-id={item.productId}>
+                            <span class="tb-suggestion-name">{item.productName}</span>
+                            <span class="tb-suggestion-category">{item.category}</span>
+                        </button>
+                    </li>
+                </template>
+                <template if:true={noResults}>
+                    <li class="tb-suggestion-empty">No products found.</li>
+                </template>
+            </ul>
+        </template>
+    </div>
+</template>

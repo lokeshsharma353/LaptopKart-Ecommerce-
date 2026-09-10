@@ -1,0 +1,119 @@
+:host {
+    display: block;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    background: #000;
+    min-height: 100vh;
+    color: #f5f5f7;
+}
+
+.tb-cart-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+}
+
+.tb-page-title {
+    font-size: 30px;
+    font-weight: 700;
+    color: #f5f5f7;
+    margin: 0 0 0.4rem;
+    letter-spacing: -0.025em;
+}
+
+.tb-item-count {
+    font-size: 14px;
+    color: #86868b;
+    margin: 0 0 1.75rem;
+}
+
+.tb-cart-layout {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.tb-cart-items {
+    flex: 1;
+    min-width: 0;
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 0.5rem 1.5rem 1.25rem;
+}
+
+.tb-cart-summary {
+    width: 340px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 80px;
+}
+
+.tb-cart-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.tb-btn-secondary {
+    background: transparent;
+    color: #f5f5f7;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 0.65rem 1.25rem;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+.tb-btn-secondary:hover { border-color: #00c8ff; color: #00c8ff; }
+
+.tb-btn-danger {
+    background: transparent;
+    color: #ff453a;
+    border: 1px solid rgba(255,69,58,0.4);
+    border-radius: 8px;
+    padding: 0.65rem 1.25rem;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.tb-btn-danger:hover { background: rgba(255,69,58,0.1); }
+
+.tb-btn-primary {
+    background: #f5f5f7;
+    color: #000;
+    border: none;
+    border-radius: 980px;
+    padding: 0.75rem 1.75rem;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.tb-btn-primary:hover { background: #e0e0e2; }
+
+.tb-empty-cart {
+    text-align: center;
+    padding: 6rem 1rem;
+    color: #86868b;
+}
+.tb-empty-cart p { font-size: 18px; margin: 0 0 1.75rem; color: #f5f5f7; }
+
+@media (max-width: 900px) {
+    .tb-cart-layout { flex-direction: column; }
+    .tb-cart-summary { width: 100%; position: static; }
+}
+
+@media (max-width: 480px) {
+    .tb-cart-page { padding: 1.25rem 0.85rem; }
+    .tb-page-title { font-size: 22px; }
+    .tb-cart-items { padding: 0.25rem 0.9rem 0.9rem; }
+    .tb-cart-actions { flex-direction: column; }
+    .tb-cart-actions button { width: 100%; text-align: center; }
+}

@@ -1,0 +1,119 @@
+:host {
+    display: block;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    background: #000;
+    min-height: 100vh;
+    color: #f5f5f7;
+}
+
+.tb-tracking-page {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+}
+
+.tb-page-title {
+    font-size: 30px;
+    font-weight: 700;
+    color: #f5f5f7;
+    margin: 0 0 1.75rem;
+    letter-spacing: -0.025em;
+}
+
+.tb-loading {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: #86868b;
+}
+
+.tb-tracking-card,
+.tb-lookup-card {
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 1.75rem;
+}
+
+.tb-tracking-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 14px;
+}
+
+.tb-tracking-row:last-child {
+    border-bottom: none;
+}
+
+.tb-tracking-label {
+    color: #86868b;
+}
+
+.tb-tracking-value {
+    font-weight: 600;
+    color: #f5f5f7;
+}
+
+.tb-status-badge {
+    background: rgba(48,209,88,0.12);
+    color: #30d158;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 980px;
+}
+
+.tb-lookup-text {
+    font-size: 14px;
+    color: #86868b;
+    margin: 0 0 1rem;
+}
+
+.tb-lookup-row {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.tb-lookup-input {
+    flex: 1;
+    height: 44px;
+    padding: 0 0.9rem;
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #f5f5f7;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+.tb-lookup-input:focus { outline: none; border-color: #00c8ff; }
+
+.tb-btn-primary {
+    background: #f5f5f7;
+    color: #000;
+    border: none;
+    border-radius: 980px;
+    padding: 0 1.75rem;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+}
+.tb-btn-primary:hover { background: #e0e0e2; transform: scale(1.01); }
+
+.tb-not-found {
+    color: #ff453a;
+    font-size: 13px;
+    margin: 0.75rem 0 0;
+}
+
+@media (max-width: 480px) {
+    .tb-tracking-page { padding: 1.25rem 0.85rem; }
+    .tb-page-title { font-size: 22px; margin-bottom: 1.1rem; }
+    .tb-tracking-card, .tb-lookup-card { padding: 1.1rem; }
+    .tb-lookup-row { flex-direction: column; }
+    .tb-btn-primary { padding: 0.75rem; }
+}

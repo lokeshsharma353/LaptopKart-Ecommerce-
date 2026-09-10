@@ -1,0 +1,124 @@
+<template>
+    <div class="tb-catalog">
+
+        <aside class="tb-filters">
+            <h2 class="tb-filters-heading">Filters</h2>
+
+            <div class="tb-filter-group">
+                <label class="tb-filter-label" for="search">Search</label>
+                <input id="search" type="text" class="tb-filter-input" placeholder="Product name" value={draftFilters.search} oninput={handleSearchInput} />
+            </div>
+
+            <div class="tb-filter-group">
+                <label class="tb-filter-label" for="category">Category</label>
+                <select id="category" class="tb-filter-select" onchange={handleCategoryChange}>
+                    <template for:each={categoryOptions} for:item="cat">
+                        <option key={cat.name} value={cat.name} selected={cat.selected}>{cat.name}</option>
+                    </template>
+                </select>
+            </div>
+
+            <div class="tb-filter-group">
+                <span class="tb-filter-label">Price Range</span>
+                <div class="tb-price-inputs">
+                    <input type="number" class="tb-filter-input tb-price-input" placeholder="Min" value={draftFilters.minPrice} oninput={handleMinPriceInput} min="0" />
+                    <span>-</span>
+                    <input type="number" class="tb-filter-input tb-price-input" placeholder="Max" value={draftFilters.maxPrice} oninput={handleMaxPriceInput} min="0" />
+                </div>
+            </div>
+
+            <div class="tb-filter-actions">
+                <button class="tb-btn-primary" onclick={handleApplyFilters}>Apply Filters</button>
+                <button class="tb-btn-secondary" onclick={handleClearAll}>Clear All</button>
+            </div>
+        </aside>
+
+        <section class="tb-results">
+            <div class="tb-toolbar">
+                <span class="tb-result-count">{resultCountLabel}</span>
+
+                <div class="tb-toolbar-controls">
+                    <select class="tb-filter-select" onchange={handleSortChange}>
+                        <template for:each={sortOptions} for:item="opt">
+                            <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                        </template>
+                    </select>
+
+                    <div class="tb-view-toggle">
+                        <button class={gridButtonClass} onclick={handleGridView} aria-label="Grid view">&#9638;</button>
+                        <button class={listButtonClass} onclick={handleListView} aria-label="List view">&#9776;</button>
+                    </div>
+                </div>
+            </div>
+
+            <template if:true={isLoading}>
+                <div class="tb-loading">
+                    <p>Loading products...</p>
+                </div>
+            </template>
+
+            <template if:false={isLoading}>
+            <template if:true={hasResults}>
+                <template if:true={isGridView}>
+                    <div class="tb-product-grid">
+                        <template for:each={pagedProducts} for:item="product">
+                            <div key={product.productId}>
+                                <c-tech-basket-product-card product={product}></c-tech-basket-product-card>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <template if:true={isListView}>
+                    <div class="tb-product-list">
+                        <template for:each={pagedProducts} for:item="product">
+                            <div class="tb-list-row" key={product.productId}>
+                                <div class="tb-list-image">{product.categoryInitial}</div>
+                                <div class="tb-list-info">
+                                    <button class="tb-list-name" data-id={product.productId} onclick={handleListProductClick}>{product.productName}</button>
+                                </div>
+                                <div class="tb-list-price">₹{product.price}</div>
+                                <template if:false={product.inCart}>
+                                    <button
+                                        class="tb-add-to-cart"
+                                        data-id={product.productId}
+                                        onclick={handleListAddToCart}
+                                    >Add to Cart</button>
+                                </template>
+                                <template if:true={product.inCart}>
+                                    <div class="tb-qty-stepper">
+                                        <button class="tb-qty-btn" data-id={product.productId} onclick={handleListDecrease} aria-label="Decrease quantity">-</button>
+                                        <span class="tb-qty-value">{product.cartQuantity}</span>
+                                        <button class="tb-qty-btn" data-id={product.productId} onclick={handleListIncrease} aria-label="Increase quantity">+</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <div class="tb-pagination">
+                    <button class="tb-page-btn" onclick={handlePrevPage} disabled={isFirstPage}>Previous</button>
+                    <template for:each={pageNumbers} for:item="page">
+                        <button
+                            key={page}
+                            class={page.className}
+                            data-page={page.number}
+                            onclick={handlePageClick}
+                        >{page.number}</button>
+                    </template>
+                    <button class="tb-page-btn" onclick={handleNextPage} disabled={isLastPage}>Next</button>
+                </div>
+            </template>
+
+            <template if:false={hasResults}>
+                <div class="tb-empty-state">
+                    <p>No products found.</p>
+                    <button class="tb-btn-secondary" onclick={handleClearAll}>Clear All Filters</button>
+                </div>
+            </template>
+            </template>
+        </section>
+
+    </div>
+</template>

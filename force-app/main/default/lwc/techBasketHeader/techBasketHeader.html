@@ -1,0 +1,107 @@
+<template>
+    <header class="tb-header">
+        <div class="tb-header-bar">
+
+            <!-- Logo + name, both on the left; nav/account/cart stay on the right. -->
+            <button class="tb-logo" onclick={goHome} aria-label="LaptopKart Home">
+                <img src={logoUrl} class="tb-logo-img" alt="LaptopKart" />
+                <span class="tb-logo-text">LaptopKart</span>
+            </button>
+
+            <!-- All nav + actions on the right -->
+            <nav class="tb-nav" aria-label="Main navigation">
+                <div class="tb-nav-item-dropdown">
+                    <button class="tb-nav-link" onclick={goShop}>Shop</button>
+                    <div class="tb-dropdown-panel">
+                        <template for:each={categories} for:item="cat">
+                            <button key={cat.id} class="tb-dropdown-item" data-category={cat.name} onclick={goCategory}>
+                                <span class="tb-dropdown-icon">{cat.icon}</span>
+                                <span>{cat.name}</span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+                <button class="tb-nav-link" onclick={goAbout}>About</button>
+                <button class="tb-nav-link" onclick={goContact}>Contact</button>
+
+                <div class="tb-nav-divider"></div>
+
+                <!-- Search toggle button -->
+                <button class="tb-nav-link" onclick={toggleSearch} aria-label="Search">Search</button>
+
+                <!-- Account -->
+                <button class="tb-nav-link" onclick={goAccount}>Account</button>
+                <!-- Login/Sign Up temporarily hidden — site login is blocked when
+                     tested inside Experience Builder's preview iframe (Salesforce
+                     refuses to frame its own login page; this is not a code bug).
+                     Guest checkout still works fully without these. Re-add once
+                     verified working on the real published site URL. -->
+
+                <!-- Cart -->
+                <template if:true={showCart}>
+                    <button class="tb-cart-btn" onclick={goCart} aria-label="Cart">
+                        Cart
+                        <template if:true={hasCartItems}>
+                            <span class="tb-cart-badge">{cartCount}</span>
+                        </template>
+                    </button>
+                </template>
+            </nav>
+
+            <!-- Mobile-only search trigger — the "Search" link above lives
+                 inside .tb-nav, which is hidden below 900px, and the drawer
+                 has no search entry, so without this, search is completely
+                 unreachable on mobile. -->
+            <button class="tb-mobile-search-btn" onclick={toggleSearch} aria-label="Search">Search</button>
+
+            <!-- Hamburger mobile -->
+            <button class="tb-hamburger" onclick={toggleDrawer} aria-label="Open menu">
+                <span class={hamburgerLine1}></span>
+                <span class={hamburgerLine2}></span>
+                <span class={hamburgerLine3}></span>
+            </button>
+        </div>
+
+        <!-- Search bar — slides down when searchOpen is true -->
+        <template if:true={searchOpen}>
+            <div class="tb-search-bar">
+                <div class="tb-search-inner">
+                    <c-tech-basket-search
+                        onsearch={handleSearch}
+                        onselect={handleSearchSelect}>
+                    </c-tech-basket-search>
+                    <button class="tb-search-close" onclick={toggleSearch} aria-label="Close search">✕</button>
+                </div>
+            </div>
+        </template>
+    </header>
+
+    <!-- Mobile drawer -->
+    <template if:true={drawerOpen}>
+        <div class="tb-drawer-overlay" onclick={closeDrawer}></div>
+        <div class="tb-drawer">
+            <div class="tb-drawer-header">
+                <span class="tb-drawer-logo">
+                    <img src={logoUrl} class="tb-logo-img" alt="LaptopKart" />
+                    <span class="tb-logo-text">LaptopKart</span>
+                </span>
+                <button class="tb-drawer-close" onclick={closeDrawer}>✕</button>
+            </div>
+            <nav class="tb-drawer-nav">
+                <button class="tb-drawer-link" onclick={goHome}>Home</button>
+                <button class="tb-drawer-link" onclick={goShop}>Shop</button>
+                <button class="tb-drawer-link" onclick={goAbout}>About</button>
+                <button class="tb-drawer-link" onclick={goContact}>Contact</button>
+                <button class="tb-drawer-link" onclick={goAccount}>Account</button>
+                <button class="tb-drawer-link" onclick={goCart}>Cart
+                    <template if:true={hasCartItems}>
+                        <span class="tb-cart-badge">{cartCount}</span>
+                    </template>
+                </button>
+                <template if:true={isLoggedIn}>
+                    <button class="tb-drawer-link tb-drawer-logout" onclick={handleLogout}>Logout</button>
+                </template>
+            </nav>
+        </div>
+    </template>
+</template>

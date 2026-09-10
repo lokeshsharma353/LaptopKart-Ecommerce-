@@ -1,0 +1,40 @@
+:host {
+    display: block;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+}
+
+/* Restyled to match the dark checkout theme used by every other step
+   (Shipping Method, Billing, Payment) — this previously used a light
+   blue/white theme left over from an earlier pass, which stood out
+   awkwardly inside the otherwise all-dark checkout flow. */
+.tb-method-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.tb-method-btn {
+    width: 100%;
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    font-size: 14px;
+    font-weight: 600;
+    color: #f5f5f7;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.tb-method-btn:hover { border-color: rgba(0,200,255,0.4); }
+
+.tb-method-btn-active {
+    border-color: #00c8ff;
+    background: rgba(0,200,255,0.08);
+}
+
+@media (max-width: 480px) {
+    .tb-method-btn { padding: 0.85rem 1rem; font-size: 13.5px; }
+}

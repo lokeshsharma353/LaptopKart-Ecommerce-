@@ -1,0 +1,21 @@
+<template>
+    <div class="tb-cart-item">
+        <button class="tb-item-image" onclick={handleViewProduct} aria-label={item.productName}>
+            <img src={productImage} alt={item.productName} class="tb-item-img" onerror={handleImgError} />
+        </button>
+
+        <div class="tb-item-info">
+            <button class="tb-item-name" onclick={handleViewProduct}>{item.productName}</button>
+            <div class="tb-item-price">&#8377;{item.price} each</div>
+        </div>
+
+        <c-tech-basket-quantity-selector
+            quantity={item.quantity}
+            onchange={handleQuantityChange}
+        ></c-tech-basket-quantity-selector>
+
+        <div class="tb-item-subtotal">&#8377;{subtotal}</div>
+
+        <button class="tb-item-remove" onclick={handleRemove} aria-label="Remove item">&times;</button>
+    </div>
+</template>

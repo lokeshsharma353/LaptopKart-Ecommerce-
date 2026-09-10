@@ -1,0 +1,13 @@
+<template>
+    <template if:true={isOpen}>
+        <div class="tb-modal-overlay" onclick={handleCancel}></div>
+        <div class="tb-modal" role="dialog" aria-modal="true" aria-label={title}>
+            <h2 class="tb-modal-title">{title}</h2>
+            <p class="tb-modal-message">{message}</p>
+            <div class="tb-modal-actions">
+                <button class="tb-btn-secondary" onclick={handleCancel}>{cancelLabel}</button>
+                <button class="tb-btn-danger" onclick={handleConfirm}>{confirmLabel}</button>
+            </div>
+        </div>
+    </template>
+</template>

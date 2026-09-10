@@ -1,0 +1,68 @@
+<template>
+    <div class="tb-contact-page">
+        <h1 class="tb-page-title">Contact Us</h1>
+
+        <div class="tb-contact-layout">
+            <div class="tb-contact-form-card">
+                <h2 class="tb-section-heading">Send Us a Message</h2>
+
+                <template if:true={submitted}>
+                    <p class="tb-success-message">Your message has been submitted successfully.</p>
+                </template>
+
+                <template if:false={submitted}>
+                    <div class="tb-field">
+                        <label for="name">Name</label>
+                        <input id="name" type="text" value={formData.name} data-field="name" oninput={handleInput} />
+                        <template if:true={errors.name}><p class="tb-error">{errors.name}</p></template>
+                    </div>
+                    <div class="tb-field">
+                        <label for="email">Email</label>
+                        <input id="email" type="email" value={formData.email} data-field="email" oninput={handleInput} />
+                        <template if:true={errors.email}><p class="tb-error">{errors.email}</p></template>
+                    </div>
+                    <div class="tb-field">
+                        <label for="phone">Phone (optional)</label>
+                        <input id="phone" type="tel" inputmode="numeric" maxlength="10" value={formData.phone} data-field="phone" oninput={handleInput} />
+                        <template if:true={errors.phone}><p class="tb-error">{errors.phone}</p></template>
+                    </div>
+                    <div class="tb-field">
+                        <label for="subject">Subject</label>
+                        <input id="subject" type="text" value={formData.subject} data-field="subject" oninput={handleInput} />
+                        <template if:true={errors.subject}><p class="tb-error">{errors.subject}</p></template>
+                    </div>
+                    <div class="tb-field">
+                        <label for="message">Message</label>
+                        <textarea id="message" rows="5" data-field="message" oninput={handleInput}>{formData.message}</textarea>
+                        <template if:true={errors.message}><p class="tb-error">{errors.message}</p></template>
+                    </div>
+                    <button class="tb-btn-primary" onclick={handleSubmit} disabled={isSubmitting}>
+                        <template if:false={isSubmitting}>Submit</template>
+                        <template if:true={isSubmitting}>Sending...</template>
+                    </button>
+                </template>
+            </div>
+
+            <div class="tb-contact-side">
+                <div class="tb-support-card">
+                    <h2 class="tb-section-heading">Support</h2>
+                    <p>Email: support@laptopkart.com</p>
+                    <p>Phone: +91 95885 63701 ,+91 86507 10111 </p>
+                    <p>Hours: Mon-Sat, 9am-7pm IST</p>
+                    <p>Address:  New - Delhi, India</p>
+                    <button class="tb-btn-secondary" onclick={handleLiveChat}>Start Live Chat</button>
+                </div>
+
+                <div class="tb-faq-card">
+                    <h2 class="tb-section-heading">FAQs</h2>
+                    <template for:each={faqs} for:item="faq">
+                        <div class="tb-faq" key={faq.id}>
+                            <p class="tb-faq-question">{faq.question}</p>
+                            <p class="tb-faq-answer">{faq.answer}</p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,12 @@
+<template>
+    <div class="tb-rating" role="img" aria-label={ariaLabel}>
+        <span class="tb-stars" aria-hidden="true">
+            <template for:each={stars} for:item="star">
+                <span key={star.id} class={star.className}>&#9733;</span>
+            </template>
+        </span>
+        <template if:true={showCount}>
+            <span class="tb-review-count">({reviewCount})</span>
+        </template>
+    </div>
+</template>

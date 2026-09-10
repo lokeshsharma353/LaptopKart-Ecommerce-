@@ -1,0 +1,94 @@
+:host {
+    --dashboard-border: #e5e5e5;
+    --dashboard-bg-subtle: #f3f2f2;
+    --dashboard-label: #706e6b;
+    --dashboard-value: #16325c;
+    --dashboard-danger: #ba0517;
+    --dashboard-success: #04844b;
+    --dashboard-warning: #b35c00;
+}
+
+/* Order summary */
+
+.order-summary {
+    background-color: var(--dashboard-bg-subtle);
+    border: 1px solid var(--dashboard-border);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+}
+
+.detail-item {
+    padding: 0.5rem 0.75rem;
+}
+
+.detail-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--dashboard-label);
+    margin-bottom: 0.15rem;
+}
+
+.detail-value {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--dashboard-value);
+}
+
+.outstanding-value.is-due {
+    color: var(--dashboard-danger);
+}
+
+.outstanding-value.is-paid {
+    color: var(--dashboard-success);
+}
+
+/* Payment status badge — same token colors as outstanding-value above,
+   just as a small pill instead of plain text. */
+.status-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.15rem 0.6rem;
+    border-radius: 1rem;
+    background: var(--dashboard-bg-subtle);
+    color: var(--dashboard-value);
+}
+.status-badge.is-paid {
+    background: rgba(4, 132, 75, 0.12);
+    color: var(--dashboard-success);
+}
+.status-badge.is-pending {
+    background: rgba(179, 92, 0, 0.12);
+    color: var(--dashboard-warning);
+}
+.status-badge.is-partial {
+    background: rgba(179, 92, 0, 0.12);
+    color: var(--dashboard-warning);
+}
+
+/* Payments section */
+
+.payments-section h2 {
+    color: var(--dashboard-value);
+    border-bottom: 1px solid var(--dashboard-border);
+    padding-bottom: 0.5rem;
+}
+
+.payments-table-wrapper {
+    border: 1px solid var(--dashboard-border);
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.no-payments-notice {
+    background-color: var(--dashboard-bg-subtle);
+    border: 1px solid var(--dashboard-border);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    color: var(--dashboard-label);
+    font-size: 0.85rem;
+}

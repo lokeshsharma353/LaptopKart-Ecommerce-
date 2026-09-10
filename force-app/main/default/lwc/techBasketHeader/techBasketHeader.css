@@ -1,0 +1,412 @@
+:host {
+    display: block;
+    font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ── HEADER BAR ─────────────────────────────── */
+.tb-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    /* Still fundamentally black — a very subtle vertical gradient plus a
+       thin gold hairline underneath (instead of a flat white-alpha border)
+       is what reads as "premium/realistic" rather than a flat poster. */
+    background: linear-gradient(180deg, #000000 0%, #050505 100%);
+    border-bottom: 1px solid rgba(201,168,76,0.18);
+    box-shadow: 0 1px 0 rgba(201,168,76,0.06), 0 12px 24px rgba(0,0,0,0.35);
+}
+
+.tb-header-bar {
+    display: flex;
+    align-items: center;
+    height: 68px;
+    padding: 0 2.5rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ── LOGO ───────────────────────────────────── */
+.tb-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    font-family: inherit;
+    transition: opacity 0.2s;
+}
+.tb-logo:hover { opacity: 0.85; }
+
+.tb-logo-img {
+    height: 50px;
+    width: auto;
+    display: block;
+    object-fit: contain;
+}
+
+.tb-logo-text {
+    font-size: 19px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+}
+
+/* ── NAV — pushed fully to the right ───────── */
+.tb-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+    margin-left: auto;
+}
+
+.tb-nav-divider {
+    width: 1px;
+    height: 18px;
+    background: rgba(255,255,255,0.15);
+    margin: 0 0.5rem;
+    flex-shrink: 0;
+}
+
+.tb-nav-link {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    color: rgba(255,255,255,0.65);
+    padding: 0.45rem 0.85rem;
+    border-radius: 6px;
+    transition: color 0.18s, background 0.18s;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+}
+
+.tb-nav-link:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.07);
+}
+
+/* "Shop" nav item's hover dropdown — pure CSS hover, matches the
+   "hover the cursor, then show" behavior requested. */
+.tb-nav-item-dropdown {
+    position: relative;
+}
+
+.tb-dropdown-panel {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    min-width: 200px;
+    background: #0d0d0d;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    box-shadow: 0 16px 32px rgba(0,0,0,0.5);
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.18s, transform 0.18s, visibility 0.18s;
+    z-index: 10;
+}
+
+.tb-nav-item-dropdown:hover .tb-dropdown-panel {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(2px);
+}
+
+.tb-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 13.5px;
+    font-weight: 500;
+    font-family: inherit;
+    color: rgba(255,255,255,0.75);
+    cursor: pointer;
+    padding: 0.55rem 0.75rem;
+    border-radius: 7px;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+}
+.tb-dropdown-item:hover {
+    background: rgba(201,168,76,0.12);
+    color: #f3e2ab;
+}
+
+.tb-dropdown-icon {
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+/* Sign Up accent button */
+.tb-nav-btn-accent {
+    background: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #000;
+    padding: 0.42rem 1rem;
+    border-radius: 980px;
+    transition: background 0.18s, transform 0.18s;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+    margin-left: 0.25rem;
+}
+.tb-nav-btn-accent:hover { background: rgba(255,255,255,0.88); transform: scale(1.02); }
+
+/* Cart button */
+.tb-cart-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.18);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #fff;
+    padding: 0.42rem 1rem;
+    border-radius: 980px;
+    transition: background 0.18s, border-color 0.18s;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+}
+.tb-cart-btn:hover {
+    background: rgba(255,255,255,0.18);
+    border-color: rgba(255,255,255,0.35);
+}
+
+.tb-cart-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background: #c9a84c;
+    color: #000;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 0 4px;
+    animation: badgePop 0.3s ease-out;
+}
+
+@keyframes badgePop {
+    0%   { transform: scale(0); }
+    70%  { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* ── MOBILE SEARCH TRIGGER ──────────────────── */
+/* Hidden by default — desktop already has the "Search" link inside .tb-nav.
+   Shown below 900px, where .tb-nav (and that link with it) disappears. */
+.tb-mobile-search-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 0.9rem;
+    background: none;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 980px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    margin-left: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* ── HAMBURGER ──────────────────────────────── */
+.tb-hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-left: 0.5rem;
+}
+
+.tb-hline {
+    width: 20px;
+    height: 2px;
+    background: #fff;
+    border-radius: 1px;
+    transition: all 0.28s;
+    display: block;
+}
+.tb-hline-open1 { transform: translateY(7px) rotate(45deg); }
+.tb-hline-open2 { opacity: 0; transform: scaleX(0); }
+.tb-hline-open3 { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── SEARCH BAR (slides down) ───────────────── */
+.tb-search-bar {
+    background: #0d0d0d;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 0.75rem 2.5rem;
+    animation: searchSlide 0.22s ease-out;
+}
+
+@keyframes searchSlide {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.tb-search-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.tb-search-close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.5);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: color 0.18s;
+    flex-shrink: 0;
+    font-family: inherit;
+}
+.tb-search-close:hover { color: #fff; }
+
+/* ── MOBILE DRAWER ──────────────────────────── */
+.tb-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 1998;
+}
+
+.tb-drawer {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: 280px;
+    max-width: 85vw;
+    background: #0d0d0d;
+    border-left: 1px solid rgba(255,255,255,0.08);
+    z-index: 1999;
+    display: flex;
+    flex-direction: column;
+    animation: drawerSlide 0.28s ease-out;
+}
+
+@keyframes drawerSlide {
+    from { transform: translateX(100%); }
+    to   { transform: translateX(0); }
+}
+
+.tb-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.tb-drawer-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tb-drawer-logo .tb-logo-text {
+    font-size: 16px;
+}
+
+.tb-drawer-logo .tb-logo-img {
+    height: 38px;
+}
+
+.tb-drawer-close {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 15px;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+}
+
+.tb-drawer-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem;
+    gap: 0.15rem;
+    flex: 1;
+}
+
+.tb-drawer-link {
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: inherit;
+    color: rgba(255,255,255,0.65);
+    cursor: pointer;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    transition: color 0.18s, background 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.tb-drawer-link:hover { color: #fff; background: rgba(255,255,255,0.07); }
+.tb-drawer-logout { color: #ff453a; margin-top: auto; }
+
+/* ── RESPONSIVE ─────────────────────────────── */
+@media (max-width: 900px) {
+    .tb-nav { display: none; }
+    .tb-mobile-search-btn { display: flex; }
+    .tb-hamburger { display: flex; }
+}
+
+@media (max-width: 600px) {
+    .tb-header-bar { padding: 0 1.25rem; height: 56px; }
+    .tb-search-bar { padding: 0.75rem 1.25rem; }
+    .tb-logo-img { height: 34px; }
+    .tb-logo-text { font-size: 16px; }
+    .tb-search-close { font-size: 22px; padding: 0.4rem 0.6rem; }
+}
+
+@media (max-width: 380px) {
+    .tb-header-bar { padding: 0 0.85rem; }
+    .tb-logo { gap: 0.4rem; }
+    .tb-logo-img { height: 28px; }
+    .tb-logo-text { font-size: 14px; }
+    .tb-hamburger { padding: 0.4rem; }
+}

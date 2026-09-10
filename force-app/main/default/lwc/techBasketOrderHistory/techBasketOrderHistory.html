@@ -1,0 +1,52 @@
+<template>
+    <div class="tb-order-history">
+        <h1 class="tb-page-title">Order History</h1>
+
+        <template if:true={isLoading}>
+            <div class="tb-loading">
+                <p>Loading your orders...</p>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+        <template if:true={hasOrders}>
+            <div class="tb-table-wrap">
+                <table class="tb-orders-table">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={orders} for:item="order">
+                            <tr key={order.orderId}>
+                                <td>{order.orderNumber}</td>
+                                <td>{order.orderDate}</td>
+                                <td>₹{order.totalAmount}</td>
+                                <td><span class={order.statusClass}>{order.status}</span></td>
+                                <td class="tb-actions-cell">
+                                    <button class="tb-link-btn" data-id={order.orderId} onclick={handleViewDetails}>View Order</button>
+                                    <template if:true={order.canCancel}>
+                                        <button class="tb-link-btn tb-link-danger" data-id={order.orderId} onclick={handleCancelOrder} disabled={order.isCancelling}>Cancel Order</button>
+                                    </template>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+
+        <template if:false={hasOrders}>
+            <div class="tb-empty-state">
+                <p>No orders yet.</p>
+                <button class="tb-btn-primary" onclick={handleShopNow}>Start Shopping</button>
+            </div>
+        </template>
+        </template>
+    </div>
+</template>

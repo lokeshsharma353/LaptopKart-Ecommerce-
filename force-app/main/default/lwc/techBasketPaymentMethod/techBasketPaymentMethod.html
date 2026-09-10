@@ -1,0 +1,12 @@
+<template>
+    <div class="tb-method-grid">
+        <template for:each={methods} for:item="method">
+            <button
+                key={method.id}
+                class={method.className}
+                data-id={method.id}
+                onclick={handleSelect}
+            >{method.label}</button>
+        </template>
+    </div>
+</template>

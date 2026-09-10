@@ -1,0 +1,277 @@
+<template>
+    <div class="tb-account-page">
+
+        <!-- ═══════════════ LOGGED OUT: Log In / Sign Up ═══════════════ -->
+        <template if:false={isLoggedIn}>
+            <div class="tb-auth-shell">
+                <div class="tb-auth-brandmark">
+                    <img src={logoUrl} class="tb-auth-logo-img" alt="LaptopKart" />
+                </div>
+                <h1 class="tb-auth-title">Welcome to LaptopKart</h1>
+                <p class="tb-auth-subtitle">Sign in to track orders, save addresses and manage your wishlist.</p>
+
+                <div class="tb-auth-card">
+                    <div class="tb-tab-row">
+                        <button class={loginTabClass} onclick={handleSwitchToLogin}>Log In</button>
+                        <button class={signUpTabClass} onclick={handleSwitchToSignUp}>Sign Up</button>
+                    </div>
+
+                    <template if:true={hasError}>
+                        <p class="tb-error-text">{errorMessage}</p>
+                    </template>
+
+                    <template if:true={isLoginMode}>
+                        <div class="tb-form">
+                            <label class="tb-field-label" for="loginEmail">Email</label>
+                            <input id="loginEmail" data-field="loginEmail" type="email" class="tb-input" placeholder="you@example.com" />
+
+                            <label class="tb-field-label" for="loginPassword">Password</label>
+                            <input id="loginPassword" data-field="loginPassword" type="password" class="tb-input" placeholder="••••••••" />
+
+                            <button class="tb-link-btn tb-forgot-link" onclick={handleSwitchToForgotPassword}>Forgot password?</button>
+
+                            <button class="tb-btn-primary tb-btn-block" onclick={handleLogin} disabled={isSubmitting}>{loginButtonLabel}</button>
+                        </div>
+                    </template>
+
+                    <template if:true={isSignUpMode}>
+                        <div class="tb-form">
+                            <label class="tb-field-label" for="signUpName">Full Name</label>
+                            <input id="signUpName" data-field="signUpName" type="text" class="tb-input" placeholder="Jane Doe" />
+
+                            <label class="tb-field-label" for="signUpEmail">Email</label>
+                            <input id="signUpEmail" data-field="signUpEmail" type="email" class="tb-input" placeholder="you@example.com" />
+
+                            <label class="tb-field-label" for="signUpPhone">Phone Number</label>
+                            <input id="signUpPhone" data-field="signUpPhone" type="tel" inputmode="numeric" maxlength="10" class="tb-input" placeholder="9876543210" oninput={handlePhoneInput} />
+
+                            <label class="tb-field-label" for="signUpPassword">Password</label>
+                            <input id="signUpPassword" data-field="signUpPassword" type="password" class="tb-input" placeholder="At least 8 characters" />
+
+                            <button class="tb-btn-primary tb-btn-block" onclick={handleSignUp} disabled={isSubmitting}>{signUpButtonLabel}</button>
+                        </div>
+                    </template>
+
+                    <template if:true={isForgotPasswordMode}>
+                        <template if:false={forgotPasswordSubmitted}>
+                            <div class="tb-form">
+                                <p class="tb-forgot-intro">
+                                    Enter your account details below. There's no automatic reset link — our
+                                    team will personally follow up to help you regain access.
+                                </p>
+
+                                <label class="tb-field-label" for="forgotPasswordEmail">Email on your account</label>
+                                <input id="forgotPasswordEmail" data-field="forgotPasswordEmail" type="email" class="tb-input" placeholder="you@example.com" />
+
+                                <label class="tb-field-label" for="forgotPasswordPhone">Phone Number (optional)</label>
+                                <input id="forgotPasswordPhone" data-field="forgotPasswordPhone" type="tel" inputmode="numeric" maxlength="10" class="tb-input" placeholder="9876543210" oninput={handlePhoneInput} />
+
+                                <label class="tb-field-label" for="forgotPasswordMessage">Anything else we should know? (optional)</label>
+                                <textarea id="forgotPasswordMessage" data-field="forgotPasswordMessage" class="tb-input tb-textarea" placeholder="e.g. I can't remember which email I signed up with"></textarea>
+
+                                <button class="tb-btn-primary tb-btn-block" onclick={handleForgotPasswordSubmit} disabled={isSubmitting}>{forgotPasswordButtonLabel}</button>
+                                <button class="tb-link-btn tb-forgot-link" onclick={handleSwitchToLogin}>Back to Log In</button>
+                            </div>
+                        </template>
+
+                        <template if:true={forgotPasswordSubmitted}>
+                            <div class="tb-forgot-confirmation">
+                                <p class="tb-forgot-confirmation-title">Request received</p>
+                                <p class="tb-forgot-intro">
+                                    Thanks — our team has been notified and will personally reach out to help
+                                    you regain access to your account.
+                                </p>
+                                <button class="tb-btn-primary tb-btn-block" onclick={handleSwitchToLogin}>Back to Log In</button>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- ═══════════════ LOGGED IN: sidebar dashboard ═══════════════ -->
+        <template if:true={isLoggedIn}>
+            <h1 class="tb-page-title">My Account</h1>
+
+            <div class="tb-dashboard">
+                <!-- Sidebar -->
+                <div class="tb-sidebar">
+                    <div class="tb-sidebar-identity">
+                        <span class="tb-sidebar-avatar">{session.name}</span>
+                        <span class="tb-sidebar-email">{session.email}</span>
+                    </div>
+                    <nav class="tb-nav">
+                        <template for:each={navItems} for:item="item">
+                            <button key={item.key} class={item.className} data-key={item.key} onclick={handleNavClick}>{item.label}</button>
+                        </template>
+                        <button class="tb-nav-btn tb-nav-btn-logout" onclick={handleLogout}>Log Out</button>
+                    </nav>
+                </div>
+
+                <!-- Content -->
+                <div class="tb-content">
+
+                    <!-- Profile -->
+                    <template if:true={isProfileSection}>
+                        <div class="tb-panel">
+                            <h2 class="tb-panel-title">Profile</h2>
+                            <div class="tb-profile-row">
+                                <span class="tb-profile-label">Name</span>
+                                <span class="tb-profile-value">{session.name}</span>
+                            </div>
+                            <div class="tb-profile-row">
+                                <span class="tb-profile-label">Email</span>
+                                <span class="tb-profile-value">{session.email}</span>
+                            </div>
+                            <div class="tb-profile-row">
+                                <span class="tb-profile-label">Phone</span>
+                                <span class="tb-profile-value">{session.phone}</span>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Order History -->
+                    <template if:true={isOrdersSection}>
+                        <div class="tb-panel">
+                            <h2 class="tb-panel-title">Order History</h2>
+
+                            <template if:true={isLoadingOrders}>
+                                <p class="tb-empty-text">Loading your orders…</p>
+                            </template>
+
+                            <template if:false={isLoadingOrders}>
+                                <template if:true={hasOrders}>
+                                    <div class="tb-table-wrap">
+                                        <table class="tb-orders-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Order #</th>
+                                                    <th>Date</th>
+                                                    <th>Amount</th>
+                                                    <th>Status</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template for:each={orders} for:item="order">
+                                                    <tr key={order.orderId}>
+                                                        <td>{order.orderNumber}</td>
+                                                        <td>{order.orderDate}</td>
+                                                        <td>&#8377;{order.totalAmount}</td>
+                                                        <td><span class={order.statusClass}>{order.status}</span></td>
+                                                        <td>
+                                                            <button class="tb-link-btn" data-id={order.orderId} onclick={handleViewOrder}>View</button>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </template>
+                                <template if:false={hasOrders}>
+                                    <p class="tb-empty-text">You haven't placed any orders yet.</p>
+                                </template>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Saved Addresses -->
+                    <template if:true={isAddressesSection}>
+                        <div class="tb-panel">
+                            <h2 class="tb-panel-title">Saved Addresses</h2>
+
+                            <template if:true={hasAddresses}>
+                                <div class="tb-address-grid">
+                                    <template for:each={addresses} for:item="addr">
+                                        <div key={addr.id} class="tb-address-card">
+                                            <template if:false={addr.editing}>
+                                                <p class="tb-address-line">{addr.line1}</p>
+                                                <p class="tb-address-line">{addr.city}</p>
+                                                <p class="tb-address-line">{addr.phone}</p>
+                                                <div class="tb-address-actions">
+                                                    <button class="tb-link-btn" data-id={addr.id} onclick={handleEditAddress}>Edit</button>
+                                                    <button class="tb-link-btn tb-link-danger" data-id={addr.id} onclick={handleDeleteAddress}>Delete</button>
+                                                </div>
+                                            </template>
+                                            <template if:true={addr.editing}>
+                                                <label class="tb-field-label">Address Line</label>
+                                                <input class="tb-input" value={addr.line1} data-id={addr.id} data-field="line1" oninput={handleAddressInput} placeholder="Street address" />
+                                                <label class="tb-field-label">City</label>
+                                                <input class="tb-input" value={addr.city} data-id={addr.id} data-field="city" oninput={handleAddressInput} placeholder="City" />
+                                                <label class="tb-field-label">Phone</label>
+                                                <input class="tb-input" type="tel" inputmode="numeric" maxlength="10" value={addr.phone} data-id={addr.id} data-field="phone" oninput={handleAddressInput} placeholder="9876543210" />
+                                                <div class="tb-address-actions">
+                                                    <button class="tb-link-btn" data-id={addr.id} onclick={handleDoneEditAddress}>Done</button>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template if:false={hasAddresses}>
+                                <p class="tb-empty-text">No saved addresses yet.</p>
+                            </template>
+
+                            <button class="tb-btn-secondary" onclick={handleAddAddress}>Add Address</button>
+                        </div>
+                    </template>
+
+                    <!-- Wishlist -->
+                    <template if:true={isWishlistSection}>
+                        <div class="tb-panel">
+                            <h2 class="tb-panel-title">Wishlist</h2>
+
+                            <template if:true={hasWishlistItems}>
+                                <div class="tb-wishlist-grid">
+                                    <template for:each={wishlistProducts} for:item="product">
+                                        <div key={product.productId} class="tb-wishlist-card">
+                                            <button class="tb-wishlist-name" data-id={product.productId} onclick={handleViewWishlistProduct}>{product.productName}</button>
+                                            <span class="tb-wishlist-price">&#8377;{product.price}</span>
+                                            <button class="tb-link-btn tb-link-danger" data-id={product.productId} onclick={handleRemoveWishlistItem}>Remove</button>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template if:false={hasWishlistItems}>
+                                <p class="tb-empty-text">Your wishlist is empty. Tap the heart on any product to save it here.</p>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Payment Methods -->
+                    <template if:true={isPaymentsSection}>
+                        <div class="tb-panel">
+                            <h2 class="tb-panel-title">Payment Methods</h2>
+                            <p class="tb-empty-text">LaptopKart doesn't store card or payment details. At checkout, choose Cash on Delivery or pay by UPI/QR each time — nothing is saved here.</p>
+                        </div>
+                    </template>
+
+                    <!-- Reviews & Ratings -->
+                    <template if:true={isReviewsSection}>
+                        <div class="tb-panel">
+                            <h2 class="tb-panel-title">Reviews &amp; Ratings</h2>
+                            <p class="tb-empty-text">You haven't written any reviews yet. Product reviews aren't available on LaptopKart yet — check back soon.</p>
+                        </div>
+                    </template>
+
+                    <!-- Account Settings -->
+                    <template if:true={isSettingsSection}>
+                        <div class="tb-panel">
+                            <h2 class="tb-panel-title">Account Settings</h2>
+                            <div class="tb-setting-row">
+                                <span>Email notifications</span>
+                                <input type="checkbox" checked={settings.emailNotifications} data-field="emailNotifications" onchange={handleSettingChange} />
+                            </div>
+                            <div class="tb-setting-row">
+                                <span>SMS notifications</span>
+                                <input type="checkbox" checked={settings.smsNotifications} data-field="smsNotifications" onchange={handleSettingChange} />
+                            </div>
+                            <button class="tb-btn-secondary" onclick={handleSaveSettings}>Save Changes</button>
+                        </div>
+                    </template>
+
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

@@ -1,0 +1,39 @@
+<template>
+    <template if:true={isOpen}>
+        <div class="tb-welcome-overlay" onclick={handleClose}></div>
+        <div class="tb-welcome-modal" role="dialog" aria-modal="true" aria-label="Welcome to LaptopKart">
+            <button class="tb-welcome-close" onclick={handleClose} aria-label="Close">&times;</button>
+
+            <span class="tb-welcome-eyebrow">Welcome to LaptopKart</span>
+            <h2 class="tb-welcome-heading">Let's find your perfect laptop</h2>
+            <p class="tb-welcome-sub">Tell us a little about you and we'll point you to the best picks — no spam, ever.</p>
+
+            <div class="tb-field">
+                <label for="wName">Name</label>
+                <input id="wName" type="text" value={formData.name} data-field="name" oninput={handleInput} />
+                <template if:true={errors.name}><p class="tb-error">{errors.name}</p></template>
+            </div>
+
+            <div class="tb-field">
+                <label for="wEmail">Email</label>
+                <input id="wEmail" type="email" value={formData.email} data-field="email" oninput={handleInput} />
+                <template if:true={errors.email}><p class="tb-error">{errors.email}</p></template>
+            </div>
+
+            <div class="tb-field">
+                <label for="wType">Which type of laptop are you looking for?</label>
+                <select id="wType" onchange={handleLaptopTypeChange}>
+                    <template for:each={laptopTypeOptions} for:item="opt">
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    </template>
+                </select>
+            </div>
+
+            <button class="tb-welcome-submit" onclick={handleSubmit} disabled={isSubmitting}>
+                <template if:false={isSubmitting}>Notify Me</template>
+                <template if:true={isSubmitting}>Submitting...</template>
+            </button>
+            <button class="tb-welcome-skip" onclick={handleClose}>Maybe later</button>
+        </div>
+    </template>
+</template>
