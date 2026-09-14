@@ -80,6 +80,10 @@
     margin: 0.3rem 0 0;
 }
 
+.tb-required {
+    color: #ff453a;
+}
+
 .tb-checkbox-row {
     display: flex;
     align-items: center;

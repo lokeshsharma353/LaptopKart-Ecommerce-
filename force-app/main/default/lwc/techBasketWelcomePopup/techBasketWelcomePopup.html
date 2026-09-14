@@ -9,13 +9,13 @@
             <p class="tb-welcome-sub">Tell us a little about you and we'll point you to the best picks — no spam, ever.</p>
 
             <div class="tb-field">
-                <label for="wName">Name</label>
+                <label for="wName">Name <span class="tb-required">*</span></label>
                 <input id="wName" type="text" value={formData.name} data-field="name" oninput={handleInput} />
                 <template if:true={errors.name}><p class="tb-error">{errors.name}</p></template>
             </div>
 
             <div class="tb-field">
-                <label for="wEmail">Email</label>
+                <label for="wEmail">Email <span class="tb-required">*</span></label>
                 <input id="wEmail" type="email" value={formData.email} data-field="email" oninput={handleInput} />
                 <template if:true={errors.email}><p class="tb-error">{errors.email}</p></template>
             </div>

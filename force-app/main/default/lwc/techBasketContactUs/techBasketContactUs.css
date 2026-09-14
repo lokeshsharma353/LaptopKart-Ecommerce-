@@ -101,6 +101,10 @@
     margin: 0.3rem 0 0;
 }
 
+.tb-required {
+    color: var(--tb-danger);
+}
+
 .tb-success-message {
     color: var(--tb-secondary);
     font-size: 14px;

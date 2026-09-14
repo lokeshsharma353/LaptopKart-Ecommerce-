@@ -3,7 +3,7 @@
         <h2 class="tb-form-heading">Billing Address</h2>
 
         <div class="tb-field">
-            <label for="address1">Address Line 1</label>
+            <label for="address1">Address Line 1 <span class="tb-required">*</span></label>
             <input id="address1" type="text" value={formData.address1} data-field="address1" oninput={handleInput} />
             <template if:true={errors.address1}><p class="tb-error">{errors.address1}</p></template>
         </div>
@@ -15,12 +15,12 @@
 
         <div class="tb-field-row">
             <div class="tb-field">
-                <label for="city">City</label>
+                <label for="city">City <span class="tb-required">*</span></label>
                 <input id="city" type="text" value={formData.city} data-field="city" oninput={handleInput} />
                 <template if:true={errors.city}><p class="tb-error">{errors.city}</p></template>
             </div>
             <div class="tb-field">
-                <label for="state">State/Province</label>
+                <label for="state">State/Province <span class="tb-required">*</span></label>
                 <input id="state" type="text" value={formData.state} data-field="state" oninput={handleInput} />
                 <template if:true={errors.state}><p class="tb-error">{errors.state}</p></template>
             </div>
@@ -28,12 +28,12 @@
 
         <div class="tb-field-row">
             <div class="tb-field">
-                <label for="postalCode">Postal Code</label>
+                <label for="postalCode">Postal Code <span class="tb-required">*</span></label>
                 <input id="postalCode" type="text" inputmode="numeric" maxlength="6" value={formData.postalCode} data-field="postalCode" oninput={handleInput} />
                 <template if:true={errors.postalCode}><p class="tb-error">{errors.postalCode}</p></template>
             </div>
             <div class="tb-field">
-                <label for="country">Country</label>
+                <label for="country">Country <span class="tb-required">*</span></label>
                 <input id="country" type="text" value={formData.country} data-field="country" oninput={handleInput} />
                 <template if:true={errors.country}><p class="tb-error">{errors.country}</p></template>
             </div>

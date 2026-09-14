@@ -5,6 +5,7 @@ import logIn from '@salesforce/apex/LoginCredentialsController.logIn';
 import requestPasswordReset from '@salesforce/apex/LoginCredentialsController.requestPasswordReset';
 import getOrdersByEmail from '@salesforce/apex/CheckoutController.getOrdersByEmail';
 import { getSession, setSession, clearSession, subscribe } from 'c/authService';
+import { rememberEmail } from 'c/orderService';
 import { getOrderConfirmationRef, getProductRef } from 'c/navigationService';
 import { showToast } from 'c/toastService';
 import { getAddresses, saveAddress, deleteAddress } from 'c/addressService';
@@ -167,6 +168,15 @@ export default class TechBasketMyAccount extends NavigationMixin(LightningElemen
         logIn({ email, password })
             .then((session) => {
                 setSession(session);
+                // Keeps orderService's remembered checkout email in sync with
+                // whoever is actually logged in, so the standalone Order
+                // History page (which looks orders up by that remembered
+                // email) always agrees with My Account's own Order History
+                // tab (which looks orders up by this session's email) —
+                // without this they can silently diverge whenever someone
+                // logs into an account whose email differs from the email
+                // last used at checkout on this browser.
+                rememberEmail(session.email);
                 showToast(`Welcome back, ${session.name}!`, 'success');
             })
             .catch((error) => { this.errorMessage = this._extractError(error); })
@@ -209,6 +219,8 @@ export default class TechBasketMyAccount extends NavigationMixin(LightningElemen
         signUp({ name, email, phone, password })
             .then((session) => {
                 setSession(session);
+                // See handleLogin — keeps the two Order History surfaces in sync.
+                rememberEmail(session.email);
                 showToast(`Welcome, ${session.name}!`, 'success');
             })
             .catch((error) => { this.errorMessage = this._extractError(error); })

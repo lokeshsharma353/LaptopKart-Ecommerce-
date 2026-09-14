@@ -11,32 +11,32 @@
                         <template if:true={errors.firstName}><p class="tb-error">{errors.firstName}</p></template>
                     </div>
                     <div class="tb-field">
-                        <label for="lastName">Last Name</label>
+                        <label for="lastName">Last Name <span class="tb-required">*</span></label>
                         <input id="lastName" type="text" value={formData.lastName} data-field="lastName" oninput={handleInput} />
                         <template if:true={errors.lastName}><p class="tb-error">{errors.lastName}</p></template>
                     </div>
                 </div>
 
                 <div class="tb-field">
-                    <label for="email">Email</label>
+                    <label for="email">Email <span class="tb-required">*</span></label>
                     <input id="email" type="email" value={formData.email} data-field="email" oninput={handleInput} />
                     <template if:true={errors.email}><p class="tb-error">{errors.email}</p></template>
                 </div>
 
                 <div class="tb-field">
-                    <label for="phone">Phone</label>
+                    <label for="phone">Phone <span class="tb-required">*</span></label>
                     <input id="phone" type="tel" inputmode="numeric" maxlength="10" value={formData.phone} data-field="phone" oninput={handleInput} />
                     <template if:true={errors.phone}><p class="tb-error">{errors.phone}</p></template>
                 </div>
 
                 <div class="tb-field">
-                    <label for="password">Password</label>
+                    <label for="password">Password <span class="tb-required">*</span></label>
                     <input id="password" type="password" value={formData.password} data-field="password" oninput={handleInput} />
                     <template if:true={errors.password}><p class="tb-error">{errors.password}</p></template>
                 </div>
 
                 <div class="tb-field">
-                    <label for="confirmPassword">Confirm Password</label>
+                    <label for="confirmPassword">Confirm Password <span class="tb-required">*</span></label>
                     <input id="confirmPassword" type="password" value={formData.confirmPassword} data-field="confirmPassword" oninput={handleInput} />
                     <template if:true={errors.confirmPassword}><p class="tb-error">{errors.confirmPassword}</p></template>
                 </div>

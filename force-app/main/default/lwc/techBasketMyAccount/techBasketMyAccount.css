@@ -96,6 +96,10 @@
     margin: 0 0 1rem;
 }
 
+.tb-required {
+    color: #ff453a;
+}
+
 .tb-form {
     display: flex;
     flex-direction: column;

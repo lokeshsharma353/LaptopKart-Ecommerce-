@@ -53,8 +53,8 @@ export default class TechBasketHeader extends NavigationMixin(LightningElement) 
     }
     handleSearchSelect(event)   { this.searchOpen = false; this[NavigationMixin.Navigate](getProductRef(event.detail.productId)); }
 
-    goHome()    { this.drawerOpen = false; this[NavigationMixin.Navigate](getHomeRef()); }
-    goShop()    { this.drawerOpen = false; this[NavigationMixin.Navigate](getShopRef()); }
+    goHome()    { this.drawerOpen = false; this.searchOpen = false; this[NavigationMixin.Navigate](getHomeRef()); }
+    goShop()    { this.drawerOpen = false; this.searchOpen = false; this[NavigationMixin.Navigate](getShopRef()); }
 
     /**
      * Navigates to the catalog pre-filtered by the clicked category, from
@@ -63,12 +63,13 @@ export default class TechBasketHeader extends NavigationMixin(LightningElement) 
      */
     goCategory(event) {
         this.drawerOpen = false;
+        this.searchOpen = false;
         this[NavigationMixin.Navigate](getShopRefByCategory(event.currentTarget.dataset.category));
     }
-    goAbout()   { this.drawerOpen = false; this[NavigationMixin.Navigate](getAboutRef()); }
-    goAccount() { this.drawerOpen = false; this[NavigationMixin.Navigate](getAccountRef()); }
-    goContact() { this.drawerOpen = false; this[NavigationMixin.Navigate](getContactRef()); }
-    goCart()    { this.drawerOpen = false; this[NavigationMixin.Navigate](getCartRef()); }
-    goLogin()   { this.drawerOpen = false; this[NavigationMixin.Navigate](getLoginRef()); }
-    goSignUp()  { this.drawerOpen = false; this[NavigationMixin.Navigate](getSignUpRef()); }
+    goAbout()   { this.drawerOpen = false; this.searchOpen = false; this[NavigationMixin.Navigate](getAboutRef()); }
+    goAccount() { this.drawerOpen = false; this.searchOpen = false; this[NavigationMixin.Navigate](getAccountRef()); }
+    goContact() { this.drawerOpen = false; this.searchOpen = false; this[NavigationMixin.Navigate](getContactRef()); }
+    goCart()    { this.drawerOpen = false; this.searchOpen = false; this[NavigationMixin.Navigate](getCartRef()); }
+    goLogin()   { this.drawerOpen = false; this.searchOpen = false; this[NavigationMixin.Navigate](getLoginRef()); }
+    goSignUp()  { this.drawerOpen = false; this.searchOpen = false; this[NavigationMixin.Navigate](getSignUpRef()); }
 }

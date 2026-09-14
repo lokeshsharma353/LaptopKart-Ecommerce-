@@ -69,6 +69,10 @@
     margin: 0.3rem 0 0;
 }
 
+.tb-required {
+    color: #ff453a;
+}
+
 .tb-form-actions {
     display: flex;
     justify-content: space-between;

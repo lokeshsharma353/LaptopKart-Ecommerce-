@@ -67,6 +67,10 @@
     margin: 0.3rem 0 0;
 }
 
+.tb-required {
+    color: var(--tb-danger);
+}
+
 .tb-submit-error {
     margin-bottom: 1rem;
 }

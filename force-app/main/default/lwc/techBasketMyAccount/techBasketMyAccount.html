@@ -22,10 +22,10 @@
 
                     <template if:true={isLoginMode}>
                         <div class="tb-form">
-                            <label class="tb-field-label" for="loginEmail">Email</label>
+                            <label class="tb-field-label" for="loginEmail">Email <span class="tb-required">*</span></label>
                             <input id="loginEmail" data-field="loginEmail" type="email" class="tb-input" placeholder="you@example.com" />
 
-                            <label class="tb-field-label" for="loginPassword">Password</label>
+                            <label class="tb-field-label" for="loginPassword">Password <span class="tb-required">*</span></label>
                             <input id="loginPassword" data-field="loginPassword" type="password" class="tb-input" placeholder="••••••••" />
 
                             <button class="tb-link-btn tb-forgot-link" onclick={handleSwitchToForgotPassword}>Forgot password?</button>
@@ -36,16 +36,16 @@
 
                     <template if:true={isSignUpMode}>
                         <div class="tb-form">
-                            <label class="tb-field-label" for="signUpName">Full Name</label>
+                            <label class="tb-field-label" for="signUpName">Full Name <span class="tb-required">*</span></label>
                             <input id="signUpName" data-field="signUpName" type="text" class="tb-input" placeholder="Jane Doe" />
 
-                            <label class="tb-field-label" for="signUpEmail">Email</label>
+                            <label class="tb-field-label" for="signUpEmail">Email <span class="tb-required">*</span></label>
                             <input id="signUpEmail" data-field="signUpEmail" type="email" class="tb-input" placeholder="you@example.com" />
 
-                            <label class="tb-field-label" for="signUpPhone">Phone Number</label>
+                            <label class="tb-field-label" for="signUpPhone">Phone Number <span class="tb-required">*</span></label>
                             <input id="signUpPhone" data-field="signUpPhone" type="tel" inputmode="numeric" maxlength="10" class="tb-input" placeholder="9876543210" oninput={handlePhoneInput} />
 
-                            <label class="tb-field-label" for="signUpPassword">Password</label>
+                            <label class="tb-field-label" for="signUpPassword">Password <span class="tb-required">*</span></label>
                             <input id="signUpPassword" data-field="signUpPassword" type="password" class="tb-input" placeholder="At least 8 characters" />
 
                             <button class="tb-btn-primary tb-btn-block" onclick={handleSignUp} disabled={isSubmitting}>{signUpButtonLabel}</button>
@@ -60,7 +60,7 @@
                                     team will personally follow up to help you regain access.
                                 </p>
 
-                                <label class="tb-field-label" for="forgotPasswordEmail">Email on your account</label>
+                                <label class="tb-field-label" for="forgotPasswordEmail">Email on your account <span class="tb-required">*</span></label>
                                 <input id="forgotPasswordEmail" data-field="forgotPasswordEmail" type="email" class="tb-input" placeholder="you@example.com" />
 
                                 <label class="tb-field-label" for="forgotPasswordPhone">Phone Number (optional)</label>
