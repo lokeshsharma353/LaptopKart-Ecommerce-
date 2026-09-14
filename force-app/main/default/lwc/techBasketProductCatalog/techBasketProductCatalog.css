@@ -1,12 +1,12 @@
 :host {
-    --tb-primary: #0066cc;
-    --tb-secondary: #00a86b;
-    --tb-accent: #ff6b35;
-    --tb-text: #333333;
-    --tb-background: #f5f5f5;
-    --tb-danger: #e74c3c;
+    --tb-primary: #2563EB;
+    --tb-secondary: #0F172A;
+    --tb-accent: #2563EB;
+    --tb-text: #0F172A;
+    --tb-background: #F8FAFC;
+    --tb-danger: #DC2626;
     --tb-white: #ffffff;
-    --tb-muted: #666666;
+    --tb-muted: #64748B;
 
     display: block;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -54,7 +54,7 @@
     width: 100%;
     height: 38px;
     padding: 0 0.6rem;
-    border: 1px solid #dddddd;
+    border: 1px solid #CBD5E1;
     border-radius: 6px;
     font-size: 13px;
     font-family: inherit;
@@ -146,7 +146,7 @@
 .tb-view-btn {
     width: 36px;
     height: 36px;
-    border: 1px solid #dddddd;
+    border: 1px solid #CBD5E1;
     background: var(--tb-white);
     border-radius: 6px;
     cursor: pointer;
@@ -190,7 +190,7 @@
     border-radius: 6px;
     background: var(--tb-background);
     font-weight: 700;
-    color: #bfbfbf;
+    color: #94A3B8;
     flex-shrink: 0;
 }
 
@@ -245,7 +245,7 @@
 }
 
 .tb-add-to-cart:disabled {
-    background: #cccccc;
+    background: #CBD5E1;
     cursor: not-allowed;
 }
 
@@ -294,7 +294,7 @@
 .tb-page-btn {
     min-width: 36px;
     height: 36px;
-    border: 1px solid #dddddd;
+    border: 1px solid #CBD5E1;
     background: var(--tb-white);
     color: var(--tb-text);
     border-radius: 6px;

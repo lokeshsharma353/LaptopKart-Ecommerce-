@@ -24,8 +24,8 @@
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: #1a1a1a;
-    border: 2px solid rgba(255,255,255,0.15);
+    background: #FFFFFF;
+    border: 2px solid #CBD5E1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -40,35 +40,35 @@
     transition: color 0.2s;
 }
 
-/* Done — filled, checkmark visible */
+/* Done — filled green, checkmark visible. */
 .tb-progress-step-done .tb-progress-dot {
-    background: #30d158;
-    border-color: #30d158;
+    background: #16A34A;
+    border-color: #16A34A;
 }
-.tb-progress-step-done .tb-progress-check { color: #06210c; }
-.tb-progress-step-done .tb-progress-label { color: #f5f5f7; }
+.tb-progress-step-done .tb-progress-check { color: #fff; }
+.tb-progress-step-done .tb-progress-label { color: #0F172A; }
 
-/* Current — highlighted ring, no check yet */
+/* Current — blue ring, no check yet. */
 .tb-progress-step-current .tb-progress-dot {
-    background: #00c8ff;
-    border-color: #00c8ff;
-    box-shadow: 0 0 0 4px rgba(0,200,255,0.18);
+    background: #2563EB;
+    border-color: #2563EB;
+    box-shadow: 0 0 0 4px #EFF6FF;
 }
-.tb-progress-step-current .tb-progress-label { color: #00c8ff; font-weight: 700; }
+.tb-progress-step-current .tb-progress-label { color: #2563EB; font-weight: 700; }
 
 /* Issue (e.g. payment marked Failed/Refunded by the admin) */
 .tb-progress-step-issue .tb-progress-dot {
-    background: #ff453a;
-    border-color: #ff453a;
-    box-shadow: 0 0 0 4px rgba(255,69,58,0.16);
+    background: #DC2626;
+    border-color: #DC2626;
+    box-shadow: 0 0 0 4px #FEF2F2;
 }
-.tb-progress-step-issue .tb-progress-label { color: #ff453a; font-weight: 700; }
+.tb-progress-step-issue .tb-progress-label { color: #DC2626; font-weight: 700; }
 
 .tb-progress-label {
     margin-top: 0.5rem;
     font-size: 11.5px;
     font-weight: 600;
-    color: #86868b;
+    color: #64748B;
     letter-spacing: 0.01em;
     line-height: 1.3;
 }
@@ -76,34 +76,35 @@
 .tb-progress-sublabel {
     margin-top: 0.15rem;
     font-size: 10px;
-    color: #86868b;
+    color: #94A3B8;
     letter-spacing: 0.01em;
 }
 
+/* Upcoming steps' connecting line. */
 .tb-progress-line {
     position: absolute;
     top: 13px;
     left: 50%;
     width: 100%;
     height: 2px;
-    background: rgba(255,255,255,0.12);
+    background: #CBD5E1;
     z-index: 0;
 }
 
 .tb-progress-step-done .tb-progress-line,
 .tb-progress-step-current .tb-progress-line {
-    background: #30d158;
+    background: #16A34A;
 }
 
 .tb-progress-cancelled {
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    background: rgba(255,69,58,0.1);
-    border: 1px solid rgba(255,69,58,0.25);
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
     border-radius: 10px;
     padding: 0.9rem 1.1rem;
-    color: #ff453a;
+    color: #B91C1C;
     font-size: 13.5px;
     font-weight: 600;
 }
@@ -115,7 +116,7 @@
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    background: rgba(255,69,58,0.18);
+    background: #FECACA;
     font-size: 11px;
     flex-shrink: 0;
 }

@@ -1,9 +1,9 @@
 :host {
-    --tb-primary: #0066cc;
-    --tb-accent: #ff6b35;
+    --tb-primary: #2563EB;
+    --tb-accent: #2563EB;
     --tb-white: #ffffff;
-    --tb-footer: #1a1a1a;
-    --tb-muted: #666666;
+    --tb-footer: #0F172A;
+    --tb-muted: #94A3B8;
 
     display: block;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -38,7 +38,7 @@
 .tb-footer-text {
     font-size: 13px;
     line-height: 1.6;
-    color: #b3b3b3;
+    color: #CBD5E1;
     margin: 0;
 }
 
@@ -69,12 +69,12 @@
     text-align: left;
     font-size: 13px;
     font-family: inherit;
-    color: #b3b3b3;
+    color: #94A3B8;
     padding: 0;
 }
 
 .tb-footer-link:hover {
-    color: var(--tb-white);
+    color: #60A5FA;
 }
 
 .tb-social-row {
@@ -89,8 +89,8 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: #2a2a2a;
-    color: var(--tb-white);
+    background: #334155;
+    color: #94A3B8;
     text-decoration: none;
     font-size: 13px;
     font-weight: 700;
@@ -98,10 +98,11 @@
 
 .tb-social-link:hover {
     background: var(--tb-primary);
+    color: #fff;
 }
 
 .tb-footer-bottom {
-    border-top: 1px solid #2a2a2a;
+    border-top: 1px solid #334155;
     padding: 1.25rem 0;
     text-align: center;
 }

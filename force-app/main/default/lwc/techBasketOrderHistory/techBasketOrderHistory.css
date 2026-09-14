@@ -1,21 +1,21 @@
 :host {
     display: block;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-    background: #000;
+    background: #F8FAFC;
     min-height: 100vh;
-    color: #f5f5f7;
+    color: #0F172A;
 }
 
 .tb-order-history { max-width: 1280px; margin: 0 auto; padding: 2.5rem 1.5rem; }
 
-.tb-page-title { font-size: 30px; font-weight: 700; color: #f5f5f7; margin: 0 0 1.75rem; letter-spacing: -0.025em; }
+.tb-page-title { font-size: 30px; font-weight: 700; color: #0F172A; margin: 0 0 1.75rem; letter-spacing: -0.025em; }
 
-.tb-loading { text-align: center; padding: 5rem 1rem; color: #86868b; font-size: 15px; }
+.tb-loading { text-align: center; padding: 5rem 1rem; color: #64748B; font-size: 15px; }
 
 .tb-table-wrap {
     overflow-x: auto;
-    background: #111;
-    border: 1px solid rgba(255,255,255,0.07);
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
     border-radius: 14px;
 }
 
@@ -24,39 +24,45 @@
 .tb-orders-table th,
 .tb-orders-table td {
     text-align: left; padding: 1rem 1.25rem; font-size: 13px;
-    border-bottom: 1px solid rgba(255,255,255,0.06); color: #d1d1d6;
+    border-bottom: 1px solid #F1F5F9; color: #475569;
 }
 .tb-orders-table tr:last-child td { border-bottom: none; }
 
-.tb-orders-table th { color: #86868b; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+.tb-orders-table th { color: #64748B; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
 
+/* Order Id / Amount columns read navy per spec; date stays secondary. */
+.tb-orders-table td:first-child { color: #0F172A; font-weight: 600; }
+
+/* Status badges — light background, colored text, matches the rest of the site. */
 .tb-status {
     font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 980px;
 }
-.tb-status-processing { background: rgba(255,159,10,0.15); color: #ff9f0a; }
-.tb-status-done { background: rgba(48,209,88,0.12); color: #30d158; }
-.tb-status-cancelled { background: rgba(255,69,58,0.12); color: #ff453a; }
+.tb-status-processing { background: #EFF6FF; color: #1D4ED8; }
+.tb-status-done { background: #F0FDF4; color: #15803D; }
+.tb-status-cancelled { background: #FEF2F2; color: #B91C1C; }
 
 .tb-actions-cell { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
 
 .tb-link-btn {
-    background: none; border: 1px solid rgba(255,255,255,0.1); color: #86868b;
+    background: #FFFFFF; border: 1px solid #E2E8F0; color: #475569;
     font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit;
-    padding: 0.3rem 0.7rem; border-radius: 6px; transition: border-color 0.2s, color 0.2s;
+    padding: 0.3rem 0.7rem; border-radius: 6px; transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
-.tb-link-btn:hover { border-color: #00c8ff; color: #00c8ff; }
+.tb-link-btn:hover { border-color: #2563EB; color: #2563EB; background: #EFF6FF; }
 .tb-link-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-.tb-link-danger { color: #ff8a80; }
-.tb-link-danger:hover { border-color: #ff453a; color: #ff453a; }
+.tb-link-danger { color: #DC2626; border-color: #FECACA; }
+.tb-link-danger:hover { border-color: #DC2626; color: #B91C1C; background: #FEF2F2; }
 
-.tb-empty-state { text-align: center; padding: 6rem 1rem; color: #86868b; }
-.tb-empty-state p { font-size: 18px; margin: 0 0 1.75rem; color: #f5f5f7; }
+.tb-empty-state { text-align: center; padding: 6rem 1rem; color: #64748B; }
+.tb-empty-state p { font-size: 18px; margin: 0 0 1.75rem; color: #0F172A; }
 
 .tb-btn-primary {
-    background: #f5f5f7; color: #000; border: none; border-radius: 980px;
+    background: #2563EB; color: #fff; border: none; border-radius: 980px;
     padding: 0.75rem 1.75rem; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer;
+    transition: background 0.2s;
 }
+.tb-btn-primary:hover { background: #1D4ED8; }
 
 @media (max-width: 480px) {
     .tb-order-history { padding: 1.25rem 0.85rem; }

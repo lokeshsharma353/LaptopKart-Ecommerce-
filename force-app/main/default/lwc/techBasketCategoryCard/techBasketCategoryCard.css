@@ -1,8 +1,8 @@
 :host {
-    --tb-primary: #0066cc;
-    --tb-text: #333333;
+    --tb-primary: #2563EB;
+    --tb-text: #0F172A;
     --tb-white: #ffffff;
-    --tb-muted: #666666;
+    --tb-muted: #64748B;
 
     display: block;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -15,18 +15,18 @@
     gap: 0.5rem;
     width: 100%;
     background: var(--tb-white);
-    border: none;
+    border: 1px solid #E2E8F0;
     border-radius: 12px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    box-shadow: none;
     padding: 1.25rem 1rem;
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: border-color 0.15s ease, background 0.15s ease;
     font-family: inherit;
 }
 
 .tb-category-card:hover {
-    transform: scale(1.03);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    border-color: #2563EB;
+    background: #EFF6FF;
 }
 
 .tb-category-card:hover .tb-category-name {
@@ -40,7 +40,7 @@
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: #eaf3fc;
+    background: #EFF6FF;
 }
 
 .tb-category-initial {

@@ -1,7 +1,7 @@
 :host {
     display: block;
-    background: #000;
-    color: #f5f5f7;
+    background: #F8FAFC;
+    color: #0F172A;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
 }
 
@@ -9,7 +9,7 @@
 .tb-loading { padding: 4rem 2rem; max-width: 1280px; margin: 0 auto; }
 .tb-skeleton-wrap { display: flex; gap: 3rem; }
 .tb-skel {
-    background: linear-gradient(90deg, #1a1a1a 25%, #252525 50%, #1a1a1a 75%);
+    background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
     background-size: 200% 100%;
     animation: shimmer 1.4s infinite;
     border-radius: 12px;
@@ -24,24 +24,24 @@
 /* ── Main layout ── */
 .tb-detail {
     display: flex;
-    gap: 4rem;
+    gap: 2rem;
     max-width: 1280px;
     margin: 0 auto;
     padding: 3.5rem 2rem 2rem;
     align-items: flex-start;
 }
 
-/* ── Gallery ── */
+/* ── Gallery — its own white card on the light-gray page ── */
 .tb-gallery { width: 500px; flex-shrink: 0; position: sticky; top: 80px; }
 
 .tb-main-image-wrap {
     position: relative;
     width: 100%;
     height: 460px;
-    border-radius: 20px;
+    border-radius: 12px;
     overflow: hidden;
-    background: #0d0d0d;
-    border: 1px solid rgba(255,255,255,0.08);
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
 }
 
 .tb-main-image {
@@ -69,9 +69,9 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: rgba(0,0,0,0.7);
-    border: 1px solid rgba(255,255,255,0.12);
-    color: #fff;
+    background: rgba(255,255,255,0.92);
+    border: 1px solid #E2E8F0;
+    color: #0F172A;
     font-size: 18px;
     cursor: pointer;
     z-index: 2;
@@ -80,8 +80,9 @@
     align-items: center;
     justify-content: center;
     transition: background 0.2s, border-color 0.2s;
+    box-shadow: 0 2px 8px rgba(15,23,42,0.08);
 }
-.tb-nav-arrow:hover { background: rgba(0,200,255,0.2); border-color: #00c8ff; }
+.tb-nav-arrow:hover { background: #EFF6FF; border-color: #2563EB; }
 .tb-nav-prev { left: 14px; }
 .tb-nav-next { right: 14px; }
 
@@ -97,13 +98,13 @@
     height: 6px;
     border-radius: 50%;
     border: none;
-    background: rgba(255,255,255,0.2);
+    background: #CBD5E1;
     cursor: pointer;
     padding: 0;
     transition: background 0.2s, width 0.2s;
 }
 .tb-dot-active {
-    background: #00c8ff !important;
+    background: #2563EB !important;
     width: 20px !important;
     border-radius: 3px !important;
 }
@@ -120,33 +121,41 @@
     width: 80px;
     height: 64px;
     border-radius: 10px;
-    border: 1.5px solid rgba(255,255,255,0.08);
-    background: #0d0d0d;
+    border: 1.5px solid #E2E8F0;
+    background: #FFFFFF;
     cursor: pointer;
     overflow: hidden;
     padding: 0;
-    transition: border-color 0.2s, transform 0.2s;
+    transition: border-color 0.2s, transform 0.2s, background 0.2s;
 }
-.tb-thumbnail:hover { transform: scale(1.06); border-color: rgba(0,200,255,0.4); }
-.tb-thumbnail-active { border-color: #00c8ff !important; }
+.tb-thumbnail:hover { transform: scale(1.06); border-color: #93C5FD; }
+.tb-thumbnail-active { border-color: #2563EB !important; background: #EFF6FF !important; }
 .tb-thumb-img { width: 100%; height: 100%; object-fit: contain; display: block; padding: 4px; box-sizing: border-box; }
 
-/* ── Info panel ── */
-.tb-info { flex: 1; min-width: 0; padding-top: 0.5rem; }
+/* ── Info panel — its own white card, matching the gallery card ── */
+.tb-info {
+    flex: 1;
+    min-width: 0;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 1.75rem 2rem;
+    box-sizing: border-box;
+}
 
 .tb-brand-label {
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #00c8ff;
+    color: #64748B;
     margin: 0 0 0.6rem;
 }
 
 .tb-product-name {
     font-size: 30px;
     font-weight: 700;
-    color: #f5f5f7;
+    color: #0F172A;
     margin: 0 0 1.5rem;
     line-height: 1.25;
     letter-spacing: -0.025em;
@@ -159,19 +168,19 @@
     gap: 0.75rem;
     margin-bottom: 1.75rem;
     padding-bottom: 1.75rem;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
+    border-bottom: 1px solid #E2E8F0;
 }
 
 .tb-price {
     font-size: 38px;
     font-weight: 700;
-    color: #f5f5f7;
+    color: #0F172A;
     letter-spacing: -0.03em;
 }
 
 .tb-price-note {
     font-size: 12px;
-    color: #86868b;
+    color: #64748B;
 }
 
 /* Specs strip */
@@ -179,14 +188,15 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1px;
-    background: rgba(255,255,255,0.07);
+    background: #E2E8F0;
     border-radius: 14px;
     overflow: hidden;
     margin-bottom: 1.75rem;
+    border: 1px solid #E2E8F0;
 }
 
 .tb-spec-item {
-    background: #0d0d0d;
+    background: #F8FAFC;
     padding: 1rem 0.5rem;
     display: flex;
     flex-direction: column;
@@ -195,14 +205,14 @@
     text-align: center;
     transition: background 0.2s;
 }
-.tb-spec-item:hover { background: #141414; }
+.tb-spec-item:hover { background: #EFF6FF; }
 
-.tb-spec-icon { font-size: 20px; }
+.tb-spec-icon { font-size: 20px; color: #2563EB; }
 
 .tb-spec-text {
     font-size: 11px;
     font-weight: 600;
-    color: #86868b;
+    color: #475569;
     letter-spacing: 0.02em;
 }
 
@@ -212,7 +222,7 @@
 .tb-description-text {
     font-size: 14px;
     line-height: 1.75;
-    color: #86868b;
+    color: #475569;
     margin: 0 0 0.5rem;
 }
 
@@ -226,7 +236,7 @@
 .tb-read-more {
     background: none;
     border: none;
-    color: #00c8ff;
+    color: #2563EB;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
@@ -243,12 +253,13 @@
     flex-wrap: wrap;
 }
 
+/* Add to Cart — primary blue. */
 .tb-add-cart-btn {
     flex: 1;
     min-width: 180px;
     height: 52px;
-    background: #f5f5f7;
-    color: #000;
+    background: #2563EB;
+    color: #fff;
     border: none;
     border-radius: 980px;
     font-size: 15px;
@@ -258,17 +269,19 @@
     letter-spacing: -0.01em;
     transition: background 0.2s, transform 0.15s;
 }
-.tb-add-cart-btn:hover { background: #e0e0e2; transform: scale(1.02); }
+.tb-add-cart-btn:hover { background: #1D4ED8; transform: scale(1.02); }
 .tb-add-cart-btn:active { transform: scale(0.98); }
-.tb-added { background: #1a7a3a !important; color: #fff !important; }
+.tb-added { background: #16A34A !important; color: #fff !important; }
 
+/* Buy Now — dark navy, deliberately distinct from Add to Cart so the two
+   actions read differently without introducing a third color. */
 .tb-buy-now-btn {
     position: relative;
     flex: 1;
     min-width: 180px;
     height: 52px;
-    background: #c9a84c;
-    color: #000;
+    background: #0F172A;
+    color: #fff;
     border: none;
     border-radius: 980px;
     font-size: 15px;
@@ -279,7 +292,7 @@
     letter-spacing: -0.01em;
     transition: background 0.2s;
 }
-.tb-buy-now-btn:hover { background: #ddbe63; }
+.tb-buy-now-btn:hover { background: #1E293B; }
 
 /* Premium shine sweep on hover — matches the product card's Buy Now button;
    an internal overlay only, no size/position change on the button itself. */
@@ -290,7 +303,7 @@
     left: -60%;
     width: 35%;
     height: 100%;
-    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.65), transparent);
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
     transform: skewX(-20deg);
     transition: left 0.65s cubic-bezier(0.25,0.46,0.45,0.94);
     pointer-events: none;
@@ -304,40 +317,40 @@
     gap: 0.75rem;
     flex-wrap: wrap;
     padding-top: 1.25rem;
-    border-top: 1px solid rgba(255,255,255,0.07);
+    border-top: 1px solid #E2E8F0;
 }
 
 .tb-wishlist-btn {
     background: transparent;
-    border: 1px solid rgba(255,255,255,0.12);
+    border: 1px solid #E2E8F0;
     border-radius: 980px;
     padding: 0.5rem 1.25rem;
     font-size: 13px;
     font-weight: 600;
     font-family: inherit;
     cursor: pointer;
-    color: #86868b;
-    transition: border-color 0.2s, color 0.2s;
+    color: #64748B;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
-.tb-wishlist-btn:hover { border-color: #ff453a; color: #ff453a; }
-.tb-wishlist-active { color: #ff453a !important; border-color: #ff453a !important; }
+.tb-wishlist-btn:hover { border-color: #E11D48; color: #E11D48; }
+.tb-wishlist-active { color: #E11D48 !important; border-color: #E11D48 !important; background: #FFF1F2 !important; }
 
 .tb-share-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
 .tb-share-pill {
     background: transparent;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid #E2E8F0;
     border-radius: 980px;
     padding: 0.4rem 0.9rem;
     font-size: 12px;
     font-weight: 500;
-    color: #86868b;
+    color: #64748B;
     text-decoration: none;
     cursor: pointer;
     font-family: inherit;
     transition: border-color 0.2s, color 0.2s;
 }
-.tb-share-pill:hover { border-color: #00c8ff; color: #00c8ff; }
+.tb-share-pill:hover { border-color: #2563EB; color: #2563EB; }
 
 /* ── Tabs section ── */
 .tb-tabs-section {
@@ -348,7 +361,7 @@
 
 .tb-tab-bar {
     display: flex;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
+    border-bottom: 1px solid #E2E8F0;
     margin-bottom: 2rem;
     gap: 0;
 }
@@ -360,22 +373,22 @@
     padding: 0.85rem 1.5rem;
     font-size: 14px;
     font-weight: 500;
-    color: #86868b;
+    color: #64748B;
     cursor: pointer;
     font-family: inherit;
     margin-bottom: -1px;
     transition: color 0.2s, border-color 0.2s;
     letter-spacing: -0.01em;
 }
-.tb-tab-btn:hover { color: #f5f5f7; }
-.tb-tab-btn-active { color: #f5f5f7; border-bottom-color: #f5f5f7; font-weight: 600; }
+.tb-tab-btn:hover { color: #0F172A; }
+.tb-tab-btn-active { color: #0F172A; border-bottom-color: #2563EB; font-weight: 600; }
 
 .tb-tab-body { min-height: 120px; }
 
 .tb-tab-text {
     font-size: 15px;
     line-height: 1.8;
-    color: #86868b;
+    color: #475569;
     max-width: 720px;
     margin: 0;
 }
@@ -388,33 +401,33 @@
 }
 
 .tb-review-card {
-    background: #0d0d0d;
-    border: 1px solid rgba(255,255,255,0.07);
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
     border-radius: 14px;
     padding: 1.5rem;
     transition: border-color 0.2s;
 }
-.tb-review-card:hover { border-color: rgba(0,200,255,0.2); }
+.tb-review-card:hover { border-color: #93C5FD; }
 
 .tb-review-stars { margin-bottom: 0.75rem; }
-.tb-star { color: #ffd60a; font-size: 14px; }
+.tb-star { color: #F59E0B; font-size: 14px; }
 
 .tb-review-comment {
     font-size: 14px;
     line-height: 1.65;
-    color: #d1d1d6;
+    color: #475569;
     margin: 0 0 0.75rem;
 }
-.tb-review-author { font-size: 12px; color: #86868b; margin: 0; font-weight: 600; }
+.tb-review-author { font-size: 12px; color: #64748B; margin: 0; font-weight: 600; }
 
 /* FAQs */
 .tb-faq-list { max-width: 720px; }
 .tb-faq-item {
     padding: 1.25rem 0;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
+    border-bottom: 1px solid #E2E8F0;
 }
-.tb-faq-q { font-size: 15px; font-weight: 600; color: #f5f5f7; margin: 0 0 0.5rem; }
-.tb-faq-a { font-size: 14px; color: #86868b; margin: 0; line-height: 1.65; }
+.tb-faq-q { font-size: 15px; font-weight: 600; color: #0F172A; margin: 0 0 0.5rem; }
+.tb-faq-a { font-size: 14px; color: #64748B; margin: 0; line-height: 1.65; }
 
 /* ── Related ── */
 .tb-related {
@@ -426,7 +439,7 @@
 .tb-related-heading {
     font-size: 24px;
     font-weight: 700;
-    color: #f5f5f7;
+    color: #0F172A;
     margin: 0 0 1.5rem;
     letter-spacing: -0.02em;
 }
@@ -440,19 +453,20 @@
 .tb-not-found {
     text-align: center;
     padding: 8rem 1rem;
-    color: #86868b;
+    color: #64748B;
     font-size: 16px;
 }
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {
-    .tb-detail { flex-direction: column; gap: 2.5rem; }
+    .tb-detail { flex-direction: column; gap: 1.5rem; }
     .tb-gallery { width: 100%; position: static; }
     .tb-related-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 768px) {
     .tb-detail { padding: 2rem 1rem 1.5rem; }
+    .tb-info { padding: 1.5rem; }
     .tb-product-name { font-size: 24px; }
     .tb-price { font-size: 30px; }
     .tb-specs-strip { grid-template-columns: repeat(2, 1fr); }
@@ -464,10 +478,11 @@
 }
 
 @media (max-width: 480px) {
-    .tb-main-image-wrap { height: 280px; border-radius: 14px; }
+    .tb-main-image-wrap { height: 280px; border-radius: 12px; }
     .tb-nav-arrow { width: 32px; height: 32px; font-size: 14px; }
     .tb-thumbnail { width: 56px; height: 46px; }
 
+    .tb-info { padding: 1.1rem; }
     .tb-product-name { font-size: 20px; margin-bottom: 1rem; }
     .tb-price { font-size: 24px; }
     .tb-price-block { margin-bottom: 1.25rem; padding-bottom: 1.25rem; }

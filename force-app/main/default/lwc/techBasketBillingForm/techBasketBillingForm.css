@@ -1,12 +1,12 @@
 :host {
     display: block;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-    color: #f5f5f7;
+    color: #0F172A;
 }
 
 .tb-form {
-    background: #111;
-    border: 1px solid rgba(255,255,255,0.07);
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
     border-radius: 16px;
     padding: 1.75rem 1.75rem 2rem;
 }
@@ -14,7 +14,7 @@
 .tb-form-heading {
     font-size: 20px;
     font-weight: 700;
-    color: #f5f5f7;
+    color: #0F172A;
     margin: 0 0 1.5rem;
     letter-spacing: -0.02em;
 }
@@ -29,7 +29,7 @@
     display: block;
     font-size: 11px;
     font-weight: 600;
-    color: #86868b;
+    color: #334155;
     margin-bottom: 0.4rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -39,23 +39,23 @@
     width: 100%;
     height: 44px;
     padding: 0 0.9rem;
-    background: #1a1a1a;
-    border: 1px solid rgba(255,255,255,0.1);
+    background: #FFFFFF;
+    border: 1px solid #CBD5E1;
     border-radius: 8px;
     font-size: 14px;
     font-family: inherit;
-    color: #f5f5f7;
+    color: #0F172A;
     box-sizing: border-box;
     transition: border-color 0.2s;
 }
 
 .tb-field input::placeholder {
-    color: #5c5c5e;
+    color: #94A3B8;
 }
 
 .tb-field input:focus {
     outline: none;
-    border-color: #00c8ff;
+    border-color: #2563EB;
 }
 
 .tb-field-row {
@@ -64,13 +64,13 @@
 }
 
 .tb-error {
-    color: #ff453a;
+    color: #B91C1C;
     font-size: 12px;
     margin: 0.3rem 0 0;
 }
 
 .tb-required {
-    color: #ff453a;
+    color: #DC2626;
 }
 
 .tb-form-actions {
@@ -81,8 +81,8 @@
 }
 
 .tb-btn-primary {
-    background: #f5f5f7;
-    color: #000;
+    background: #2563EB;
+    color: #fff;
     border: none;
     border-radius: 980px;
     padding: 0.75rem 1.75rem;
@@ -93,29 +93,29 @@
     transition: background 0.2s, transform 0.15s;
 }
 
-.tb-btn-primary:hover { background: #e0e0e2; transform: scale(1.01); }
+.tb-btn-primary:hover { background: #1D4ED8; transform: scale(1.01); }
 
 .tb-btn-primary:disabled {
-    background: #2a2a2a;
-    color: #86868b;
+    background: #CBD5E1;
+    color: #64748B;
     cursor: not-allowed;
     transform: none;
 }
 
 .tb-btn-secondary {
-    background: transparent;
-    color: #f5f5f7;
-    border: 1px solid rgba(255,255,255,0.15);
+    background: #FFFFFF;
+    color: #0F172A;
+    border: 1px solid #CBD5E1;
     border-radius: 980px;
     padding: 0.75rem 1.75rem;
     font-size: 14px;
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
-    transition: border-color 0.2s, color 0.2s;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
 
-.tb-btn-secondary:hover { border-color: #00c8ff; color: #00c8ff; }
+.tb-btn-secondary:hover { border-color: #2563EB; background: #EFF6FF; }
 
 @media (max-width: 600px) {
     /* Kept side-by-side (City/State, Postal/Country) rather than

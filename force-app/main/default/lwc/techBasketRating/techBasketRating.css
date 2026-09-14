@@ -1,5 +1,5 @@
 :host {
-    --tb-muted: #666666;
+    --tb-muted: #64748B;
 
     display: inline-block;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -18,15 +18,15 @@
 }
 
 .tb-star {
-    color: #d9d9d9;
+    color: #E2E8F0;
 }
 
 .tb-star-filled {
-    color: #ffb400;
+    color: #F59E0B;
 }
 
 .tb-star-half {
-    background: linear-gradient(90deg, #ffb400 50%, #d9d9d9 50%);
+    background: linear-gradient(90deg, #F59E0B 50%, #E2E8F0 50%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;

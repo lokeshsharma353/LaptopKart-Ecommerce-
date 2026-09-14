@@ -1,14 +1,16 @@
 :host {
-    --tb-primary: #0066cc;
-    --tb-secondary: #00a86b;
-    --tb-text: #333333;
-    --tb-danger: #e74c3c;
+    --tb-primary: #2563EB;
+    --tb-secondary: #16A34A;
+    --tb-text: #0F172A;
+    --tb-danger: #DC2626;
     --tb-white: #ffffff;
-    --tb-muted: #666666;
-    --tb-background: #f5f5f5;
+    --tb-muted: #64748B;
+    --tb-background: #F8FAFC;
 
     display: block;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--tb-background);
+    min-height: 100vh;
 }
 
 .tb-contact-page {
@@ -20,7 +22,7 @@
 .tb-page-title {
     font-size: 28px;
     font-weight: 700;
-    color: var(--tb-primary);
+    color: var(--tb-text);
     margin: 0 0 1.5rem;
 }
 
@@ -34,8 +36,8 @@
     flex: 1;
     min-width: 0;
     background: var(--tb-white);
-    border-radius: 8px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
     padding: 1.5rem;
 }
 
@@ -50,21 +52,21 @@
 .tb-support-card,
 .tb-faq-card {
     background: var(--tb-white);
-    border-radius: 8px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
     padding: 1.5rem;
 }
 
 .tb-support-card p {
     font-size: 13px;
-    color: var(--tb-text);
+    color: #475569;
     margin: 0.4rem 0;
 }
 
 .tb-section-heading {
     font-size: 18px;
     font-weight: 700;
-    color: var(--tb-primary);
+    color: var(--tb-text);
     margin: 0 0 1rem;
 }
 
@@ -76,7 +78,7 @@
     display: block;
     font-size: 13px;
     font-weight: 600;
-    color: var(--tb-text);
+    color: #334155;
     margin-bottom: 0.4rem;
 }
 
@@ -84,12 +86,15 @@
 .tb-field textarea {
     width: 100%;
     padding: 0.6rem 0.75rem;
-    border: 1px solid #dddddd;
+    border: 1px solid #CBD5E1;
     border-radius: 6px;
     font-size: 14px;
     font-family: inherit;
+    color: var(--tb-text);
     box-sizing: border-box;
+    transition: border-color 0.2s;
 }
+.tb-field input:focus, .tb-field textarea:focus { outline: none; border-color: var(--tb-primary); }
 
 .tb-field input {
     height: 40px;
@@ -121,7 +126,9 @@
     font-weight: 600;
     font-family: inherit;
     cursor: pointer;
+    transition: background 0.2s;
 }
+.tb-btn-primary:hover { background: #1D4ED8; }
 
 .tb-btn-secondary {
     background: var(--tb-white);
@@ -134,11 +141,13 @@
     font-family: inherit;
     cursor: pointer;
     margin-top: 0.75rem;
+    transition: background 0.2s;
 }
+.tb-btn-secondary:hover { background: #EFF6FF; }
 
 .tb-faq {
     padding: 0.75rem 0;
-    border-bottom: 1px solid var(--tb-background);
+    border-bottom: 1px solid #E2E8F0;
 }
 
 .tb-faq-question {

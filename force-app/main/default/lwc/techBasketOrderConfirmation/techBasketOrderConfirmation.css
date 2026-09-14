@@ -1,15 +1,15 @@
 :host {
     display: block;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-    background: #000;
+    background: #F8FAFC;
     min-height: 100vh;
-    color: #f5f5f7;
+    color: #0F172A;
 }
 
 .tb-loading {
     text-align: center;
     padding: 5rem 1rem;
-    color: #86868b;
+    color: #64748B;
     font-size: 15px;
 }
 
@@ -35,8 +35,8 @@
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
-    background: #111;
-    border: 1px solid rgba(255,255,255,0.07);
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
     border-radius: 14px;
     padding: 1rem 1.1rem;
     text-align: left;
@@ -47,18 +47,17 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #86868b;
+    color: #64748B;
 }
 
 .tb-stat-value {
     font-size: 16px;
     font-weight: 700;
-    color: #f5f5f7;
+    color: #0F172A;
 }
 
 /* ── Content grid: items on the left, payment + shipping stacked as
-   separate cards on the right — same colors/tokens as before, just
-   restructured. ── */
+   separate cards on the right ── */
 .tb-content-grid {
     display: grid;
     grid-template-columns: 1fr 360px;
@@ -95,11 +94,12 @@
     .tb-btn-primary, .tb-btn-secondary { width: 100%; text-align: center; }
 }
 
+/* Success — green per spec (only used to communicate success). */
 .tb-check-mark {
     width: 72px;
     height: 72px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #00c8ff, #7b2ff7);
+    background: #16A34A;
     color: #fff;
     font-size: 30px;
     display: flex;
@@ -108,8 +108,9 @@
     margin: 0 auto 1.5rem;
 }
 
+/* Pending — warning amber, payment not yet confirmed. */
 .tb-check-mark-pending {
-    background: linear-gradient(135deg, #ff9f0a, #ff6b00);
+    background: #F59E0B;
     animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
 }
 @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -117,20 +118,20 @@
 .tb-heading {
     font-size: 28px;
     font-weight: 700;
-    color: #f5f5f7;
+    color: #0F172A;
     margin: 0 0 0.5rem;
     letter-spacing: -0.025em;
 }
 
 .tb-subheading {
     font-size: 14px;
-    color: #86868b;
+    color: #64748B;
     margin: 0 0 2.5rem;
 }
 
 .tb-progress-section {
-    background: #111;
-    border: 1px solid rgba(255,255,255,0.07);
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
     border-radius: 14px;
     padding: 1rem 1.25rem 0.25rem;
     margin-bottom: 2rem;
@@ -138,8 +139,8 @@
 
 .tb-card {
     text-align: left;
-    background: #111;
-    border: 1px solid rgba(255,255,255,0.07);
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
     border-radius: 14px;
     padding: 1.5rem;
 }
@@ -147,7 +148,7 @@
 .tb-section-heading {
     font-size: 16px;
     font-weight: 600;
-    color: #f5f5f7;
+    color: #0F172A;
     margin: 0 0 1rem;
     letter-spacing: -0.01em;
 }
@@ -162,12 +163,12 @@
     text-align: left;
     padding: 0.65rem 0;
     font-size: 13px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    color: #d1d1d6;
+    border-bottom: 1px solid #F1F5F9;
+    color: #475569;
 }
 
 .tb-items-table th {
-    color: #86868b;
+    color: #64748B;
     font-weight: 600;
     font-size: 11px;
     text-transform: uppercase;
@@ -177,11 +178,11 @@
 .tb-items-table tfoot td {
     border-bottom: none;
     padding-top: 0.85rem;
-    color: #86868b;
+    color: #64748B;
     font-weight: 600;
 }
 .tb-items-table tfoot tr:last-child td {
-    color: #f5f5f7;
+    color: #0F172A;
     font-size: 15px;
     font-weight: 700;
 }
@@ -190,9 +191,9 @@
     display: flex;
     justify-content: space-between;
     font-size: 14px;
-    color: #86868b;
+    color: #64748B;
     padding: 0.55rem 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid #F1F5F9;
 }
 .tb-detail-row:last-child { border-bottom: none; }
 
@@ -208,13 +209,13 @@
 
 .tb-detail-value {
     font-weight: 600;
-    color: #f5f5f7;
+    color: #0F172A;
 }
 
 .tb-link-btn {
     background: none;
     border: none;
-    color: #00c8ff;
+    color: #2563EB;
     font-weight: 600;
     cursor: pointer;
     font-family: inherit;
@@ -238,10 +239,11 @@
     }
 }
 
+/* Track Order — primary blue. */
 .tb-btn-primary {
     width: auto;
-    background: #f5f5f7;
-    color: #000;
+    background: #2563EB;
+    color: #fff;
     border: none;
     border-radius: 980px;
     padding: 0.75rem 1.75rem;
@@ -252,27 +254,28 @@
     transition: background 0.2s;
     box-sizing: border-box;
 }
-.tb-btn-primary:hover { background: #e0e0e2; }
+.tb-btn-primary:hover { background: #1D4ED8; }
 
+/* Continue Shopping — secondary dark navy, per the global button standard. */
 .tb-btn-secondary {
     width: auto;
-    background: transparent;
-    color: #f5f5f7;
-    border: 1px solid rgba(255,255,255,0.15);
+    background: #0F172A;
+    color: #fff;
+    border: none;
     border-radius: 980px;
     padding: 0.75rem 1.75rem;
     font-size: 14px;
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
-    transition: border-color 0.2s;
+    transition: background 0.2s;
     box-sizing: border-box;
 }
-.tb-btn-secondary:hover { border-color: #00c8ff; color: #00c8ff; }
+.tb-btn-secondary:hover { background: #1E293B; }
 
 .tb-not-found {
     text-align: center;
     padding: 6rem 1rem;
-    color: #86868b;
+    color: #64748B;
     font-size: 16px;
 }
