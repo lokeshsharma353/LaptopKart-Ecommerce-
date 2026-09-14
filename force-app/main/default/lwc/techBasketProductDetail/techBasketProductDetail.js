@@ -5,7 +5,8 @@ import { addItem, getItemQuantity, updateQuantity } from 'c/cartService';
 import { showToast } from 'c/toastService';
 import { isWishlisted, toggleWishlist } from 'c/wishlistService';
 import { getBrandForProduct, getProductImages } from 'c/brandService';
-import { getCheckoutRef } from 'c/navigationService';
+import { getCheckoutRef, getAccountRef } from 'c/navigationService';
+import { isLoggedIn } from 'c/authService';
 
 /** Mock reviews — a real Salesforce review object is not in scope for this project. */
 const MOCK_REVIEWS = [
@@ -248,14 +249,23 @@ export default class TechBasketProductDetail extends NavigationMixin(LightningEl
     }
 
     /**
-     * Buys this product right now at the currently selected quantity, then
-     * jumps straight to Checkout. Syncs the cart to exactly `this.quantity`
-     * rather than always adding on top of it — so if the product is already
-     * in the cart (e.g. added earlier, or the shopper bumped the quantity
-     * selector up before clicking) Buy Now reflects that exact quantity
-     * instead of double-counting or silently resetting it back to 1.
+     * Buys this product right now at the currently selected quantity. Checks
+     * login FIRST — if nobody's logged in, bounces to the Account page
+     * without touching the cart at all, so a guest clicking "Buy Now" while
+     * browsing never silently ends up with products in their cart they don't
+     * remember adding. Only once logged in does it sync the cart to exactly
+     * `this.quantity` rather than always adding on top of it — so if the
+     * product is already in the cart (e.g. added earlier, or the shopper
+     * bumped the quantity selector up before clicking) Buy Now reflects that
+     * exact quantity instead of double-counting or silently resetting it
+     * back to 1 — then jumps straight to Checkout.
      */
     handleBuyNow() {
+        if (!isLoggedIn()) {
+            showToast('Please log in to continue.', 'info');
+            this[NavigationMixin.Navigate](getAccountRef());
+            return;
+        }
         const existingQuantity = getItemQuantity(this.product.productId);
         if (existingQuantity === 0) {
             addItem(this.product, this.quantity);

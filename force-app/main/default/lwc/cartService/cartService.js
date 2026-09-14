@@ -1,7 +1,68 @@
+import { getSession, subscribe as subscribeToAuth } from 'c/authService';
+import updateCartSnapshot from '@salesforce/apex/LoginCredentialsController.updateCartSnapshot';
+import logCartActivity from '@salesforce/apex/LoginCredentialsController.logCartActivity';
+
 /** localStorage key used to persist the cart across page navigations. */
 const STORAGE_KEY = 'techbasket_cart';
 /** Set of subscriber callbacks notified on every cart mutation. */
 const listeners = new Set();
+
+/**
+ * Mirrors the cart onto the logged-in shopper's Login_Credentials__c record
+ * (Cart_Items__c) so an admin can see their live cart on the account
+ * record. A no-op for guests (nobody's account to mirror onto yet) — cart
+ * stays local-only exactly as before until they log in. Fire-and-forget:
+ * failures are swallowed so a sync hiccup never blocks actual shopping.
+ * @param {Array} items - current cart items array
+ */
+function syncCartToAccount(items) {
+    const session = getSession();
+    if (!session || !session.id) {
+        return;
+    }
+    const cartSummary = items.length === 0
+        ? '(cart is empty)'
+        : items
+            .map((i) => `${i.productName} — Qty ${i.quantity} (₹${i.price} each)`)
+            .join('\n') +
+          `\n\nCart Total: ₹${items.reduce((sum, i) => sum + i.price * i.quantity, 0)}`;
+
+    updateCartSnapshot({ loginCredentialsId: session.id, cartSummary })
+        .catch(() => { /* best-effort mirror only */ });
+}
+
+/**
+ * Records one row of permanent cart history (Cart_Activity__c) for a single
+ * add/remove/clear action. A no-op for guests, same as syncCartToAccount —
+ * only logged-in shoppers have an account record to attach history to.
+ * @param {string} action - 'Added' | 'Removed' | 'Cart Cleared'
+ * @param {string} productName
+ * @param {number} quantity - how many units this specific action involved
+ * @param {number} price - price per unit, or null if not applicable
+ */
+function logActivity(action, productName, quantity, price) {
+    const session = getSession();
+    if (!session || !session.id) {
+        return;
+    }
+    logCartActivity({
+        loginCredentialsId: session.id,
+        action,
+        productName,
+        quantity,
+        price: price == null ? null : price
+    }).catch(() => { /* best-effort history only */ });
+}
+
+// Syncs the current cart the moment a shopper logs in, so items added
+// while browsing as a guest (before Cart_Items__c had anywhere to mirror
+// to) show up on their account immediately, not just after their next
+// add/remove.
+subscribeToAuth((session) => {
+    if (session) {
+        syncCartToAccount(readCart());
+    }
+});
 
 /**
  * Reads the cart from localStorage.
@@ -29,6 +90,7 @@ function writeCart(items) {
         // storage unavailable — state stays in-memory for this session
     }
     listeners.forEach((cb) => cb(items));
+    syncCartToAccount(items);
 }
 
 /**
@@ -76,6 +138,7 @@ export function addItem(product, quantity) {
         items.push({ productId: product.productId, productName: product.productName, price: product.price, quantity });
     }
     writeCart(items);
+    logActivity('Added', product.productName, quantity, product.price);
     return items;
 }
 
@@ -88,8 +151,18 @@ export function addItem(product, quantity) {
 export function updateQuantity(productId, quantity) {
     const items = readCart();
     const item = items.find((i) => i.productId === productId);
-    if (item) { item.quantity = quantity; }
-    writeCart(items);
+    if (item) {
+        const delta = quantity - item.quantity;
+        item.quantity = quantity;
+        writeCart(items);
+        if (delta > 0) {
+            logActivity('Added', item.productName, delta, item.price);
+        } else if (delta < 0) {
+            logActivity('Removed', item.productName, Math.abs(delta), item.price);
+        }
+    } else {
+        writeCart(items);
+    }
     return items;
 }
 
@@ -99,8 +172,13 @@ export function updateQuantity(productId, quantity) {
  * @returns {Array} updated cart items array
  */
 export function removeItem(productId) {
-    const items = readCart().filter((i) => i.productId !== productId);
+    const all = readCart();
+    const removed = all.find((i) => i.productId === productId);
+    const items = all.filter((i) => i.productId !== productId);
     writeCart(items);
+    if (removed) {
+        logActivity('Removed', removed.productName, removed.quantity, removed.price);
+    }
     return items;
 }
 
@@ -109,7 +187,12 @@ export function removeItem(productId) {
  * @returns {Array} empty array
  */
 export function clearCart() {
+    const items = readCart();
     writeCart([]);
+    if (items.length > 0) {
+        const totalUnits = items.reduce((sum, i) => sum + i.quantity, 0);
+        logActivity('Cart Cleared', `${items.length} product(s), ${totalUnits} unit(s)`, totalUnits, null);
+    }
     return [];
 }
 

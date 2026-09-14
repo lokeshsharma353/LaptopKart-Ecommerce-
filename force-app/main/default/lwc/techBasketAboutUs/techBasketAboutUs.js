@@ -6,10 +6,10 @@ import TANISHQ_PHOTO from '@salesforce/resourceUrl/DevTanishq';
 
 /** Company stats shown in the stats grid section. */
 const STATS = [
-    { label: 'Products',        value: '500+' },
-    { label: 'Happy Customers', value: '50K+' },
+    { label: 'Products',        value: '50+' },
+    { label: 'Happy Customers', value: '100+' },
     { label: 'Cities Served',   value: '120+' },
-    { label: 'Years Running',   value: '5+'   }
+    { label: 'Years Running',   value: '1+'   }
 ];
 
 /** Company values shown in the values grid section. */

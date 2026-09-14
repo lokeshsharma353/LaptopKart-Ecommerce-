@@ -219,7 +219,8 @@ These came with the Experience Cloud site template and back the *native* Salesfo
 
 | Object | Purpose |
 |---|---|
-| `Login_Credentials__c` (custom) | LaptopKart's own login system — email, plain-text password, name, phone |
+| `Login_Credentials__c` (custom) | LaptopKart's own login system — email, plain-text password, name, phone, and `Cart_Items__c` (a live mirror of that shopper's cart, auto-updated by `cartService.js` on every add/remove/quantity change and on login) |
+| `Cart_Activity__c` (custom) | Permanent, append-only history of every cart change — one record per add/remove/clear action (Action, Product Name, Quantity, Price, timestamped by CreatedDate), linked to the shopper's `Login_Credentials__c` record. Shows under that record's Related list. Logged by `LoginCredentialsController.logCartActivity`, called from `cartService.js` alongside the snapshot sync. |
 | `Contact_Us__c` (custom) | Every Contact Us form submission |
 | `Order_Tracking__c` (custom) | Delivery status per Order |
 | `Payment__c` (custom) | One row per payment attempt against an Order |

@@ -154,23 +154,23 @@ export default class TechBasketProductCard extends NavigationMixin(LightningElem
     }
 
     /**
-     * Buys this product right now: ensures at least 1 unit is in the cart
-     * (without touching the quantity if it's already there — the shopper may
-     * have already bumped it up via the +/- stepper, and Buy Now must carry
-     * that quantity through, not reset it), then jumps straight to Checkout —
-     * or to the Account page to log in first if nobody's logged in yet. The
-     * Checkout page itself also gates on this (the authoritative check, for
-     * shoppers who reach it via the cart instead), so this is purely to skip
-     * a wasted navigate-then-bounce for the common Buy Now path.
+     * Buys this product right now. Checks login FIRST — if nobody's logged
+     * in, bounces to the Account page to log in without touching the cart at
+     * all, so a guest clicking "Buy Now" while browsing never silently ends
+     * up with products in their cart they don't remember adding. Only once
+     * logged in does it ensure at least 1 unit is in the cart (without
+     * touching the quantity if it's already there — the shopper may have
+     * already bumped it up via the +/- stepper, and Buy Now must carry that
+     * quantity through, not reset it), then jumps straight to Checkout.
      */
     handleBuyNow() {
-        if (this.cartQuantity === 0) {
-            addItem(this.product, 1);
-        }
         if (!isLoggedIn()) {
             showToast('Please log in to continue.', 'info');
             this[NavigationMixin.Navigate](getAccountRef());
             return;
+        }
+        if (this.cartQuantity === 0) {
+            addItem(this.product, 1);
         }
         this[NavigationMixin.Navigate](getCheckoutRef());
     }

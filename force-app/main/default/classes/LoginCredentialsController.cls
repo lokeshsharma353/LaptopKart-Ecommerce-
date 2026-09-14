@@ -154,6 +154,56 @@ public without sharing class LoginCredentialsController {
         Database.insert(reminderTask, AccessLevel.SYSTEM_MODE);
     }
 
+    // Mirrors the shopper's live cart (see cartService.js) onto their
+    // Login_Credentials__c record's Cart_Items__c field — called on every
+    // cart change (add/remove/quantity change) and once right after login,
+    // so an admin looking at the record always sees what's actually in the
+    // shopper's cart, live. Deliberately best-effort: swallows any failure
+    // rather than throwing, because this is a background mirror, not
+    // something that should ever block or error out the shopping flow.
+    @AuraEnabled
+    public static void updateCartSnapshot(Id loginCredentialsId, String cartSummary) {
+        if (loginCredentialsId == null) {
+            return;
+        }
+        try {
+            Database.update(
+                new Login_Credentials__c(
+                    Id = loginCredentialsId,
+                    Cart_Items__c = cartSummary
+                ),
+                AccessLevel.SYSTEM_MODE
+            );
+        } catch (Exception e) {
+            System.debug(LoggingLevel.WARN, 'Cart snapshot mirror failed: ' + e.getMessage());
+        }
+    }
+
+    // Records one row of cart history (see Cart_Activity__c) every time a
+    // shopper adds, removes, or clears something from their cart — called
+    // alongside updateCartSnapshot by cartService.js. Cart_Items__c above
+    // only ever shows the CURRENT cart; this is the permanent, append-only
+    // log of every change that ever happened to it, one record per action,
+    // timestamped by CreatedDate. Same best-effort reasoning as
+    // updateCartSnapshot: never blocks or errors out the shopping flow.
+    @AuraEnabled
+    public static void logCartActivity(Id loginCredentialsId, String action, String productName, Decimal quantity, Decimal price) {
+        if (loginCredentialsId == null || String.isBlank(action)) {
+            return;
+        }
+        try {
+            Cart_Activity__c activity = new Cart_Activity__c();
+            activity.Login_Credentials__c = loginCredentialsId;
+            activity.Action__c = action;
+            activity.Product_Name__c = productName;
+            activity.Quantity__c = quantity;
+            activity.Price__c = price;
+            Database.insert(activity, AccessLevel.SYSTEM_MODE);
+        } catch (Exception e) {
+            System.debug(LoggingLevel.WARN, 'Cart activity log failed: ' + e.getMessage());
+        }
+    }
+
     // Same admin-resolution pattern as CheckoutController.getDefaultOwnerId —
     // duplicated rather than shared, since that method is private to a
     // different class and this is only a few lines.
