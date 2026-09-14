@@ -16,7 +16,7 @@ import {
     EMAIL_PATTERN, PHONE_PATTERN, NAME_PATTERN,
     EMAIL_ERROR, PHONE_ERROR, NAME_ERROR, sanitizePhoneInput
 } from 'c/formValidators';
-import APP_LOGO from '@salesforce/resourceUrl/AppLogo';
+import LOGIN_LOGO from '@salesforce/resourceUrl/LapkartLogoWhite';
 
 /**
  * TechBasketMyAccount — the Account page.
@@ -33,8 +33,8 @@ import APP_LOGO from '@salesforce/resourceUrl/AppLogo';
  * instead of made-up saved cards or reviews.
  */
 export default class TechBasketMyAccount extends NavigationMixin(LightningElement) {
-    /** The real LaptopKart brand logo (LK monogram + wordmark), shown on the logged-out auth card. */
-    logoUrl = APP_LOGO;
+    /** The white LaptopKart brand logo, shown on the logged-out login/sign-up auth card. */
+    logoUrl = LOGIN_LOGO;
 
     /** Current session ({ id, name, email, phone }), or null when logged out. */
     @track session = null;
