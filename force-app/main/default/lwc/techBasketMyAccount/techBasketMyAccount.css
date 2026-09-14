@@ -27,17 +27,11 @@
     text-align: center;
 }
 
-/* Navy backdrop behind the logo — the logo artwork itself is white, so it
-   needs a dark panel to actually be visible now that the page/card
-   background is white too. Matches the same navy used by the header/footer. */
 .tb-auth-brandmark {
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 1rem;
-    background: #0F172A;
-    border-radius: 20px;
-    padding: 1.5rem;
 }
 
 .tb-auth-logo-img {
@@ -220,7 +214,6 @@
     .tb-page-title { font-size: 22px; margin-bottom: 1.25rem; }
 
     .tb-auth-shell { margin-top: 1rem; }
-    .tb-auth-brandmark { padding: 1rem; border-radius: 16px; }
     .tb-auth-logo-img { height: 120px; }
     .tb-auth-title { font-size: 21px; }
     .tb-auth-card { padding: 1.25rem; }
