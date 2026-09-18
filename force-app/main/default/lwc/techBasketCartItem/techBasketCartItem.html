@@ -7,10 +7,12 @@
         <div class="tb-item-info">
             <button class="tb-item-name" onclick={handleViewProduct}>{item.productName}</button>
             <div class="tb-item-price">&#8377;{item.price} each</div>
+            <button class="tb-item-save-later" onclick={handleSaveForLater}>Save for Later</button>
         </div>
 
         <c-tech-basket-quantity-selector
             quantity={item.quantity}
+            max-quantity={maxQuantity}
             onchange={handleQuantityChange}
         ></c-tech-basket-quantity-selector>
 

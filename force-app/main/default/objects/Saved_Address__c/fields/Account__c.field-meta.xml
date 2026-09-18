@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Account__c</fullName>
+    <externalId>false</externalId>
+    <label>Customer Account</label>
+    <referenceTo>Account</referenceTo>
+    <relationshipLabel>Saved Addresses</relationshipLabel>
+    <relationshipName>Saved_Addresses</relationshipName>
+    <required>true</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+    <deleteConstraint>Cascade</deleteConstraint>
+    <description>The customer this delivery address belongs to — the storefront's My Account "Saved Addresses" section only ever shows/edits addresses scoped to the logged-in shopper's own Account.Id.</description>
+</CustomField>

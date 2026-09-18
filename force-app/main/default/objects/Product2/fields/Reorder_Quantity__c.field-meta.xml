@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Reorder_Quantity__c</fullName>
+    <externalId>false</externalId>
+    <label>Reorder Quantity</label>
+    <precision>18</precision>
+    <scale>0</scale>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+    <description>How many units to reorder from Primary_Vendor__c when restocking this product. Only meaningful once a Purchase Order workflow exists (a later phase) — kept on Product2 now so restock planning has somewhere to live without waiting on that workflow.</description>
+</CustomField>

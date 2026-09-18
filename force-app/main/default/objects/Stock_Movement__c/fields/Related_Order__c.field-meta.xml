@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Related_Order__c</fullName>
+    <externalId>false</externalId>
+    <label>Related Order</label>
+    <referenceTo>Order</referenceTo>
+    <relationshipLabel>Stock Movements</relationshipLabel>
+    <relationshipName>Stock_Movements</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>Set for Sale and Cancellation movements — which order caused this stock change. Blank for Restock/Adjustment movements.</description>
+</CustomField>

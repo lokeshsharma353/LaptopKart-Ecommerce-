@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Price__c</fullName>
+    <externalId>false</externalId>
+    <label>Price</label>
+    <precision>16</precision>
+    <scale>2</scale>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Currency</type>
+    <description>The real, editable source of truth for this product's price — read directly by ProductCatalogController (storefront display) and CheckoutController (server-side re-pricing at checkout). Synced once from the Standard Price Book's PricebookEntry.UnitPrice; PricebookEntry itself is still required by the platform (OpportunityLineItem/OrderItem both mandate a PricebookEntryId), but its UnitPrice value no longer drives what's actually charged — edit Price__c instead.</description>
+</CustomField>

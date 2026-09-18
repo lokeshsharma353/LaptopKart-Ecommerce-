@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Product__c</fullName>
+    <externalId>false</externalId>
+    <label>Product</label>
+    <referenceTo>Product2</referenceTo>
+    <relationshipLabel>Stock Movements</relationshipLabel>
+    <relationshipName>Stock_Movements</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>Which product this movement changed the stock of. Not enforced as schema-required because Product2 doesn't allow a Restrict/Cascade delete constraint on lookups pointing to it (a platform rule, not a choice made here) — the only delete constraint Salesforce accepts here is SetNull, which in turn cannot be combined with required=true. InventoryService always populates this on every row it creates regardless.</description>
+</CustomField>

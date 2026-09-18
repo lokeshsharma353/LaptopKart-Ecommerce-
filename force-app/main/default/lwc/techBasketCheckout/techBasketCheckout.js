@@ -22,6 +22,8 @@ export default class TechBasketCheckout extends NavigationMixin(LightningElement
     @track shippingAddress = null;
     /** Billing address collected from techBasketBillingForm (null if same as shipping). */
     @track billingAddress = null;
+    /** Currently selected shipping method (live — updates as the shopper clicks between options on the Shipping Method step, before "Next" is pressed). Defaults to Standard/free, matching that step's own default selection. */
+    @track selectedShippingMethod = { id: 'standard', price: 0 };
 
     /** Cart items snapshot — used to detect an empty cart on load. */
     items = [];
@@ -35,7 +37,7 @@ export default class TechBasketCheckout extends NavigationMixin(LightningElement
     }
 
     /**
-     * True when nobody is logged in via the custom Login_Credentials__c
+     * True when nobody is logged in via the custom Account-based login
      * system (see authService) — checkout requires an account so the order
      * can be tied to it and the shipping address saved to it. Checked ahead
      * of the empty-cart state so an unauthenticated shopper always sees
@@ -45,6 +47,10 @@ export default class TechBasketCheckout extends NavigationMixin(LightningElement
 
     /** True when the cart is empty — shows the empty-cart notice. */
     get isEmptyCart()        { return this.items.length === 0; }
+    /** Cost of the currently selected shipping method — feeds the sidebar total live, before the shopper even reaches Payment. */
+    get currentShippingCost() {
+        return this.selectedShippingMethod ? this.selectedShippingMethod.price : 0;
+    }
     /** True when the Shipping step is active. */
     get isShippingStep()     { return this.step === 'shipping'; }
     /** True when the Billing step is active. */
@@ -118,6 +124,17 @@ export default class TechBasketCheckout extends NavigationMixin(LightningElement
      */
     handleShippingMethodBack() {
         this.step = this.shippingAddress && !this.shippingAddress.useSameForBilling ? 'billing' : 'shipping';
+    }
+
+    /**
+     * Handles the live "select" event from techBasketShippingMethod, fired
+     * on every click (and once on load for the default) — keeps the sidebar
+     * total in sync with whichever delivery option is currently highlighted,
+     * not just the one eventually confirmed via "Next".
+     * @param {CustomEvent} event - detail contains the currently selected shipping method
+     */
+    handleShippingMethodSelect(event) {
+        this.selectedShippingMethod = event.detail;
     }
 
     /**

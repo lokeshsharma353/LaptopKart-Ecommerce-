@@ -1,0 +1,67 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Order Tracking",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"84f4b5c4-4706-4b12-a364-069c78c518d5\",\"columns\":[{\"UUID\":\"f0361436-3cf0-421e-aaea-41a344bc3de2\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : { },
+              "definition" : "c:techBasketOrderTracking",
+              "id" : "dc0dadf5-9ff2-4c7d-b9ef-1e8410453b30",
+              "type" : "component"
+            } ],
+            "id" : "f0361436-3cf0-421e-aaea-41a344bc3de2",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "84f4b5c4-4706-4b12-a364-069c78c518d5",
+          "type" : "component"
+        } ],
+        "id" : "40f56a2d-40c1-4d25-8b7c-4a07839fb243",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "pageTitle" : "Order Tracking",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "1469f555-59b0-4013-8ecb-dca6129c5a53",
+          "type" : "component"
+        } ],
+        "id" : "e4354438-fb90-42bf-af05-ef09c922406a",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "e0dca567-c9fa-43f5-98f7-bae38b958a9b",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-order-tracking"
+  },
+  "urlName" : "order-tracking"
+}

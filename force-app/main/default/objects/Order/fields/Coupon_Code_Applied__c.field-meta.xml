@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Coupon_Code_Applied__c</fullName>
+    <externalId>false</externalId>
+    <label>Coupon Code Applied</label>
+    <length>30</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+    <description>Display convenience — the coupon code text applied to this order, if any, without having to traverse the CampaignMember redemption row. Blank when no coupon was used.</description>
+</CustomField>

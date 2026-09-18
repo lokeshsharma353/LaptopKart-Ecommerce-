@@ -1,6 +1,7 @@
 import getOrders from '@salesforce/apex/CheckoutController.getOrders';
 import getOrdersByEmail from '@salesforce/apex/CheckoutController.getOrdersByEmail';
 import cancelOrderApex from '@salesforce/apex/CheckoutController.cancelOrder';
+import { getSession } from 'c/authService';
 
 /**
  * orderService — tracks which Salesforce Order Ids this browser has placed.
@@ -80,15 +81,19 @@ function readEmail() {
 
 /**
  * Returns full order details for every website order placed by this shopper.
- * Prefers looking up by the last remembered checkout email (CheckoutController.
- * getOrdersByEmail), since that finds every order for this shopper regardless
- * of which browser/session placed it — then merges in any locally remembered
- * order ids not already covered (e.g. orders placed before email tracking
- * existed, or if local storage and the email happen to disagree).
+ * Prefers the actual logged-in session's email (authService) when one
+ * exists — a shopper who logged in on a new device/browser, or after
+ * clearing storage, still has a real Salesforce identity even though this
+ * browser never separately remembered a checkout email. Falls back to the
+ * last remembered checkout email for a guest with no session (the previous
+ * sole behavior), then merges in any locally remembered order ids not
+ * already covered (e.g. orders placed before email tracking existed, or if
+ * local storage and the email happen to disagree).
  * @returns {Promise<Array>} resolves to an array of OrderSummary objects
  */
 export function getMyOrders() {
-    const email = readEmail();
+    const session = getSession();
+    const email = (session && session.email) || readEmail();
     const ids = readIds();
 
     if (!email) {

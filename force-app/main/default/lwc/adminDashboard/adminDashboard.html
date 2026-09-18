@@ -1,0 +1,230 @@
+<template>
+    <div class="admin-dashboard">
+        <div class="admin-header">
+            <div>
+                <h1 class="admin-title">Admin Dashboard</h1>
+                <p class="admin-subtitle">Store overview, discount campaigns, and offer emails — all in one place.</p>
+            </div>
+            <div class="admin-quick-actions">
+                <lightning-button label="Orders" icon-name="utility:record" onclick={handleGoToOrders} variant="neutral"></lightning-button>
+                <lightning-button label="Products" icon-name="utility:product" onclick={handleGoToProducts} variant="neutral"></lightning-button>
+                <lightning-button label="Accounts" icon-name="utility:company" onclick={handleGoToAccounts} variant="neutral"></lightning-button>
+                <lightning-button label="Campaigns" icon-name="utility:announcement" onclick={handleGoToCampaigns} variant="neutral"></lightning-button>
+                <lightning-button label="Coupon Codes" icon-name="utility:price_book_entries" onclick={handleGoToCoupons} variant="neutral"></lightning-button>
+                <lightning-button label="Order Trackings" icon-name="utility:trail" onclick={handleGoToOrderTrackings} variant="neutral"></lightning-button>
+            </div>
+        </div>
+
+        <!-- ═══════════════ KPI tiles ═══════════════ -->
+        <template if:true={isLoadingStats}>
+            <lightning-spinner alternative-text="Loading stats" size="small"></lightning-spinner>
+        </template>
+        <template if:false={isLoadingStats}>
+            <div class="admin-kpi-grid">
+                <div class="admin-kpi-tile">
+                    <span class="admin-kpi-label">Total Orders</span>
+                    <span class="admin-kpi-value">{stats.totalOrders}</span>
+                </div>
+                <div class="admin-kpi-tile">
+                    <span class="admin-kpi-label">Total Revenue</span>
+                    <span class="admin-kpi-value">&#8377;{revenueDisplay}</span>
+                </div>
+                <div class="admin-kpi-tile">
+                    <span class="admin-kpi-label">Customers</span>
+                    <span class="admin-kpi-value">{stats.totalCustomers}</span>
+                </div>
+                <div class="admin-kpi-tile">
+                    <span class="admin-kpi-label">Active Coupons</span>
+                    <span class="admin-kpi-value">{stats.activeCoupons}</span>
+                </div>
+                <div class="admin-kpi-tile">
+                    <span class="admin-kpi-label">Pending Returns</span>
+                    <span class={pendingReturnsClass}>{stats.pendingReturns}</span>
+                </div>
+                <div class="admin-kpi-tile">
+                    <span class="admin-kpi-label">Low Stock Products</span>
+                    <span class={lowStockClass}>{stats.lowStockProducts}</span>
+                </div>
+            </div>
+        </template>
+
+        <div class="admin-columns">
+            <!-- ═══════════════ Coupons & Campaigns ═══════════════ -->
+            <lightning-card title="Coupons & Campaigns" icon-name="standard:coupon" class="admin-card">
+                <div slot="actions">
+                    <lightning-button label={newCouponButtonLabel} onclick={handleToggleNewCouponForm} variant="brand"></lightning-button>
+                </div>
+
+                <div class="admin-card-body">
+                    <template if:true={showNewCouponForm}>
+                        <div class="admin-new-coupon-form">
+                            <div class="admin-form-row">
+                                <lightning-input label="Campaign Name" data-field="campaignName" value={couponForm.campaignName} onchange={handleCouponFormChange}></lightning-input>
+                                <lightning-input label="Coupon Code" data-field="couponCode" value={couponForm.couponCode} onchange={handleCouponFormChange} placeholder="e.g. NEW10"></lightning-input>
+                            </div>
+                            <div class="admin-form-row">
+                                <lightning-combobox label="Discount Type" data-field="discountType" value={couponForm.discountType} options={discountTypeOptions} onchange={handleCouponFormChange}></lightning-combobox>
+                                <lightning-input type="number" label="Discount Value" data-field="discountValue" value={couponForm.discountValue} onchange={handleCouponFormChange}></lightning-input>
+                            </div>
+                            <div class="admin-form-row">
+                                <lightning-input type="number" label="Minimum Order Value (optional)" data-field="minimumOrderValue" value={couponForm.minimumOrderValue} onchange={handleCouponFormChange}></lightning-input>
+                                <lightning-input type="number" label="Maximum Discount Amount (optional)" data-field="maximumDiscountAmount" value={couponForm.maximumDiscountAmount} onchange={handleCouponFormChange}></lightning-input>
+                            </div>
+                            <div class="admin-form-row">
+                                <lightning-input label="Eligible Category (optional)" data-field="eligibleCategory" value={couponForm.eligibleCategory} onchange={handleCouponFormChange} placeholder="e.g. Laptops — blank applies to whole cart"></lightning-input>
+                            </div>
+                            <div class="admin-form-row">
+                                <lightning-input type="date" label="Start Date (optional)" data-field="startDate" value={couponForm.startDate} onchange={handleCouponFormChange}></lightning-input>
+                                <lightning-input type="date" label="End Date (optional)" data-field="endDate" value={couponForm.endDate} onchange={handleCouponFormChange}></lightning-input>
+                            </div>
+                            <div class="admin-form-row">
+                                <lightning-input type="number" label="Max Uses Per Customer" data-field="maxUsesPerCustomer" value={couponForm.maxUsesPerCustomer} onchange={handleCouponFormChange}></lightning-input>
+                                <lightning-input type="number" label="Max Total Uses (optional)" data-field="maxTotalUses" value={couponForm.maxTotalUses} onchange={handleCouponFormChange}></lightning-input>
+                            </div>
+                            <lightning-button label="Create Coupon" variant="brand" onclick={handleCreateCoupon} disabled={isCreatingCoupon} class="admin-form-submit"></lightning-button>
+                        </div>
+                    </template>
+
+                    <template if:true={isLoadingCoupons}>
+                        <lightning-spinner alternative-text="Loading coupons" size="small"></lightning-spinner>
+                    </template>
+                    <template if:false={isLoadingCoupons}>
+                        <template if:true={hasCoupons}>
+                            <table class="admin-coupon-table">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Campaign</th>
+                                        <th>Discount</th>
+                                        <th>Redemptions</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={coupons} for:item="coupon">
+                                        <tr key={coupon.couponCodeId}>
+                                            <td class="admin-coupon-code">{coupon.code}</td>
+                                            <td>{coupon.campaignName}</td>
+                                            <td>{coupon.discountDisplay}</td>
+                                            <td>{coupon.totalRedemptions}</td>
+                                            <td><span class={coupon.statusClass}>{coupon.statusLabel}</span></td>
+                                            <td>
+                                                <lightning-button
+                                                    label={coupon.toggleLabel}
+                                                    variant="neutral"
+                                                    data-id={coupon.couponCodeId}
+                                                    data-active={coupon.isActive}
+                                                    onclick={handleToggleCouponActive}
+                                                ></lightning-button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </template>
+                        <template if:false={hasCoupons}>
+                            <p class="admin-empty-text">No coupons yet — create one above.</p>
+                        </template>
+                    </template>
+                </div>
+            </lightning-card>
+
+            <!-- ═══════════════ Offer email ═══════════════ -->
+            <lightning-card title="Send Offer Email" icon-name="standard:email" class="admin-card">
+                <div class="admin-card-body">
+                    <p class="admin-card-hint">Sends to every customer account with an email on file.</p>
+                    <lightning-input data-id="offerSubjectInput" label="Subject" required value={offerSubject} onchange={handleOfferSubjectChange}></lightning-input>
+                    <lightning-textarea data-id="offerBodyInput" label="Message" required value={offerBody} onchange={handleOfferBodyChange}></lightning-textarea>
+                    <lightning-button label={sendOfferButtonLabel} variant="brand" onclick={handleSendOffer} disabled={isSendingOffer} class="admin-form-submit"></lightning-button>
+                    <template if:true={offerResult}>
+                        <p class={offerResultClass}>{offerResult.message}</p>
+                    </template>
+                </div>
+            </lightning-card>
+        </div>
+
+        <div class="admin-columns">
+            <!-- ═══════════════ Recent Orders ═══════════════ -->
+            <lightning-card title="Recent Orders" icon-name="standard:orders" class="admin-card">
+                <div class="admin-card-body">
+                    <template if:true={isLoadingRecentOrders}>
+                        <lightning-spinner alternative-text="Loading orders" size="small"></lightning-spinner>
+                    </template>
+                    <template if:false={isLoadingRecentOrders}>
+                        <template if:true={hasRecentOrders}>
+                            <table class="admin-coupon-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Customer</th>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={recentOrders} for:item="order">
+                                        <tr key={order.orderId}>
+                                            <td class="admin-coupon-code">{order.orderNumber}</td>
+                                            <td>{order.customerName}</td>
+                                            <td>{order.orderDate}</td>
+                                            <td>&#8377;{order.amountDisplay}</td>
+                                            <td><span class={order.statusClass}>{order.status}</span></td>
+                                            <td>
+                                                <lightning-button label="View" variant="neutral" data-id={order.orderId} onclick={handleViewOrder}></lightning-button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </template>
+                        <template if:false={hasRecentOrders}>
+                            <p class="admin-empty-text">No orders yet.</p>
+                        </template>
+                    </template>
+                </div>
+            </lightning-card>
+
+            <!-- ═══════════════ Low Stock Products ═══════════════ -->
+            <lightning-card title="Low Stock Products" icon-name="standard:product_item" class="admin-card">
+                <div class="admin-card-body">
+                    <p class="admin-card-hint">Products at or below their reorder threshold.</p>
+                    <template if:true={isLoadingLowStock}>
+                        <lightning-spinner alternative-text="Loading products" size="small"></lightning-spinner>
+                    </template>
+                    <template if:false={isLoadingLowStock}>
+                        <template if:true={hasLowStockList}>
+                            <table class="admin-coupon-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Stock</th>
+                                        <th>Threshold</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={lowStockList} for:item="product">
+                                        <tr key={product.productId}>
+                                            <td>{product.productName}</td>
+                                            <td>{product.stockQuantity}</td>
+                                            <td>{product.reorderLevel}</td>
+                                            <td>
+                                                <lightning-button label="View" variant="neutral" data-id={product.productId} onclick={handleViewProduct}></lightning-button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </template>
+                        <template if:false={hasLowStockList}>
+                            <p class="admin-empty-text">Nothing low on stock right now.</p>
+                        </template>
+                    </template>
+                </div>
+            </lightning-card>
+        </div>
+    </div>
+</template>

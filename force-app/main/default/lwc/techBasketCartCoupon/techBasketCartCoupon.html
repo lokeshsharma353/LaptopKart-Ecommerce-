@@ -1,0 +1,39 @@
+<template>
+    <div class="tb-promo-card">
+        <div class="tb-promo-label-row">
+            <p class="tb-promo-label">Coupon Code</p>
+            <template if:true={showViewCouponsButton}>
+                <button type="button" class="tb-view-coupons-btn" onclick={handleToggleAvailableCoupons}>{viewCouponsLabel}</button>
+            </template>
+        </div>
+
+        <template if:true={appliedCouponCode}>
+            <div class="tb-applied-chip">
+                <span>&#127873; {appliedCouponCode} applied &mdash; &#8377;{discountDisplay} off</span>
+                <button type="button" onclick={handleRemoveCoupon}>Remove</button>
+            </div>
+        </template>
+
+        <template if:false={appliedCouponCode}>
+            <div class="tb-promo-row">
+                <input type="text" placeholder="Enter coupon code" value={couponInput} oninput={handleCouponInput} />
+                <button type="button" class="tb-btn-apply" onclick={handleApplyCoupon} disabled={isApplying}>Apply</button>
+            </div>
+
+            <template if:true={showAvailableCoupons}>
+                <div class="tb-available-coupons">
+                    <template for:each={availableCoupons} for:item="coupon">
+                        <button type="button" key={coupon.code} class="tb-coupon-chip" data-code={coupon.code} onclick={handleSelectAvailableCoupon} disabled={isApplying}>
+                            <span class="tb-coupon-chip-code">{coupon.code}</span>
+                            <span class="tb-coupon-chip-desc">{coupon.description}</span>
+                        </button>
+                    </template>
+                </div>
+            </template>
+        </template>
+
+        <template if:true={couponMessage}>
+            <p class={couponMessageClass}>{couponMessage}</p>
+        </template>
+    </div>
+</template>

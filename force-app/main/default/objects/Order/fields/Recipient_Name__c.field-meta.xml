@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Recipient_Name__c</fullName>
+    <externalId>false</externalId>
+    <label>Recipient Name</label>
+    <length>120</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+    <description>The name of the person this order is being delivered to, typed into the Shipping step at checkout. Distinct from Customer_Name__c/Placed_By__c, which are the logged-in buyer — the buyer can order for someone else (a gift, a family member) without that recipient gaining any access to the buyer's account. See Feature Expansion Plan §5.</description>
+</CustomField>

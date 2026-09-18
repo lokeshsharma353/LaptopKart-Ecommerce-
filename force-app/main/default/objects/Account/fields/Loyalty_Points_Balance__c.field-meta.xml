@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Loyalty_Points_Balance__c</fullName>
+    <defaultValue>0</defaultValue>
+    <description>The live, current loyalty point balance for a Customer Account Detail record. Maintained by Apex (LoyaltyService) — never edited directly. See Feature Expansion Plan §2.</description>
+    <externalId>false</externalId>
+    <label>Loyalty Points Balance</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

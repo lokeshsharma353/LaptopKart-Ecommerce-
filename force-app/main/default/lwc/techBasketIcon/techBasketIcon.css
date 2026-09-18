@@ -1,0 +1,16 @@
+:host {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+}
+
+/* Sized in em so a parent controls the icon's size purely via font-size on
+   the wrapping element — same trick used for its color via currentColor
+   (see the stroke="currentColor" on the <svg> itself). No shadow-DOM
+   piercing needed for either. */
+.tb-icon-svg {
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+}

@@ -1,5 +1,7 @@
 trigger accountTrigger on Account(after Update) {
-    
+
+    AccountTriggerHandler.handleAfterUpdate(Trigger.new, Trigger.oldMap);
+
     
 
 

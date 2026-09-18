@@ -1,5 +1,5 @@
 :host {
-    --tb-muted: #64748B;
+    --tb-muted: var(--lk-text-muted, #64748B);
 
     display: inline-block;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -18,15 +18,15 @@
 }
 
 .tb-star {
-    color: #E2E8F0;
+    color: var(--lk-border, #E2E8F0);
 }
 
 .tb-star-filled {
-    color: #F59E0B;
+    color: var(--lk-warning, #F59E0B);
 }
 
 .tb-star-half {
-    background: linear-gradient(90deg, #F59E0B 50%, #E2E8F0 50%);
+    background: linear-gradient(90deg, var(--lk-warning, #F59E0B) 50%, var(--lk-border, #E2E8F0) 50%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;

@@ -142,13 +142,58 @@
         <table class="totals-table" style="margin-top:10pt;">
             <tr>
                 <td style="width:66%;"></td>
-                <td class="label">Total Amount</td>
+                <td class="label">Subtotal</td>
                 <td class="value">&#8377; <apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!ord.TotalAmount}" /></apex:outputText></td>
+            </tr>
+            <apex:outputPanel rendered="{!hasDiscount}" layout="none">
+                <tr>
+                    <td></td>
+                    <td class="label">Discount<apex:outputPanel rendered="{!ord.Coupon_Code_Applied__c != null}" layout="none"> ({!ord.Coupon_Code_Applied__c})</apex:outputPanel></td>
+                    <td class="value">-&#8377; <apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!ord.Discount_Amount__c}" /></apex:outputText></td>
+                </tr>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!hasPricingBreakdown}" layout="none">
+                <tr>
+                    <td></td>
+                    <td class="label">Taxable Value</td>
+                    <td class="value">&#8377; <apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!ord.Taxable_Amount__c}" /></apex:outputText></td>
+                </tr>
+                <apex:outputPanel rendered="{!isIntrastate}" layout="none">
+                    <tr>
+                        <td></td>
+                        <td class="label">CGST</td>
+                        <td class="value">&#8377; <apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!ord.CGST_Amount__c}" /></apex:outputText></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td class="label">SGST</td>
+                        <td class="value">&#8377; <apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!ord.SGST_Amount__c}" /></apex:outputText></td>
+                    </tr>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!!isIntrastate}" layout="none">
+                    <tr>
+                        <td></td>
+                        <td class="label">IGST</td>
+                        <td class="value">&#8377; <apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!ord.IGST_Amount__c}" /></apex:outputText></td>
+                    </tr>
+                </apex:outputPanel>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!hasShippingCost}" layout="none">
+                <tr>
+                    <td></td>
+                    <td class="label">Shipping<apex:outputPanel rendered="{!ord.Shipping_Method__c != null}" layout="none"> ({!ord.Shipping_Method__c})</apex:outputPanel></td>
+                    <td class="value">&#8377; <apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!ord.Shipping_Cost__c}" /></apex:outputText></td>
+                </tr>
+            </apex:outputPanel>
+            <tr>
+                <td></td>
+                <td class="grand-label">Amount Payable</td>
+                <td class="grand-value">&#8377; <apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!amountPayable}" /></apex:outputText></td>
             </tr>
             <tr>
                 <td></td>
-                <td class="label">Amount Paid</td>
-                <td class="value">&#8377; <apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!ord.Total_Paid__c}" /></apex:outputText></td>
+                <td class="label" style="padding-top:8pt;">Amount Paid</td>
+                <td class="value" style="padding-top:8pt;">&#8377; <apex:outputText value="{0,number,#,##0.00}"><apex:param value="{!ord.Total_Paid__c}" /></apex:outputText></td>
             </tr>
             <tr>
                 <td></td>

@@ -37,36 +37,99 @@ export default class TechBasketOrderConfirmation extends NavigationMixin(Lightni
     }
 
     /**
-     * True once an admin has manually confirmed payment (Payment__c.Payment_Status__c
-     * changed to 'Successful', which rolls Order.Payment_Status__c up to
-     * 'Fully Paid' — see PaymentService). Every order starts unconfirmed:
-     * an Online payment is a self-reported UTR with nothing to verify it
-     * against, and Cash on Delivery hasn't actually been collected yet.
+     * True once payment is confirmed (Payment__c.Payment_Status__c is
+     * 'Successful', which rolls Order.Payment_Status__c up to 'Fully Paid'
+     * — see PaymentService). For an Online payment through Razorpay this
+     * happens instantly — CheckoutController re-verifies it with Razorpay
+     * before the Order is even created, so a shopper paying online lands
+     * here already confirmed. Cash on Delivery still starts unconfirmed:
+     * nothing has actually been collected yet, so it stays Pending until
+     * an admin confirms it by hand.
      */
     get isPaymentConfirmed() {
         return !!this.order && this.order.paymentStatus === 'Fully Paid';
     }
 
-    /** Heading text — differs before vs. after admin payment confirmation. */
+    /**
+     * True for a Cash on Delivery order (Payment_Method__c is 'Cash').
+     * Nothing has been collected yet, but that's expected — not a payment
+     * still being verified — so COD gets its own confirmed-looking state
+     * instead of the "we're confirming your payment" copy meant for a
+     * self-reported UTR still awaiting admin review.
+     */
+    get isCashOnDelivery() {
+        return !!this.order && this.order.paymentMethod === 'Cash';
+    }
+
+    /** Heading text — Fully Paid and Cash on Delivery both read as confirmed; only a real payment still awaiting admin review shows the "received" copy. */
     get confirmationHeading() {
-        return this.isPaymentConfirmed ? 'Thank You! Your Order is Confirmed' : "We've Received Your Order";
+        if (this.isPaymentConfirmed || this.isCashOnDelivery) {
+            return 'Thank You! Your Order is Confirmed';
+        }
+        return "We've Received Your Order";
     }
 
-    /** Subheading text — differs before vs. after admin payment confirmation. */
+    /** Subheading text — three distinct states: paid online, pay on delivery, or still awaiting verification. */
     get confirmationSubheading() {
-        return this.isPaymentConfirmed
-            ? 'A confirmation email has been sent to you.'
-            : "We're confirming your payment — you'll get an email the moment it's approved.";
+        if (this.isPaymentConfirmed) {
+            return 'A confirmation email has been sent to you.';
+        }
+        if (this.isCashOnDelivery) {
+            return `Pay ₹${this.order.totalAmount} in cash when your order arrives.`;
+        }
+        return "We're confirming your payment — you'll get an email the moment it's approved.";
     }
 
-    /** CSS class for the icon badge at the top of the page — green check once confirmed, amber clock while pending. */
+    /**
+     * True once this order carries the real pricing breakdown (Discount/GST/
+     * Amount Payable — see OrderPricingService) — every order created since
+     * that engine shipped. Guards the detailed breakdown below so an older
+     * order from before it existed still falls back to the plain
+     * subtotal/paid figures instead of showing blank GST rows.
+     */
+    get hasPricingBreakdown() {
+        return !!this.order && this.order.amountPayable != null;
+    }
+
+    get hasDiscount() {
+        return !!this.order && this.order.discountAmount > 0;
+    }
+
+    get hasLoyaltyDiscount() {
+        return !!this.order && this.order.pointsRedeemed > 0;
+    }
+
+    /** True when this order actually paid for delivery (Standard is free and stays hidden from the breakdown). */
+    get hasShippingCost() {
+        return !!this.order && this.order.shippingCost > 0;
+    }
+
+    get loyaltyDiscountDisplay() {
+        // 1 point = ₹1 — same conversion LoyaltyService uses.
+        return this.order && this.order.pointsRedeemed ? this.order.pointsRedeemed.toFixed(2) : '0.00';
+    }
+
+    get hasPointsEarned() {
+        return !!this.order && this.order.pointsEarned > 0;
+    }
+
+    /** True for an intrastate shipment (CGST+SGST shown) — false shows IGST instead. See OrderPricingService.SELLER_STATE. */
+    get isIntrastate() {
+        return !!this.order && (this.order.igstAmount == null || this.order.igstAmount === 0);
+    }
+
+    get hasRecipient() {
+        return !!this.order && !!this.order.recipientName;
+    }
+
+    /** CSS class for the icon badge at the top of the page — green check for Fully Paid or COD, amber clock only while a real payment is still pending admin review. */
     get confirmationIconClass() {
-        return this.isPaymentConfirmed ? 'tb-check-mark' : 'tb-check-mark tb-check-mark-pending';
+        return (this.isPaymentConfirmed || this.isCashOnDelivery) ? 'tb-check-mark' : 'tb-check-mark tb-check-mark-pending';
     }
 
-    /** Icon character — checkmark once confirmed, a clock while payment is still pending admin review. */
+    /** Icon character — checkmark for Fully Paid or COD, a clock only while a real payment is still pending admin review. */
     get confirmationIcon() {
-        return this.isPaymentConfirmed ? '✔' : '⏳';
+        return (this.isPaymentConfirmed || this.isCashOnDelivery) ? '✔' : '⏳';
     }
 
     /** Navigates to the Product Catalog page. */

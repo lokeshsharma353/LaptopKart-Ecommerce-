@@ -3,15 +3,14 @@ const STORAGE_KEY = 'techbasket_account_settings';
 
 /** Default preferences used the first time a shopper opens Account Settings. */
 const DEFAULTS = {
-    emailNotifications: true,
-    smsNotifications: false
+    emailNotifications: true
 };
 
 /**
  * Returns the saved notification preferences, merged over the defaults so a
  * newly-added preference always has a sensible value even for a shopper who
  * saved settings before it existed.
- * @returns {Object} { emailNotifications, smsNotifications }
+ * @returns {Object} { emailNotifications }
  */
 export function getSettings() {
     try {
@@ -24,7 +23,7 @@ export function getSettings() {
 
 /**
  * Persists notification preferences.
- * @param {Object} settings - { emailNotifications, smsNotifications }
+ * @param {Object} settings - { emailNotifications }
  */
 export function saveSettings(settings) {
     try {

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LaptopKart — Inventory & Vendor System Plan</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page">
+
+  <header>
+    <p class="eyebrow">LaptopKart &middot; Inventory &amp; Vendor System</p>
+    <h1>How stock moves through the system</h1>
+    <p class="lede">One live number per product (<code>Stock_Quantity__c</code>) that four events can change, and one ledger (<code>Stock_Movement__c</code>) that records every change as a row — the same pattern <code>Payment__c</code> already uses for money. Below: the detailed flow, then the exact field schema for every object involved.</p>
+    <p class="source-note">Status: <strong>plan only</strong> — nothing in this document has been built yet. Plain-text version: <a href="../INVENTORY-VENDOR-SYSTEM-PLAN.md">INVENTORY-VENDOR-SYSTEM-PLAN.md</a></p>
+  </header>
+
+  <figure>
+    <div class="diagram-frame">
+      <svg viewBox="0 0 1120 1220" role="img" aria-label="Detailed flowchart: the storefront reads Stock_Quantity__c. Checkout locks and checks stock with a FOR UPDATE query; insufficient stock rejects the order with no writes, sufficient stock creates the Order then decrements Product2.Stock_Quantity__c and inserts a Sale row in Stock_Movement__c. Cancelling an order restores stock and inserts a Cancellation row. A Vendor feeds a Purchase Order through Draft, Submitted and Received states; receiving it increments stock for each line item and inserts a Restock row. All three write paths update the central Stock_Quantity__c number, which the storefront reads and a nightly batch compares against Reorder_Level__c, and which feeds the Stock_Movement__c ledger.">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <!-- ===== Storefront ===== -->
+        <rect x="400" y="20" width="320" height="80" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"/>
+        <text x="560" y="48" text-anchor="middle" class="node-label" font-size="14" fill="var(--ink)">Storefront</text>
+        <text x="560" y="67" text-anchor="middle" class="node-sub" font-size="12" fill="var(--ink-muted)">Product Card / Detail — reads</text>
+        <text x="560" y="84" text-anchor="middle" class="node-mono" font-size="11.5" fill="var(--accent-ink)">Product2.Stock_Quantity__c</text>
+
+        <path d="M560,100 L560,122" stroke="var(--ink-subtle)" stroke-width="1.5" marker-end="url(#arrow)" color="var(--ink-subtle)"/>
+
+        <!-- ===== Decision diamond ===== -->
+        <polygon points="560,122 732,192 560,262 388,192" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.75"/>
+        <text x="560" y="181" text-anchor="middle" class="node-label" font-size="13" fill="var(--ink)">Checkout: lock &amp; check</text>
+        <text x="560" y="199" text-anchor="middle" class="node-mono" font-size="11" fill="var(--ink-muted)">SELECT ... FOR UPDATE</text>
+        <text x="560" y="215" text-anchor="middle" class="node-sub" font-size="11" fill="var(--ink-muted)">qty on hand &lt; qty requested?</text>
+
+        <text x="220" y="278" text-anchor="middle" class="zone-label" font-size="10" fill="var(--danger)">CHECKOUT REJECTS</text>
+        <text x="900" y="278" text-anchor="middle" class="zone-label" font-size="10" fill="var(--accent-ink)">CHECKOUT ACCEPTS</text>
+
+        <path d="M388,192 L220,192 L220,288" fill="none" stroke="var(--danger)" stroke-width="1.5" marker-end="url(#arrow)" color="var(--danger)"/>
+        <text x="304" y="185" text-anchor="middle" class="edge-label" font-size="11" fill="var(--danger)">yes — insufficient</text>
+
+        <path d="M732,192 L900,192 L900,288" fill="none" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#arrow)" color="var(--accent)"/>
+        <text x="816" y="185" text-anchor="middle" class="edge-label" font-size="11" fill="var(--accent-ink)">no — sufficient</text>
+
+        <!-- ===== Reject box ===== -->
+        <rect x="60" y="288" width="320" height="98" rx="10" fill="var(--danger-soft)" stroke="var(--danger)" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="220" y="318" text-anchor="middle" class="node-label" font-size="13.5" fill="var(--ink)">Reject the order</text>
+        <text x="220" y="338" text-anchor="middle" class="node-sub" font-size="12" fill="var(--ink-muted)">AuraHandledException —</text>
+        <text x="220" y="355" text-anchor="middle" class="node-sub" font-size="12" fill="var(--ink-muted)">shopper sees "only N left"</text>
+        <text x="220" y="372" text-anchor="middle" class="node-mono" font-size="11" fill="var(--danger)">no DML runs</text>
+
+        <!-- ===== Create Order box ===== -->
+        <rect x="740" y="288" width="320" height="98" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"/>
+        <text x="900" y="318" text-anchor="middle" class="node-label" font-size="13.5" fill="var(--ink)">Create Order + OrderItems</text>
+        <text x="900" y="338" text-anchor="middle" class="node-sub" font-size="12" fill="var(--ink-muted)">same transaction that already</text>
+        <text x="900" y="355" text-anchor="middle" class="node-sub" font-size="12" fill="var(--ink-muted)">verifies the Razorpay payment</text>
+        <text x="900" y="372" text-anchor="middle" class="node-mono" font-size="11" fill="var(--ink-subtle)">CheckoutController.submitOrder</text>
+
+        <path d="M900,386 L900,410" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#arrow)" color="var(--accent)"/>
+
+        <!-- ===== Decrement box ===== -->
+        <rect x="740" y="410" width="320" height="128" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"/>
+        <text x="900" y="436" text-anchor="middle" class="node-label" font-size="13.5" fill="var(--ink)">Decrement stock</text>
+        <text x="900" y="457" text-anchor="middle" class="node-mono" font-size="11" fill="var(--ink-muted)">UPDATE Product2</text>
+        <text x="900" y="474" text-anchor="middle" class="node-mono" font-size="11" fill="var(--ink-muted)">Stock_Quantity__c -= qty</text>
+        <text x="900" y="495" text-anchor="middle" class="node-mono" font-size="11" fill="var(--accent-ink)">INSERT Stock_Movement__c</text>
+        <text x="900" y="512" text-anchor="middle" class="node-mono" font-size="10.5" fill="var(--accent-ink)">Movement_Type__c = 'Sale'</text>
+        <text x="900" y="527" text-anchor="middle" class="node-mono" font-size="10.5" fill="var(--accent-ink)">Quantity__c = -qty</text>
+
+        <!-- ===== Left column: independent triggers ===== -->
+        <text x="220" y="412" text-anchor="middle" class="zone-label" font-size="10" fill="var(--success)">INDEPENDENT TRIGGERS — ANY TIME AFTER PURCHASE</text>
+
+        <rect x="60" y="410" width="320" height="128" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"/>
+        <text x="220" y="436" text-anchor="middle" class="node-label" font-size="13.5" fill="var(--ink)">Order cancelled</text>
+        <text x="220" y="456" text-anchor="middle" class="node-sub" font-size="11.5" fill="var(--ink-muted)">existing cancelOrder() method</text>
+        <text x="220" y="477" text-anchor="middle" class="node-mono" font-size="11" fill="var(--ink-muted)">UPDATE Product2</text>
+        <text x="220" y="494" text-anchor="middle" class="node-mono" font-size="11" fill="var(--ink-muted)">Stock_Quantity__c += qty</text>
+        <text x="220" y="515" text-anchor="middle" class="node-mono" font-size="10.5" fill="var(--success)">INSERT Stock_Movement__c</text>
+        <text x="220" y="530" text-anchor="middle" class="node-mono" font-size="10.5" fill="var(--success)">Movement_Type__c = 'Cancellation'</text>
+
+        <!-- ===== Restock subflow (vendor-driven) ===== -->
+        <text x="560" y="576" text-anchor="middle" class="zone-label" font-size="10.5" fill="var(--amber)">RESTOCK SUBFLOW — VENDOR-DRIVEN</text>
+
+        <rect x="60" y="592" width="150" height="52" rx="9" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"/>
+        <text x="135" y="614" text-anchor="middle" class="node-mono" font-size="12" fill="var(--ink)">Vendor__c</text>
+        <text x="135" y="630" text-anchor="middle" class="node-sub" font-size="10.5" fill="var(--ink-muted)">the supplier</text>
+
+        <path d="M210,618 L242,618" stroke="var(--ink-subtle)" stroke-width="1.5" marker-end="url(#arrow)" color="var(--ink-subtle)"/>
+
+        <text x="486" y="604" text-anchor="middle" class="node-mono" font-size="10.5" fill="var(--ink-subtle)">Purchase_Order__c.Status__c</text>
+
+        <rect x="242" y="612" width="140" height="48" rx="8" fill="var(--surface-2)" stroke="var(--border)" stroke-width="1.5"/>
+        <text x="312" y="641" text-anchor="middle" class="node-sub" font-size="12" fill="var(--ink-muted)">Draft</text>
+        <path d="M382,636 L412,636" stroke="var(--ink-subtle)" stroke-width="1.5" marker-end="url(#arrow)" color="var(--ink-subtle)"/>
+
+        <rect x="412" y="612" width="140" height="48" rx="8" fill="var(--surface-2)" stroke="var(--border)" stroke-width="1.5"/>
+        <text x="482" y="641" text-anchor="middle" class="node-sub" font-size="12" fill="var(--ink-muted)">Submitted</text>
+        <path d="M552,636 L582,636" stroke="var(--ink-subtle)" stroke-width="1.5" marker-end="url(#arrow)" color="var(--ink-subtle)"/>
+
+        <rect x="582" y="612" width="140" height="48" rx="8" fill="var(--success-soft)" stroke="var(--success)" stroke-width="1.5"/>
+        <text x="652" y="641" text-anchor="middle" class="node-label" font-size="12" fill="var(--success)">Received</text>
+
+        <path d="M652,660 L652,686" stroke="var(--success)" stroke-width="1.5" marker-end="url(#arrow)" color="var(--success)"/>
+
+        <rect x="492" y="686" width="320" height="128" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"/>
+        <text x="652" y="712" text-anchor="middle" class="node-label" font-size="13.5" fill="var(--ink)">Receive the PO</text>
+        <text x="652" y="732" text-anchor="middle" class="node-sub" font-size="11.5" fill="var(--ink-muted)">for each Purchase_Order_Line__c:</text>
+        <text x="652" y="753" text-anchor="middle" class="node-mono" font-size="10.5" fill="var(--ink-muted)">Product2.Stock_Quantity__c</text>
+        <text x="652" y="769" text-anchor="middle" class="node-mono" font-size="10.5" fill="var(--ink-muted)">+= Quantity_Received__c</text>
+        <text x="652" y="790" text-anchor="middle" class="node-mono" font-size="10.5" fill="var(--success)">INSERT Stock_Movement__c</text>
+        <text x="652" y="805" text-anchor="middle" class="node-mono" font-size="10" fill="var(--success)">Movement_Type__c = 'Restock'</text>
+
+        <!-- ===== Converge into central node ===== -->
+        <path d="M900,538 L900,880 L740,880 L740,914" fill="none" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#arrow)" color="var(--accent)"/>
+        <path d="M220,538 L220,900 L460,900 L460,914" fill="none" stroke="var(--success)" stroke-width="1.5" marker-end="url(#arrow)" color="var(--success)"/>
+        <path d="M652,814 L652,860 L560,860 L560,914" fill="none" stroke="var(--success)" stroke-width="1.5" marker-end="url(#arrow)" color="var(--success)"/>
+
+        <text x="700" y="908" text-anchor="middle" class="edge-label" font-size="12" fill="var(--accent-ink)">&minus;</text>
+        <text x="460" y="908" text-anchor="middle" class="edge-label" font-size="12" fill="var(--success)">+</text>
+        <text x="560" y="908" text-anchor="middle" class="edge-label" font-size="12" fill="var(--success)">+</text>
+
+        <!-- ===== Central live-number node ===== -->
+        <rect x="340" y="914" width="440" height="112" rx="12" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="560" y="946" text-anchor="middle" class="node-mono" font-size="14.5" fill="var(--accent-ink)">Product2.Stock_Quantity__c</text>
+        <text x="560" y="968" text-anchor="middle" class="node-sub" font-size="12" fill="var(--ink-muted)">the one live, current on-hand number —</text>
+        <text x="560" y="985" text-anchor="middle" class="node-sub" font-size="12" fill="var(--ink-muted)">read by the storefront, written by all three paths above</text>
+
+        <path d="M780,970 L818,970" fill="none" stroke="var(--ink-subtle)" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrow)" color="var(--ink-subtle)"/>
+
+        <!-- ===== Batch box ===== -->
+        <rect x="818" y="914" width="240" height="112" rx="10" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="938" y="942" text-anchor="middle" class="node-label" font-size="12.5" fill="var(--ink)">Nightly batch</text>
+        <text x="938" y="962" text-anchor="middle" class="node-mono" font-size="10.5" fill="var(--ink-muted)">Stock_Quantity__c &lt;=</text>
+        <text x="938" y="978" text-anchor="middle" class="node-mono" font-size="10.5" fill="var(--ink-muted)">Reorder_Level__c ?</text>
+        <text x="938" y="998" text-anchor="middle" class="node-sub" font-size="11" fill="var(--ink-muted)">→ low-stock report (admin)</text>
+
+        <path d="M560,1026 L560,1058" stroke="var(--ink-subtle)" stroke-width="1.5" marker-end="url(#arrow)" color="var(--ink-subtle)"/>
+
+        <!-- ===== Ledger ===== -->
+        <rect x="260" y="1058" width="600" height="140" rx="12" fill="var(--surface-2)" stroke="var(--border)" stroke-width="1.5"/>
+        <text x="560" y="1088" text-anchor="middle" class="node-mono" font-size="14.5" fill="var(--ink)">Stock_Movement__c</text>
+        <text x="560" y="1108" text-anchor="middle" class="node-sub" font-size="12" fill="var(--ink-muted)">audit ledger — one row per change, every path above writes here</text>
+        <text x="560" y="1132" text-anchor="middle" class="node-mono" font-size="11" fill="var(--accent-ink)">Movement_Type__c: Sale &middot; Cancellation &middot; Restock &middot; Adjustment</text>
+        <text x="560" y="1152" text-anchor="middle" class="node-mono" font-size="11" fill="var(--ink-subtle)">+ Quantity__c, Related_Order__c / Related_Purchase_Order__c, Movement_Date__c</text>
+        <text x="560" y="1176" text-anchor="middle" class="node-sub" font-size="11" fill="var(--ink-subtle)">see full field table below</text>
+
+      </svg>
+    </div>
+    <figcaption>Both write paths (checkout decrement, order cancellation) and the vendor-driven restock subflow converge on the same <code>Stock_Quantity__c</code> field and the same <code>Stock_Movement__c</code> ledger — one number to read, one ledger to audit, no matter which of the four events caused the change.</figcaption>
+  </figure>
+
+  <section>
+    <h2>Object reference</h2>
+    <p class="section-sub">Every field, exactly as it would be created in Setup — API name, type, and what it's for.</p>
+
+    <div class="schema-card">
+      <div class="schema-card-head">
+        <span class="obj-name">Vendor__c</span>
+        <span class="obj-label">Vendor</span>
+        <span class="tag tag-new">new object</span>
+      </div>
+      <p class="schema-card-desc">One record per supplier. Plain custom object — a real Salesforce "Vendor" concept doesn't exist, and reusing <code>Account</code> would mix suppliers into the same object as your customers.</p>
+      <div class="table-wrap">
+        <table class="schema">
+          <tr><th>Field (API Name)</th><th>Label</th><th>Type</th><th>Notes</th></tr>
+          <tr><td class="fname">Name</td><td class="flabel">Vendor Name</td><td class="ftype">Text(80)</td><td class="fnotes">Standard primary Name field, required</td></tr>
+          <tr><td class="fname">Contact_Name__c</td><td class="flabel">Contact Name</td><td class="ftype">Text(120)</td><td class="fnotes">Primary contact person at the vendor</td></tr>
+          <tr><td class="fname">Email__c</td><td class="flabel">Email</td><td class="ftype">Email</td><td class="fnotes"></td></tr>
+          <tr><td class="fname">Phone__c</td><td class="flabel">Phone</td><td class="ftype">Phone</td><td class="fnotes"></td></tr>
+          <tr><td class="fname">Address__c</td><td class="flabel">Address</td><td class="ftype">Address (compound)</td><td class="fnotes">Street/City/State/Postal/Country as one field</td></tr>
+          <tr><td class="fname">Status__c</td><td class="flabel">Status</td><td class="ftype">Picklist</td><td class="fnotes">Active, Inactive — restricted, default Active</td></tr>
+          <tr><td class="fname">Payment_Terms__c</td><td class="flabel">Payment Terms</td><td class="ftype">Picklist</td><td class="fnotes">Net 15, Net 30, Net 45, COD — optional</td></tr>
+          <tr><td class="fname">Notes__c</td><td class="flabel">Notes</td><td class="ftype">Long Text Area(2000)</td><td class="fnotes">Optional free text</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="schema-card">
+      <div class="schema-card-head">
+        <span class="obj-name">Product2</span>
+        <span class="obj-label">Product</span>
+        <span class="tag tag-extend">new fields on standard object</span>
+      </div>
+      <p class="schema-card-desc">No new object — five fields added to the standard <code>Product2</code> your catalog already runs on.</p>
+      <div class="table-wrap">
+        <table class="schema">
+          <tr><th>Field (API Name)</th><th>Label</th><th>Type</th><th>Notes</th></tr>
+          <tr><td class="fname">Stock_Quantity__c</td><td class="flabel">Stock Quantity</td><td class="ftype">Number(18,0)</td><td class="fnotes">Current on-hand quantity — the "live number." Default 0.</td></tr>
+          <tr><td class="fname">Reorder_Level__c</td><td class="flabel">Reorder Level</td><td class="ftype">Number(18,0)</td><td class="fnotes">Threshold the nightly batch compares stock against</td></tr>
+          <tr><td class="fname">Reorder_Quantity__c</td><td class="flabel">Reorder Quantity</td><td class="ftype">Number(18,0)</td><td class="fnotes">Optional — pre-fills a new PO line when restocking</td></tr>
+          <tr><td class="fname">Primary_Vendor__c</td><td class="flabel">Primary Vendor</td><td class="ftype">Lookup(Vendor__c)</td><td class="fnotes">Who to reorder from — single-vendor model</td></tr>
+          <tr><td class="fname">SKU_At_Vendor__c</td><td class="flabel">Vendor SKU</td><td class="ftype">Text(60)</td><td class="fnotes">Optional — the vendor's own product code</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="schema-card">
+      <div class="schema-card-head">
+        <span class="obj-name">Stock_Movement__c</span>
+        <span class="obj-label">Stock Movement</span>
+        <span class="tag tag-new">new object</span>
+      </div>
+      <p class="schema-card-desc">The audit ledger. Every write to <code>Stock_Quantity__c</code>, from any of the four events, inserts exactly one row here — mirrors how <code>Payment__c</code> already ledgers every change to an Order's paid amount.</p>
+      <div class="table-wrap">
+        <table class="schema">
+          <tr><th>Field (API Name)</th><th>Label</th><th>Type</th><th>Notes</th></tr>
+          <tr><td class="fname">Name</td><td class="flabel">Movement Number</td><td class="ftype">Auto Number</td><td class="fnotes">Format <code>SM-{0000}</code></td></tr>
+          <tr><td class="fname">Product__c</td><td class="flabel">Product</td><td class="ftype">Lookup(Product2)</td><td class="fnotes">Required</td></tr>
+          <tr><td class="fname">Movement_Type__c</td><td class="flabel">Movement Type</td><td class="ftype">Picklist</td><td class="fnotes">Sale, Cancellation, Restock, Adjustment — restricted, required</td></tr>
+          <tr><td class="fname">Quantity__c</td><td class="flabel">Quantity</td><td class="ftype">Number(18,0)</td><td class="fnotes">Signed — negative for Sale, positive for Restock/Cancellation</td></tr>
+          <tr><td class="fname">Running_Balance__c</td><td class="flabel">Balance After</td><td class="ftype">Number(18,0)</td><td class="fnotes">Optional — snapshot of Stock_Quantity__c right after this row</td></tr>
+          <tr><td class="fname">Related_Order__c</td><td class="flabel">Related Order</td><td class="ftype">Lookup(Order)</td><td class="fnotes">Set for Sale / Cancellation movements</td></tr>
+          <tr><td class="fname">Related_Purchase_Order__c</td><td class="flabel">Related Purchase Order</td><td class="ftype">Lookup(Purchase_Order__c)</td><td class="fnotes">Set for Restock movements</td></tr>
+          <tr><td class="fname">Movement_Date__c</td><td class="flabel">Movement Date</td><td class="ftype">Date/Time</td><td class="fnotes">Defaults to now</td></tr>
+          <tr><td class="fname">Notes__c</td><td class="flabel">Notes</td><td class="ftype">Text Area(255)</td><td class="fnotes">Free text — e.g. reason for a manual Adjustment</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="schema-card">
+      <div class="schema-card-head">
+        <span class="obj-name">Purchase_Order__c</span>
+        <span class="obj-label">Purchase Order</span>
+        <span class="tag tag-later">later phase</span>
+      </div>
+      <p class="schema-card-desc">One formal order placed with a vendor. Only needed once manual stock edits feel too loose — see "Build order" below.</p>
+      <div class="table-wrap">
+        <table class="schema">
+          <tr><th>Field (API Name)</th><th>Label</th><th>Type</th><th>Notes</th></tr>
+          <tr><td class="fname">Name</td><td class="flabel">PO Number</td><td class="ftype">Auto Number</td><td class="fnotes">Format <code>PO-{0000}</code></td></tr>
+          <tr><td class="fname">Vendor__c</td><td class="flabel">Vendor</td><td class="ftype">Lookup(Vendor__c)</td><td class="fnotes">Required</td></tr>
+          <tr><td class="fname">Status__c</td><td class="flabel">Status</td><td class="ftype">Picklist</td><td class="fnotes">Draft, Submitted, Received, Cancelled — restricted</td></tr>
+          <tr><td class="fname">Order_Date__c</td><td class="flabel">Order Date</td><td class="ftype">Date</td><td class="fnotes"></td></tr>
+          <tr><td class="fname">Expected_Delivery_Date__c</td><td class="flabel">Expected Delivery</td><td class="ftype">Date</td><td class="fnotes"></td></tr>
+          <tr><td class="fname">Received_Date__c</td><td class="flabel">Received Date</td><td class="ftype">Date</td><td class="fnotes">Populated when Status__c → Received</td></tr>
+          <tr><td class="fname">Total_Amount__c</td><td class="flabel">Total Amount</td><td class="ftype">Currency(16,2)</td><td class="fnotes">Roll-up sum of its lines' cost</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="schema-card">
+      <div class="schema-card-head">
+        <span class="obj-name">Purchase_Order_Line__c</span>
+        <span class="obj-label">Purchase Order Line</span>
+        <span class="tag tag-child">child of Purchase_Order__c</span>
+        <span class="tag tag-later">later phase</span>
+      </div>
+      <p class="schema-card-desc">One row per product on a Purchase Order — master-detail so it's deleted along with its parent PO.</p>
+      <div class="table-wrap">
+        <table class="schema">
+          <tr><th>Field (API Name)</th><th>Label</th><th>Type</th><th>Notes</th></tr>
+          <tr><td class="fname">Purchase_Order__c</td><td class="flabel">Purchase Order</td><td class="ftype">Master-Detail(Purchase_Order__c)</td><td class="fnotes">Required</td></tr>
+          <tr><td class="fname">Product__c</td><td class="flabel">Product</td><td class="ftype">Lookup(Product2)</td><td class="fnotes">Required</td></tr>
+          <tr><td class="fname">Quantity_Ordered__c</td><td class="flabel">Quantity Ordered</td><td class="ftype">Number(18,0)</td><td class="fnotes">Required</td></tr>
+          <tr><td class="fname">Unit_Cost__c</td><td class="flabel">Unit Cost</td><td class="ftype">Currency(16,2)</td><td class="fnotes">What the vendor charges per unit</td></tr>
+          <tr><td class="fname">Quantity_Received__c</td><td class="flabel">Quantity Received</td><td class="ftype">Number(18,0)</td><td class="fnotes">Defaults 0, updated on receiving — drives the Restock movement</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="alt-callout">
+      <strong>If one product ever needs more than one vendor:</strong> replace <code>Product2.Primary_Vendor__c</code> with a junction object <span class="obj-name">Vendor_Product__c</span> instead — <code class="node-mono">Product__c</code> (Lookup Product2), <code class="node-mono">Vendor__c</code> (Lookup Vendor__c), <code class="node-mono">Vendor_SKU__c</code> (Text), <code class="node-mono">Cost_Price__c</code> (Currency), <code class="node-mono">Lead_Time_Days__c</code> (Number), <code class="node-mono">Is_Preferred__c</code> (Checkbox, marks which vendor a PO defaults to). Only build this version if it's genuinely true for your catalog — see "Two calls only you can make" below.
+    </div>
+  </section>
+
+  <section>
+    <h2>Build order</h2>
+    <p class="section-sub">Schema first, then the Apex that enforces it, then what the storefront and admin actually see.</p>
+    <ol class="build-steps">
+      <li><div>
+        <p class="step-title">Vendor__c<span class="phase-tag phase-schema">schema</span></p>
+        <p class="step-body">8 fields, listed above. One record per supplier.</p>
+      </div></li>
+      <li><div>
+        <p class="step-title">Fields on Product2<span class="phase-tag phase-schema">schema</span></p>
+        <p class="step-body">5 fields, listed above — <code>Stock_Quantity__c</code>, <code>Reorder_Level__c</code>, <code>Reorder_Quantity__c</code>, <code>Primary_Vendor__c</code>, <code>SKU_At_Vendor__c</code>.</p>
+      </div></li>
+      <li><div>
+        <p class="step-title">Stock_Movement__c<span class="phase-tag phase-schema">schema</span></p>
+        <p class="step-body">9 fields, listed above. The ledger every other step writes to.</p>
+      </div></li>
+      <li><div>
+        <p class="step-title">InventoryService.cls<span class="phase-tag phase-logic">logic</span></p>
+        <p class="step-body">Mirrors the existing <code>PaymentService</code> pattern. One method to lock-and-check stock (<code>FOR UPDATE</code>), one to decrement + log, one to restore + log — called from <code>CheckoutController.submitOrder</code> and <code>cancelOrder</code>.</p>
+      </div></li>
+      <li><div>
+        <p class="step-title">Storefront LWC updates<span class="phase-tag phase-logic">logic</span></p>
+        <p class="step-body">Product card, product detail and the quantity stepper read <code>Stock_Quantity__c</code> — "only N left" / disabled Buy Now at zero, stepper capped at what's in stock.</p>
+      </div></li>
+      <li><div>
+        <p class="step-title">Admin restock path<span class="phase-tag phase-logic">logic</span></p>
+        <p class="step-body">Simplest version: admin edits <code>Stock_Quantity__c</code> directly on the Product record, which still fires the Adjustment-movement logging.</p>
+      </div></li>
+      <li><div>
+        <p class="step-title">Purchase_Order__c + Purchase_Order_Line__c<span class="phase-tag phase-later">later</span></p>
+        <p class="step-body">11 fields total, listed above. A formal Draft → Submitted → Received workflow per vendor.</p>
+      </div></li>
+      <li><div>
+        <p class="step-title">Low-stock batch + dashboard<span class="phase-tag phase-later">later</span></p>
+        <p class="step-body">Scheduled Apex (same shape as <code>OrderPaymentReconciliationBatch</code>) plus a List View or custom LWC dashboard once the data model has proven itself.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <div class="decisions">
+    <h2>Two calls only you can make</h2>
+    <ul>
+      <li><strong>One vendor per product, or many?</strong> <code class="node-mono">Primary_Vendor__c</code> is enough if each product has one main supplier; the <code class="node-mono">Vendor_Product__c</code> junction object is only worth the extra complexity if products genuinely come from more than one vendor at different costs.</li>
+      <li><strong>Purchase Orders from day one, or later?</strong> Manual stock edits get you a working system fast — the formal PO workflow is a real addition, not a prerequisite, and can be built once the basics are proven out.</li>
+    </ul>
+  </div>
+
+  <footer class="page-footer">LaptopKart &middot; Inventory &amp; Vendor System Plan &middot; saved locally for offline reference</footer>
+
+</div>
+</body>
+</html>

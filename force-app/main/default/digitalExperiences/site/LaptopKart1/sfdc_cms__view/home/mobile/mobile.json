@@ -1,0 +1,31 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Home",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "attributes" : {
+          "sectionColumnGutterWidth" : "0rem",
+          "componentSpacerSize" : "0rem",
+          "sectionVerticalAlign" : "flex-start",
+          "dxpStyle" : {
+            "margin" : {
+              "top" : "0px",
+              "left" : "0px",
+              "bottom" : "0px",
+              "right" : "0px"
+            },
+            "padding" : {
+              "top" : "0px",
+              "left" : "0px",
+              "bottom" : "0px",
+              "right" : "0px"
+            }
+          }
+        },
+        "id" : "4cc134bc-f99e-4fb0-982b-d4cdea0ea95a"
+      } ]
+    }
+  },
+  "urlName" : "home"
+}

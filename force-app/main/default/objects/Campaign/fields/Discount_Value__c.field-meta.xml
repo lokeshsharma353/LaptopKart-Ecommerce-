@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Discount_Value__c</fullName>
+    <externalId>false</externalId>
+    <label>Discount Value</label>
+    <precision>18</precision>
+    <scale>2</scale>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+    <description>e.g. 10 for 10% when Discount_Type__c is Percentage, or 500 for a flat ₹500 off when Discount_Type__c is Flat Amount.</description>
+</CustomField>

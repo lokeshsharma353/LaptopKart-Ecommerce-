@@ -1,0 +1,146 @@
+/* Clean, premium light theme for this internal admin screen. Base Lightning
+   components (lightning-card/-input/-button) are left at their normal SLDS
+   appearance — already a light/white theme — rather than fighting them with
+   styling-hook overrides; only the custom elements below (KPI tiles, tables,
+   badges, header) carry deliberate color choices, laid over a soft neutral
+   page background so cards read as distinct surfaces, not white-on-white. */
+:host {
+    display: block;
+    background: #F4F6F9;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+}
+
+.admin-dashboard {
+    padding: 1.25rem 1.5rem 3rem;
+    max-width: 1500px;
+    margin: 0 auto;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.admin-title { font-size: 26px; font-weight: 700; margin: 0 0 0.25rem; color: #0F172A; letter-spacing: -0.01em; }
+.admin-subtitle { font-size: 14px; color: #64748B; margin: 0; }
+
+.admin-quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.admin-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+}
+@media (max-width: 1100px) {
+    .admin-kpi-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 640px) {
+    .admin-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.admin-kpi-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    box-shadow: 0 1px 3px rgba(15,23,42,0.06);
+}
+.admin-kpi-label { font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.04em; }
+.admin-kpi-value { font-size: 24px; font-weight: 700; color: #0F172A; }
+.admin-kpi-value-warning { color: #DC2626; }
+
+.admin-columns {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+    margin-bottom: 1.5rem;
+}
+@media (max-width: 1000px) {
+    .admin-columns { grid-template-columns: 1fr; }
+}
+
+.admin-card {
+    display: block;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(15,23,42,0.06);
+}
+.admin-card-body { padding: 0.75rem 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.85rem; }
+.admin-card-hint { font-size: 12px; color: #64748B; margin: 0; }
+
+.admin-new-coupon-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding-bottom: 1rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #E2E8F0;
+}
+.admin-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+@media (max-width: 560px) {
+    .admin-form-row { grid-template-columns: 1fr; }
+}
+.admin-form-submit { align-self: flex-start; }
+
+.admin-coupon-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    color: #334155;
+}
+.admin-coupon-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid #E2E8F0;
+}
+.admin-coupon-table td {
+    padding: 0.6rem;
+    border-bottom: 1px solid #F1F5F9;
+    vertical-align: middle;
+    color: #334155;
+}
+.admin-coupon-code { font-weight: 700; color: #0F172A; letter-spacing: 0.02em; }
+
+.admin-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 980px;
+}
+.admin-badge-active { background: #F0FDF4; color: #15803D; }
+.admin-badge-inactive { background: #FEF2F2; color: #B91C1C; }
+
+.admin-empty-text { font-size: 13px; color: #64748B; margin: 0.5rem 0 0; }
+
+.admin-inline-result {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0;
+    padding: 0.6rem 0.85rem;
+    border-radius: 8px;
+}
+.admin-inline-result-success { background: #F0FDF4; color: #15803D; border: 1px solid #BBF7D0; }
+.admin-inline-result-error { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }

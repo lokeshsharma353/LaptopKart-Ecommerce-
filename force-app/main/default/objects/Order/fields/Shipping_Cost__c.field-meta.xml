@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Shipping_Cost__c</fullName>
+    <description>Cost of the delivery method the shopper picked at checkout (Standard/Express/Overnight — see OrderPricingService.SHIPPING_METHODS), added to Amount_Payable__c. Server-computed from the chosen method&apos;s id, never trusted from the client.</description>
+    <label>Shipping Cost</label>
+    <precision>16</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <trackHistory>false</trackHistory>
+    <type>Currency</type>
+</CustomField>

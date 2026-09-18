@@ -37,9 +37,15 @@
                      Guest checkout still works fully without these. Re-add once
                      verified working on the real published site URL. -->
 
+                <!-- Theme toggle -->
+                <button class={themeToggleClass} onclick={handleToggleTheme} aria-label={themeToggleLabel} title={themeToggleLabel} aria-pressed={isDarkTheme}>
+                    <span class="tb-theme-toggle-icon">{themeToggleIcon}</span>
+                    <span class="tb-theme-toggle-text">Dark Mode</span>
+                </button>
+
                 <!-- Cart -->
                 <template if:true={showCart}>
-                    <button class="tb-cart-btn" onclick={goCart} aria-label="Cart">
+                    <button class="tb-cart-btn" onclick={openMiniCart} aria-label="Cart">
                         Cart
                         <template if:true={hasCartItems}>
                             <span class="tb-cart-badge">{cartCount}</span>
@@ -59,6 +65,12 @@
                 <span class={hamburgerLine1}></span>
                 <span class={hamburgerLine2}></span>
                 <span class={hamburgerLine3}></span>
+            </button>
+
+            <!-- Mobile-only theme toggle — desktop's lives inside .tb-nav above,
+                 which is hidden below 900px alongside everything else in it. -->
+            <button class={themeToggleMobileClass} onclick={handleToggleTheme} aria-label={themeToggleLabel} title={themeToggleLabel} aria-pressed={isDarkTheme}>
+                <span class="tb-theme-toggle-icon">{themeToggleIcon}</span>
             </button>
         </div>
 
@@ -103,5 +115,9 @@
                 </template>
             </nav>
         </div>
+    </template>
+
+    <template if:true={miniCartOpen}>
+        <c-tech-basket-mini-cart onclose={closeMiniCart}></c-tech-basket-mini-cart>
     </template>
 </template>

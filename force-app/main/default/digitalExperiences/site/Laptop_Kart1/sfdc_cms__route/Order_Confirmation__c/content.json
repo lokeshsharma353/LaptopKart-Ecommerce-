@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Order Confirmation",
+  "contentBody" : {
+    "activeViewId" : "Order_Confirmation",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-order-confirmation",
+    "urlPrefix" : "order-confirmation"
+  },
+  "urlName" : "order-confirmation"
+}

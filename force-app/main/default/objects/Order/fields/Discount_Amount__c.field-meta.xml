@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Discount_Amount__c</fullName>
+    <externalId>false</externalId>
+    <label>Discount Amount</label>
+    <precision>16</precision>
+    <scale>2</scale>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Currency</type>
+    <description>Total discount applied to this order — coupon redemption (see Feature Expansion Plan §1) and/or loyalty points (§2). Subtracted from the product subtotal before the amount charged/verified.</description>
+</CustomField>

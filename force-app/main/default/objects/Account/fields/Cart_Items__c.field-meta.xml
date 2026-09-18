@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Cart_Items__c</fullName>
+    <description>Live mirror of this shopper&apos;s cart (see cartService.js), kept in sync automatically: updated whenever they add, change the quantity of, or remove an item, and whenever they log in with items already in their browser cart. Not meant to be hand-edited — the storefront overwrites it on every cart change.</description>
+    <label>Current Cart Items</label>
+    <length>32768</length>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>LongTextArea</type>
+    <visibleLines>8</visibleLines>
+</CustomField>

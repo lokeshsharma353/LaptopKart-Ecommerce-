@@ -8,7 +8,7 @@ const STORAGE_KEY = 'techbasket_cart';
 const listeners = new Set();
 
 /**
- * Mirrors the cart onto the logged-in shopper's Login_Credentials__c record
+ * Mirrors the cart onto the logged-in shopper's Account record
  * (Cart_Items__c) so an admin can see their live cart on the account
  * record. A no-op for guests (nobody's account to mirror onto yet) — cart
  * stays local-only exactly as before until they log in. Fire-and-forget:
@@ -27,7 +27,7 @@ function syncCartToAccount(items) {
             .join('\n') +
           `\n\nCart Total: ₹${items.reduce((sum, i) => sum + i.price * i.quantity, 0)}`;
 
-    updateCartSnapshot({ loginCredentialsId: session.id, cartSummary })
+    updateCartSnapshot({ accountId: session.id, cartSummary })
         .catch(() => { /* best-effort mirror only */ });
 }
 
@@ -46,7 +46,7 @@ function logActivity(action, productName, quantity, price) {
         return;
     }
     logCartActivity({
-        loginCredentialsId: session.id,
+        accountId: session.id,
         action,
         productName,
         quantity,

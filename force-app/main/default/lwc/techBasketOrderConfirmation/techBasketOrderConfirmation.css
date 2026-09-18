@@ -1,15 +1,15 @@
 :host {
     display: block;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-    background: #F8FAFC;
+    background: var(--lk-page-bg, #F8FAFC);
     min-height: 100vh;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
 }
 
 .tb-loading {
     text-align: center;
     padding: 5rem 1rem;
-    color: #64748B;
+    color: var(--lk-text-muted, #64748B);
     font-size: 15px;
 }
 
@@ -35,8 +35,8 @@
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
-    background: #FFFFFF;
-    border: 1px solid #E2E8F0;
+    background: var(--lk-surface, #FFFFFF);
+    border: 1px solid var(--lk-border, #E2E8F0);
     border-radius: 14px;
     padding: 1rem 1.1rem;
     text-align: left;
@@ -47,13 +47,13 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #64748B;
+    color: var(--lk-text-muted, #64748B);
 }
 
 .tb-stat-value {
     font-size: 16px;
     font-weight: 700;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
 }
 
 /* ── Content grid: items on the left, payment + shipping stacked as
@@ -99,8 +99,8 @@
     width: 72px;
     height: 72px;
     border-radius: 50%;
-    background: #16A34A;
-    color: #fff;
+    background: var(--lk-success, #16A34A);
+    color: var(--lk-white-fixed, #fff);
     font-size: 30px;
     display: flex;
     align-items: center;
@@ -110,7 +110,7 @@
 
 /* Pending — warning amber, payment not yet confirmed. */
 .tb-check-mark-pending {
-    background: #F59E0B;
+    background: var(--lk-warning, #F59E0B);
     animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
 }
 @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -118,20 +118,20 @@
 .tb-heading {
     font-size: 28px;
     font-weight: 700;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
     margin: 0 0 0.5rem;
     letter-spacing: -0.025em;
 }
 
 .tb-subheading {
     font-size: 14px;
-    color: #64748B;
+    color: var(--lk-text-muted, #64748B);
     margin: 0 0 2.5rem;
 }
 
 .tb-progress-section {
-    background: #FFFFFF;
-    border: 1px solid #E2E8F0;
+    background: var(--lk-surface, #FFFFFF);
+    border: 1px solid var(--lk-border, #E2E8F0);
     border-radius: 14px;
     padding: 1rem 1.25rem 0.25rem;
     margin-bottom: 2rem;
@@ -139,8 +139,8 @@
 
 .tb-card {
     text-align: left;
-    background: #FFFFFF;
-    border: 1px solid #E2E8F0;
+    background: var(--lk-surface, #FFFFFF);
+    border: 1px solid var(--lk-border, #E2E8F0);
     border-radius: 14px;
     padding: 1.5rem;
 }
@@ -148,7 +148,7 @@
 .tb-section-heading {
     font-size: 16px;
     font-weight: 600;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
     margin: 0 0 1rem;
     letter-spacing: -0.01em;
 }
@@ -163,12 +163,12 @@
     text-align: left;
     padding: 0.65rem 0;
     font-size: 13px;
-    border-bottom: 1px solid #F1F5F9;
-    color: #475569;
+    border-bottom: 1px solid var(--lk-divider, #F1F5F9);
+    color: var(--lk-text-body, #475569);
 }
 
 .tb-items-table th {
-    color: #64748B;
+    color: var(--lk-text-muted, #64748B);
     font-weight: 600;
     font-size: 11px;
     text-transform: uppercase;
@@ -178,11 +178,11 @@
 .tb-items-table tfoot td {
     border-bottom: none;
     padding-top: 0.85rem;
-    color: #64748B;
+    color: var(--lk-text-muted, #64748B);
     font-weight: 600;
 }
 .tb-items-table tfoot tr:last-child td {
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
     font-size: 15px;
     font-weight: 700;
 }
@@ -191,9 +191,9 @@
     display: flex;
     justify-content: space-between;
     font-size: 14px;
-    color: #64748B;
+    color: var(--lk-text-muted, #64748B);
     padding: 0.55rem 0;
-    border-bottom: 1px solid #F1F5F9;
+    border-bottom: 1px solid var(--lk-divider, #F1F5F9);
 }
 .tb-detail-row:last-child { border-bottom: none; }
 
@@ -209,13 +209,13 @@
 
 .tb-detail-value {
     font-weight: 600;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
 }
 
 .tb-link-btn {
     background: none;
     border: none;
-    color: #2563EB;
+    color: var(--lk-primary, #2563EB);
     font-weight: 600;
     cursor: pointer;
     font-family: inherit;
@@ -242,8 +242,8 @@
 /* Track Order — primary blue. */
 .tb-btn-primary {
     width: auto;
-    background: #2563EB;
-    color: #fff;
+    background: var(--lk-primary, #2563EB);
+    color: var(--lk-white-fixed, #fff);
     border: none;
     border-radius: 980px;
     padding: 0.75rem 1.75rem;
@@ -254,13 +254,13 @@
     transition: background 0.2s;
     box-sizing: border-box;
 }
-.tb-btn-primary:hover { background: #1D4ED8; }
+.tb-btn-primary:hover { background: var(--lk-primary-hover, #1D4ED8); }
 
 /* Continue Shopping — secondary dark navy, per the global button standard. */
 .tb-btn-secondary {
     width: auto;
-    background: #0F172A;
-    color: #fff;
+    background: var(--lk-secondary, #0F172A);
+    color: var(--lk-white-fixed, #fff);
     border: none;
     border-radius: 980px;
     padding: 0.75rem 1.75rem;
@@ -271,11 +271,50 @@
     transition: background 0.2s;
     box-sizing: border-box;
 }
-.tb-btn-secondary:hover { background: #1E293B; }
+.tb-btn-secondary:hover { background: var(--lk-secondary-hover, #1E293B); }
+
+/* ── Pricing breakdown (replaces the old plain Total Amount / Total Paid
+   footer, which showed no explanation for why they differed once GST and
+   discounts were introduced) ── */
+.tb-order-total-breakdown {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--lk-divider, #F1F5F9);
+}
+.tb-summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--lk-text-muted, #64748B);
+    padding: 0.3rem 0;
+}
+.tb-summary-row span:last-child { font-variant-numeric: tabular-nums; color: var(--lk-text-strong, #334155); }
+.tb-summary-row-discount span:last-child { color: var(--lk-success-text, #15803D); }
+.tb-summary-row-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--lk-text-heading, #0F172A);
+    padding-top: 0.65rem;
+    margin-top: 0.4rem;
+    border-top: 1px solid var(--lk-border, #E2E8F0);
+}
+.tb-summary-row-total span:last-child { font-variant-numeric: tabular-nums; }
+
+.tb-points-earned-note {
+    margin: 0.85rem 0 0;
+    font-size: 13px;
+    color: var(--lk-success-text, #15803D);
+    background: var(--lk-success-bg, #F0FDF4);
+    border: 1px solid var(--lk-success-border, #BBF7D0);
+    border-radius: 8px;
+    padding: 0.6rem 0.85rem;
+}
 
 .tb-not-found {
     text-align: center;
     padding: 6rem 1rem;
-    color: #64748B;
+    color: var(--lk-text-muted, #64748B);
     font-size: 16px;
 }

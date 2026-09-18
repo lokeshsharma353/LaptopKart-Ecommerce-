@@ -38,12 +38,12 @@
                     </template>
 
                     <template if:true={isShippingMethodStep}>
-                        <c-tech-basket-shipping-method onback={handleShippingMethodBack} onnext={handleShippingMethodNext}></c-tech-basket-shipping-method>
+                        <c-tech-basket-shipping-method onback={handleShippingMethodBack} onnext={handleShippingMethodNext} onselect={handleShippingMethodSelect}></c-tech-basket-shipping-method>
                     </template>
                 </div>
 
                 <div class="tb-checkout-summary">
-                    <c-tech-basket-order-summary items={items} hide-checkout-button></c-tech-basket-order-summary>
+                    <c-tech-basket-order-summary items={items} shipping-cost={currentShippingCost} hide-checkout-button></c-tech-basket-order-summary>
                 </div>
             </div>
         </template>

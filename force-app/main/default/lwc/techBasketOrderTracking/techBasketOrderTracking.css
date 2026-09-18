@@ -1,9 +1,9 @@
 :host {
     display: block;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-    background: #F8FAFC;
+    background: var(--lk-page-bg, #F8FAFC);
     min-height: 100vh;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
 }
 
 .tb-tracking-page {
@@ -15,7 +15,7 @@
 .tb-page-title {
     font-size: 30px;
     font-weight: 700;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
     margin: 0 0 1.75rem;
     letter-spacing: -0.025em;
 }
@@ -23,13 +23,13 @@
 .tb-loading {
     text-align: center;
     padding: 4rem 1rem;
-    color: #64748B;
+    color: var(--lk-text-muted, #64748B);
 }
 
 .tb-tracking-card,
 .tb-lookup-card {
-    background: #FFFFFF;
-    border: 1px solid #E2E8F0;
+    background: var(--lk-surface, #FFFFFF);
+    border: 1px solid var(--lk-border, #E2E8F0);
     border-radius: 14px;
     padding: 1.75rem;
 }
@@ -38,7 +38,7 @@
     display: flex;
     justify-content: space-between;
     padding: 0.75rem 0;
-    border-bottom: 1px solid #F1F5F9;
+    border-bottom: 1px solid var(--lk-divider, #F1F5F9);
     font-size: 14px;
 }
 
@@ -47,17 +47,17 @@
 }
 
 .tb-tracking-label {
-    color: #64748B;
+    color: var(--lk-text-muted, #64748B);
 }
 
 .tb-tracking-value {
     font-weight: 600;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
 }
 
 .tb-status-badge {
-    background: #F0FDF4;
-    color: #15803D;
+    background: var(--lk-success-bg, #F0FDF4);
+    color: var(--lk-success-text, #15803D);
     font-size: 12px;
     font-weight: 700;
     padding: 3px 10px;
@@ -66,7 +66,7 @@
 
 .tb-lookup-text {
     font-size: 14px;
-    color: #64748B;
+    color: var(--lk-text-muted, #64748B);
     margin: 0 0 1rem;
 }
 
@@ -79,20 +79,20 @@
     flex: 1;
     height: 44px;
     padding: 0 0.9rem;
-    background: #FFFFFF;
-    border: 1px solid #CBD5E1;
+    background: var(--lk-surface, #FFFFFF);
+    border: 1px solid var(--lk-border-strong, #CBD5E1);
     border-radius: 8px;
     font-size: 14px;
     font-family: inherit;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
     box-sizing: border-box;
     transition: border-color 0.2s;
 }
-.tb-lookup-input:focus { outline: none; border-color: #2563EB; }
+.tb-lookup-input:focus { outline: none; border-color: var(--lk-primary, #2563EB); }
 
 .tb-btn-primary {
-    background: #2563EB;
-    color: #fff;
+    background: var(--lk-primary, #2563EB);
+    color: var(--lk-white-fixed, #fff);
     border: none;
     border-radius: 980px;
     padding: 0 1.75rem;
@@ -102,10 +102,10 @@
     cursor: pointer;
     transition: background 0.2s, transform 0.15s;
 }
-.tb-btn-primary:hover { background: #1D4ED8; transform: scale(1.01); }
+.tb-btn-primary:hover { background: var(--lk-primary-hover, #1D4ED8); transform: scale(1.01); }
 
 .tb-not-found {
-    color: #DC2626;
+    color: var(--lk-error, #DC2626);
     font-size: 13px;
     margin: 0.75rem 0 0;
 }

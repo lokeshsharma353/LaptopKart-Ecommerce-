@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Points_Earned__c</fullName>
+    <defaultValue>0</defaultValue>
+    <externalId>false</externalId>
+    <label>Points Earned</label>
+    <precision>8</precision>
+    <scale>0</scale>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+    <description>Loyalty points earned from this order, set once by LoyaltyService the moment Order_Tracking__c.Delivery_Status__c reaches Delivered (1 point per ₹1,000 of Taxable_Amount__c, whole-thousand rule) — never awarded earlier, since payment can still fail or the order can still be cancelled before then. See Feature Expansion Plan §2.3.</description>
+</CustomField>

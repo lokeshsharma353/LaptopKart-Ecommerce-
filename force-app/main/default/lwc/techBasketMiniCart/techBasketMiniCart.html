@@ -1,0 +1,44 @@
+<template>
+    <div class="tb-mc-overlay" onclick={handleClose}></div>
+    <div class="tb-mc-drawer" role="dialog" aria-modal="true" aria-label="Cart">
+        <div class="tb-mc-header">
+            <h2 class="tb-mc-title">Your Cart <span if:true={hasItems} class="tb-mc-count">({itemCount})</span></h2>
+            <button class="tb-mc-close" onclick={handleClose} aria-label="Close cart">&times;</button>
+        </div>
+
+        <template if:false={hasItems}>
+            <div class="tb-mc-empty">
+                <p>Your cart is empty.</p>
+                <button class="tb-mc-shop-btn" onclick={handleClose}>Continue Shopping</button>
+            </div>
+        </template>
+
+        <template if:true={hasItems}>
+            <div class="tb-mc-items">
+                <template for:each={lineItems} for:item="item">
+                    <div key={item.productId} class="tb-mc-item">
+                        <button class="tb-mc-item-name" data-id={item.productId} onclick={handleProductClick}>{item.productName}</button>
+                        <div class="tb-mc-item-row">
+                            <div class="tb-qty-stepper">
+                                <button class="tb-qty-btn" data-id={item.productId} onclick={handleDecrease} aria-label="Decrease quantity">&#8722;</button>
+                                <span class="tb-qty-value">{item.quantity}</span>
+                                <button class="tb-qty-btn" data-id={item.productId} onclick={handleIncrease} aria-label="Increase quantity">+</button>
+                            </div>
+                            <span class="tb-mc-item-price">&#8377;{item.lineTotal}</span>
+                            <button class="tb-mc-remove" data-id={item.productId} onclick={handleRemove} aria-label="Remove item">&times;</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div class="tb-mc-footer">
+                <div class="tb-mc-subtotal-row">
+                    <span>Subtotal</span>
+                    <span class="tb-mc-subtotal">&#8377;{subtotal}</span>
+                </div>
+                <button class="tb-mc-checkout-btn" onclick={handleCheckout}>Checkout</button>
+                <button class="tb-mc-view-cart-btn" onclick={handleViewCart}>View Full Cart</button>
+            </div>
+        </template>
+    </div>
+</template>

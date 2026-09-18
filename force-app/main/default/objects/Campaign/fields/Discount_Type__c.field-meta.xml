@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Discount_Type__c</fullName>
+    <externalId>false</externalId>
+    <label>Discount Type</label>
+    <required>true</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Percentage</fullName>
+                <default>true</default>
+                <label>Percentage</label>
+            </value>
+            <value>
+                <fullName>Flat Amount</fullName>
+                <default>false</default>
+                <label>Flat Amount</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+    <description>Whether Discount_Value__c on this Campaign is a percentage off or a flat rupee amount off. Only meaningful for Campaigns used as discount campaigns (see the Feature Expansion Plan §1) — not every Campaign in the org needs this set.</description>
+</CustomField>

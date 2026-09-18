@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Account__c</fullName>
+    <externalId>false</externalId>
+    <label>Customer Account</label>
+    <referenceTo>Account</referenceTo>
+    <relationshipLabel>Cart Activities</relationshipLabel>
+    <relationshipName>Cart_Activities</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+    <deleteConstraint>Cascade</deleteConstraint>
+    <description>Replaces Login_Credentials__c as the customer link, now that the storefront login runs on Account (Customer Account Detail record type). Login_Credentials__c is left in place but no longer populated by new activity rows.</description>
+</CustomField>

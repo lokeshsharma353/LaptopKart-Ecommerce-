@@ -6,7 +6,7 @@
 .tb-welcome-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15,23,42,0.6);
+    background: var(--lk-overlay-scrim, rgba(15,23,42,0.6));
     backdrop-filter: blur(4px);
     z-index: 2998;
     animation: tbFadeIn 0.3s ease-out;
@@ -21,11 +21,11 @@
     max-width: calc(100vw - 2.5rem);
     max-height: calc(100vh - 3rem);
     overflow-y: auto;
-    background: #FFFFFF;
-    border: 1px solid #E2E8F0;
+    background: var(--lk-surface, #FFFFFF);
+    border: 1px solid var(--lk-border, #E2E8F0);
     border-radius: 20px;
     padding: 2.5rem 2.25rem 2.25rem;
-    box-shadow: 0 30px 80px rgba(15,23,42,0.25);
+    box-shadow: 0 30px 80px var(--lk-shadow-color, rgba(15,23,42,0.25));
     z-index: 2999;
     animation: tbPopIn 0.35s cubic-bezier(0.16,1,0.3,1);
 }
@@ -47,15 +47,15 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #F8FAFC;
-    border: 1px solid #E2E8F0;
-    color: #64748B;
+    background: var(--lk-surface-alt, #F8FAFC);
+    border: 1px solid var(--lk-border, #E2E8F0);
+    color: var(--lk-text-muted, #64748B);
     font-size: 18px;
     line-height: 1;
     cursor: pointer;
     transition: color 0.18s, background 0.18s;
 }
-.tb-welcome-close:hover { color: #0F172A; background: #EFF6FF; }
+.tb-welcome-close:hover { color: var(--lk-text-heading, #0F172A); background: var(--lk-primary-tint, #EFF6FF); }
 
 .tb-welcome-eyebrow {
     display: block;
@@ -63,14 +63,14 @@
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #2563EB;
+    color: var(--lk-primary, #2563EB);
     margin-bottom: 0.6rem;
 }
 
 .tb-welcome-heading {
     font-size: 24px;
     font-weight: 700;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
     margin: 0 0 0.6rem;
     letter-spacing: -0.02em;
     line-height: 1.25;
@@ -78,7 +78,7 @@
 
 .tb-welcome-sub {
     font-size: 13.5px;
-    color: #64748B;
+    color: var(--lk-text-muted, #64748B);
     line-height: 1.55;
     margin: 0 0 1.75rem;
 }
@@ -91,7 +91,7 @@
     display: block;
     font-size: 11px;
     font-weight: 600;
-    color: #334155;
+    color: var(--lk-text-strong, #334155);
     margin-bottom: 0.4rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -102,36 +102,36 @@
     width: 100%;
     height: 44px;
     padding: 0 0.9rem;
-    background: #FFFFFF;
-    border: 1px solid #CBD5E1;
+    background: var(--lk-surface, #FFFFFF);
+    border: 1px solid var(--lk-border-strong, #CBD5E1);
     border-radius: 8px;
     font-size: 14px;
     font-family: inherit;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
     box-sizing: border-box;
     transition: border-color 0.2s;
 }
 .tb-field select { cursor: pointer; }
-.tb-field select option { background: #FFFFFF; color: #0F172A; }
+.tb-field select option { background: var(--lk-surface, #FFFFFF); color: var(--lk-text-heading, #0F172A); }
 .tb-field input:focus,
-.tb-field select:focus { outline: none; border-color: #2563EB; }
+.tb-field select:focus { outline: none; border-color: var(--lk-primary, #2563EB); }
 
 .tb-error {
-    color: #B91C1C;
+    color: var(--lk-error-text, #B91C1C);
     font-size: 12px;
     margin: 0.3rem 0 0;
 }
 
 .tb-required {
-    color: #DC2626;
+    color: var(--lk-error, #DC2626);
 }
 
 .tb-welcome-submit {
     width: 100%;
     height: 48px;
     margin-top: 0.5rem;
-    background: #2563EB;
-    color: #fff;
+    background: var(--lk-primary, #2563EB);
+    color: var(--lk-white-fixed, #fff);
     border: none;
     border-radius: 980px;
     font-size: 14.5px;
@@ -141,15 +141,15 @@
     letter-spacing: -0.01em;
     transition: background 0.2s, transform 0.15s;
 }
-.tb-welcome-submit:hover { background: #1D4ED8; transform: scale(1.01); }
-.tb-welcome-submit:disabled { background: #CBD5E1; color: #64748B; cursor: not-allowed; transform: none; }
+.tb-welcome-submit:hover { background: var(--lk-primary-hover, #1D4ED8); transform: scale(1.01); }
+.tb-welcome-submit:disabled { background: var(--lk-border-strong, #CBD5E1); color: var(--lk-text-muted, #64748B); cursor: not-allowed; transform: none; }
 
 .tb-welcome-skip {
     display: block;
     width: 100%;
     background: none;
     border: none;
-    color: #94A3B8;
+    color: var(--lk-text-subtle, #94A3B8);
     font-size: 12.5px;
     font-family: inherit;
     cursor: pointer;
@@ -157,7 +157,7 @@
     text-align: center;
     transition: color 0.18s;
 }
-.tb-welcome-skip:hover { color: #475569; }
+.tb-welcome-skip:hover { color: var(--lk-text-body, #475569); }
 
 @media (max-width: 480px) {
     .tb-welcome-modal { padding: 2rem 1.5rem 1.75rem; }

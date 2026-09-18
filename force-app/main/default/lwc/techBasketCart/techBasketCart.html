@@ -13,6 +13,7 @@
                             item={item}
                             onquantitychange={handleQuantityChange}
                             onremove={handleRemove}
+                            onsaveforlater={handleSaveForLater}
                         ></c-tech-basket-cart-item>
                     </template>
 
@@ -23,6 +24,7 @@
                 </div>
 
                 <div class="tb-cart-summary">
+                    <c-tech-basket-cart-coupon></c-tech-basket-cart-coupon>
                     <c-tech-basket-order-summary items={items}></c-tech-basket-order-summary>
                 </div>
             </div>

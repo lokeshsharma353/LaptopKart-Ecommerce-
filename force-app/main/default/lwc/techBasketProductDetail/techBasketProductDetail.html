@@ -83,7 +83,7 @@
 
                     <!-- Quantity + Add to Cart -->
                     <div class="tb-buy-row">
-                        <c-tech-basket-quantity-selector quantity={quantity} onchange={handleQuantityChange}></c-tech-basket-quantity-selector>
+                        <c-tech-basket-quantity-selector quantity={quantity} max-quantity={maxSelectableQuantity} onchange={handleQuantityChange}></c-tech-basket-quantity-selector>
                         <button class={addCartClass} onclick={handleAddToCart}>{addCartLabel}</button>
                         <button class="tb-buy-now-btn" onclick={handleBuyNow}>Buy Now</button>
                     </div>

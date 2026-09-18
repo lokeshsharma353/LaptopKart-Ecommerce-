@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Coupon_Code__c</fullName>
+    <externalId>false</externalId>
+    <label>Coupon Code</label>
+    <referenceTo>Coupon_Code__c</referenceTo>
+    <relationshipLabel>Redemptions</relationshipLabel>
+    <relationshipName>Redemptions</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>Set only on CampaignMember rows that represent a coupon redemption (see the Feature Expansion Plan §1) — blank on every ordinary campaign membership row.</description>
+</CustomField>

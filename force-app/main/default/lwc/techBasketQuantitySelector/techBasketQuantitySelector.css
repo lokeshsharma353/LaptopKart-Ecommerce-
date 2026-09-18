@@ -6,11 +6,11 @@
 .tb-qty-selector {
     display: flex;
     align-items: center;
-    border: 1px solid #CBD5E1;
+    border: 1px solid var(--lk-border-strong, #CBD5E1);
     border-radius: 980px;
     overflow: hidden;
     width: fit-content;
-    background: #FFFFFF;
+    background: var(--lk-surface, #FFFFFF);
 }
 
 .tb-qty-btn {
@@ -20,12 +20,12 @@
     border: none;
     font-size: 18px;
     font-weight: 400;
-    color: #475569;
+    color: var(--lk-text-body, #475569);
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
 }
 
-.tb-qty-btn:hover { background: #EFF6FF; color: #2563EB; }
+.tb-qty-btn:hover { background: var(--lk-primary-tint, #EFF6FF); color: var(--lk-primary, #2563EB); }
 
 .tb-qty-btn:disabled {
     opacity: 0.3;
@@ -37,7 +37,7 @@
     text-align: center;
     font-size: 15px;
     font-weight: 600;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
 }
 
 @media (max-width: 480px) {

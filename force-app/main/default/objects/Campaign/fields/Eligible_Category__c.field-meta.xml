@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Eligible_Category__c</fullName>
+    <externalId>false</externalId>
+    <label>Eligible Category</label>
+    <length>80</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+    <description>Restricts this discount campaign to cart lines whose Product2.Family matches this value exactly (e.g. "Laptop") — those items get the discount, everything else in the cart does not, though it can still count toward Minimum_Order_Value__c. Blank means the discount applies to the whole eligible cart, same as before this field existed. See Feature Expansion Plan §1.2 and the discount system's worked example (laptop discounted, accessories not).</description>
+</CustomField>

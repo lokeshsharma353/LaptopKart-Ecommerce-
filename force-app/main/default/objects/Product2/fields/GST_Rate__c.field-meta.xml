@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>GST_Rate__c</fullName>
+    <externalId>false</externalId>
+    <label>GST Rate (%)</label>
+    <precision>5</precision>
+    <scale>2</scale>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Percent</type>
+    <description>e.g. 18.00 for the 18% slab. Per-product because GST rate varies by HSN code, not a single store-wide constant. See Feature Expansion Plan §3.</description>
+</CustomField>

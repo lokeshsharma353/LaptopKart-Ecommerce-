@@ -1,48 +1,169 @@
 <template>
-    <div class="tb-form">
-        <h2 class="tb-form-heading">Payment</h2>
-        <p class="tb-amount-due">Amount Due: <span>₹{totals.total}</span></p>
+    <div class="tb-checkout-shell">
+        <div class="tb-page-header">
+            <h1 class="tb-page-heading">Complete Your Payment</h1>
+            <p class="tb-page-subheading">Review your order, apply any offers, and choose how you'd like to pay.</p>
+        </div>
 
-        <template if:true={showMethodStep}>
-            <c-tech-basket-payment-method selected-id={methodId} onmethodselect={handleMethodSelect}></c-tech-basket-payment-method>
+        <div class="tb-checkout-grid">
+            <!-- ═══════════════ Left column: review + offers + method ═══════════════ -->
+            <div class="tb-checkout-main">
 
-            <p class="tb-non-card-note">
-                <template if:true={methodId}>You'll pay via {methodLabel}. Click Place Order to confirm.</template>
-            </p>
+                <div class="tb-card">
+                    <div class="tb-card-header">
+                        <span class="tb-card-icon"><c-tech-basket-icon name="package"></c-tech-basket-icon></span>
+                        <div class="tb-card-header-text">
+                            <h2 class="tb-card-title">Review Your Order</h2>
+                            <p class="tb-card-sub">{itemsCountLabel}</p>
+                        </div>
+                    </div>
+                    <template if:true={hasItems}>
+                        <div class="tb-review-list">
+                            <template for:each={itemsWithImages} for:item="item">
+                                <div key={item.productId} class="tb-review-item">
+                                    <div class="tb-review-item-img-wrap">
+                                        <img src={item.imageUrl} alt={item.productName} class="tb-review-item-img" />
+                                    </div>
+                                    <div class="tb-review-item-info">
+                                        <span class="tb-review-item-name">{item.productName}</span>
+                                        <span class="tb-review-item-qty">Qty: {item.quantity}</span>
+                                    </div>
+                                    <span class="tb-review-item-price">₹{item.lineTotal}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
 
-            <template if:true={paymentError}>
-                <p class="tb-payment-error">{paymentError}</p>
-            </template>
+                <div class="tb-card">
+                    <div class="tb-card-header">
+                        <span class="tb-card-icon"><c-tech-basket-icon name="gift"></c-tech-basket-icon></span>
+                        <div class="tb-card-header-text">
+                            <h2 class="tb-card-title">Apply Offers</h2>
+                            <p class="tb-card-sub">Coupons and loyalty points</p>
+                        </div>
+                    </div>
 
-            <div class="tb-form-actions">
-                <button class="tb-btn-secondary" onclick={handleBack} disabled={isProcessing}>Back</button>
-                <button class="tb-btn-pay" onclick={handlePayNow} disabled={payDisabled}>{payButtonLabel}</button>
+                    <div class="tb-promo-section">
+                        <div class="tb-promo-label-row">
+                            <p class="tb-promo-label">Coupon Code</p>
+                            <template if:true={showViewCouponsButton}>
+                                <button type="button" class="tb-view-coupons-btn" onclick={handleToggleAvailableCoupons}>{viewCouponsLabel}</button>
+                            </template>
+                        </div>
+                        <template if:true={appliedCouponCode}>
+                            <div class="tb-applied-chip">
+                                <span><c-tech-basket-icon name="gift"></c-tech-basket-icon> {appliedCouponCode} applied</span>
+                                <button type="button" onclick={handleRemoveCoupon}>Remove</button>
+                            </div>
+                        </template>
+                        <template if:false={appliedCouponCode}>
+                            <div class="tb-promo-row">
+                                <input type="text" placeholder="Enter coupon code" value={couponInput} oninput={handleCouponInput} />
+                                <button type="button" class="tb-btn-apply" onclick={handleApplyCoupon} disabled={isPricingLoading}>Apply</button>
+                            </div>
+                            <template if:true={showAvailableCoupons}>
+                                <div class="tb-available-coupons">
+                                    <template for:each={availableCoupons} for:item="coupon">
+                                        <button type="button" key={coupon.code} class="tb-coupon-chip" data-code={coupon.code} onclick={handleSelectAvailableCoupon} disabled={isPricingLoading}>
+                                            <span class="tb-coupon-chip-code">{coupon.code}</span>
+                                            <span class="tb-coupon-chip-desc">{coupon.description}</span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </template>
+                        </template>
+                        <template if:true={couponMessage}>
+                            <p class={couponMessageClass}>{couponMessage}</p>
+                        </template>
+                    </div>
+
+                    <template if:true={isLoggedIn}>
+                        <div class="tb-promo-section tb-promo-section-last">
+                            <p class="tb-promo-label">Loyalty Points</p>
+                            <p class="tb-loyalty-balance">Available balance: {loyaltyBalance} points</p>
+                            <template if:false={hasLoyaltyDiscount}>
+                                <div class="tb-promo-row">
+                                    <input type="number" min="1" placeholder="Points to redeem" value={pointsInput} oninput={handlePointsInput} />
+                                    <button type="button" class="tb-btn-apply" onclick={handleApplyPoints} disabled={isPricingLoading}>Apply</button>
+                                </div>
+                            </template>
+                            <template if:true={hasLoyaltyDiscount}>
+                                <div class="tb-applied-chip">
+                                    <span><c-tech-basket-icon name="gift"></c-tech-basket-icon> {appliedPoints} points applied</span>
+                                    <button type="button" onclick={handleRemovePoints}>Remove</button>
+                                </div>
+                            </template>
+                            <template if:true={loyaltyMessage}>
+                                <p class="tb-promo-message tb-promo-message-success">{loyaltyMessage}</p>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="tb-card">
+                    <div class="tb-card-header">
+                        <span class="tb-card-icon"><c-tech-basket-icon name="card"></c-tech-basket-icon></span>
+                        <div class="tb-card-header-text">
+                            <h2 class="tb-card-title">Payment Method</h2>
+                            <p class="tb-card-sub">Choose how you'd like to pay</p>
+                        </div>
+                    </div>
+                    <c-tech-basket-payment-method selected-id={methodId} onmethodselect={handleMethodSelect}></c-tech-basket-payment-method>
+                    <p class="tb-non-card-note">
+                        <template if:true={methodId}>You'll pay via {methodLabel}. Click Place Order to confirm.</template>
+                    </p>
+                </div>
             </div>
-        </template>
 
-        <template if:true={showQrStep}>
-            <div class="tb-qr-step">
-                <p class="tb-qr-instructions">Scan the QR code below with any UPI app (Google Pay, PhonePe, Paytm, etc.) and pay <strong>₹{totals.total}</strong>. Once paid, enter the transaction reference (UTR) your app gave you.</p>
+            <!-- ═══════════════ Right column: sticky totals + place order ═══════════════ -->
+            <div class="tb-checkout-side">
+                <div class="tb-card tb-summary-card">
+                    <div class="tb-card-header">
+                        <span class="tb-card-icon"><c-tech-basket-icon name="cash"></c-tech-basket-icon></span>
+                        <div class="tb-card-header-text">
+                            <h2 class="tb-card-title">Order Summary</h2>
+                        </div>
+                    </div>
 
-                <div class="tb-qr-image-wrap">
-                    <img src={qrImageUrl} alt="Scan to pay via UPI" class="tb-qr-image" />
-                </div>
+                    <div class="tb-order-summary">
+                        <div class="tb-summary-row"><span>Subtotal</span><span>₹{pricingSubtotal}</span></div>
+                        <template if:true={hasDiscount}>
+                            <div class="tb-summary-row tb-summary-row-discount"><span>Coupon Discount</span><span>-₹{discountDisplay}</span></div>
+                        </template>
+                        <div class="tb-summary-row"><span>Taxable Value</span><span>₹{taxableDisplay}</span></div>
+                        <template if:true={isIntrastate}>
+                            <div class="tb-summary-row"><span>CGST</span><span>₹{cgstDisplay}</span></div>
+                            <div class="tb-summary-row"><span>SGST</span><span>₹{sgstDisplay}</span></div>
+                        </template>
+                        <template if:false={isIntrastate}>
+                            <div class="tb-summary-row"><span>IGST</span><span>₹{igstDisplay}</span></div>
+                        </template>
+                        <template if:true={hasShippingCost}>
+                            <div class="tb-summary-row"><span>Shipping ({shippingMethodLabel})</span><span>₹{shippingCostDisplay}</span></div>
+                        </template>
+                        <template if:true={hasLoyaltyDiscount}>
+                            <div class="tb-summary-row tb-summary-row-discount"><span>Loyalty Points Redeemed</span><span>-₹{loyaltyDiscountDisplay}</span></div>
+                        </template>
+                    </div>
 
-                <div class="tb-field">
-                    <label for="utrNumber">UTR / Transaction Reference Number</label>
-                    <input id="utrNumber" type="text" value={utrNumber} oninput={handleUtrInput} placeholder="e.g. 123456789012" disabled={isProcessing} />
-                    <template if:true={utrError}><p class="tb-error">{utrError}</p></template>
-                </div>
+                    <div class="tb-amount-payable">
+                        <span>Amount Payable</span>
+                        <span>₹{amountDueDisplay}</span>
+                    </div>
 
-                <template if:true={paymentError}>
-                    <p class="tb-payment-error">{paymentError}</p>
-                </template>
+                    <template if:true={paymentError}>
+                        <p class="tb-payment-error">{paymentError}</p>
+                    </template>
 
-                <div class="tb-form-actions">
-                    <button class="tb-btn-secondary" onclick={handleBackFromQr} disabled={isProcessing}>Back</button>
-                    <button class="tb-btn-pay" onclick={handleConfirmPayment} disabled={payDisabled}>{confirmButtonLabel}</button>
+                    <div class="tb-form-actions">
+                        <button class="tb-btn-secondary" onclick={handleBack} disabled={isProcessing}>Back</button>
+                        <button class="tb-btn-pay" onclick={handlePayNow} disabled={payDisabled}>{payButtonLabel}</button>
+                    </div>
+
+                    <p class="tb-secure-note"><c-tech-basket-icon name="lock"></c-tech-basket-icon> Your payment information is processed securely.</p>
                 </div>
             </div>
-        </template>
+        </div>
     </div>
 </template>

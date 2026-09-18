@@ -51,7 +51,13 @@ export default class TechBasketOrderHistory extends NavigationMixin(LightningEle
                     ? 'tb-status tb-status-done'
                     : 'tb-status tb-status-processing',
             canCancel: order.status !== 'Cancelled',
-            isCancelling: false
+            isCancelling: false,
+            // The real, final charged amount (GST-inclusive, net of any
+            // discount/loyalty redemption) — never the raw pre-tax
+            // totalAmount, which would show a lower figure than what the
+            // customer actually paid. Falls back to totalAmount only for an
+            // order that predates the pricing engine (amountPayable blank).
+            displayAmount: order.amountPayable != null ? order.amountPayable : order.totalAmount
         };
     }
 

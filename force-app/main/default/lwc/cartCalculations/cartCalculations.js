@@ -1,5 +1,14 @@
-/** Frontend placeholder tax rate (5%) — real tax rules require Apex/tax engine integration. */
-const TAX_RATE = 0.05;
+/**
+ * Frontend estimate tax rate — mirrors OrderPricingService.DEFAULT_GST_RATE_PERCENT
+ * (18%, the standard GST slab for laptops/computers, HSN 8471), which every
+ * real product in this catalog falls back to (none currently override
+ * Product2.GST_Rate__c). This is still only an ESTIMATE shown before the
+ * real server pricing engine runs (Cart/Checkout, ahead of Payment) — the
+ * actual charge always comes from OrderPricingService.calculate, which
+ * computes GST per line at that product's own real rate. Keep this in sync
+ * with DEFAULT_GST_RATE_PERCENT if that default ever changes.
+ */
+const TAX_RATE = 0.18;
 
 /**
  * cartCalculations — pure functions for order total arithmetic.

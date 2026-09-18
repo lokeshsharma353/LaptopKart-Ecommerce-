@@ -1,10 +1,17 @@
 :host {
-    --tb-primary: #2563EB;
-    --tb-text: #0F172A;
-    --tb-danger: #DC2626;
-    --tb-white: #ffffff;
-    --tb-background: #FFFFFF;
-    --tb-muted: #64748B;
+    --tb-primary: var(--lk-primary, #2563EB);
+    --tb-primary-hover: var(--lk-primary-hover, #1D4ED8);
+    --tb-text: var(--lk-text-heading, #0F172A);
+    --tb-danger: var(--lk-error, #DC2626);
+    --tb-white: var(--lk-white-fixed, #ffffff);
+    --tb-card-bg: var(--lk-surface, #FFFFFF);
+    --tb-background: var(--lk-surface, #FFFFFF);
+    --tb-muted: var(--lk-text-muted, #64748B);
+    --tb-border: var(--lk-border, #E2E8F0);
+    --tb-border-strong: var(--lk-border-strong, #CBD5E1);
+    --tb-placeholder: var(--lk-text-subtle, #94A3B8);
+    --tb-disabled-bg: var(--lk-border-strong, #CBD5E1);
+    --tb-disabled-text: var(--lk-text-muted, #64748B);
 
     display: block;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -19,8 +26,8 @@
 }
 
 .tb-signup-card {
-    background: var(--tb-white);
-    border: 1px solid #E2E8F0;
+    background: var(--tb-card-bg);
+    border: 1px solid var(--tb-border);
     border-radius: 12px;
     padding: 2rem;
 }
@@ -51,15 +58,16 @@
     width: 100%;
     height: 40px;
     padding: 0 0.75rem;
-    border: 1px solid #CBD5E1;
+    border: 1px solid var(--tb-border-strong);
     border-radius: 6px;
     font-size: 14px;
     font-family: inherit;
     color: var(--tb-text);
+    background: var(--tb-card-bg);
     box-sizing: border-box;
     transition: border-color 0.2s;
 }
-.tb-field input::placeholder { color: #94A3B8; }
+.tb-field input::placeholder { color: var(--tb-placeholder); }
 .tb-field input:focus { outline: none; border-color: var(--tb-primary); }
 
 .tb-field-row {
@@ -95,11 +103,11 @@
     margin-top: 0.5rem;
     transition: background 0.2s;
 }
-.tb-btn-primary:hover { background: #1D4ED8; }
+.tb-btn-primary:hover { background: var(--tb-primary-hover); }
 
 .tb-btn-primary:disabled {
-    background: #CBD5E1;
-    color: #64748B;
+    background: var(--tb-disabled-bg);
+    color: var(--tb-disabled-text);
     cursor: not-allowed;
 }
 

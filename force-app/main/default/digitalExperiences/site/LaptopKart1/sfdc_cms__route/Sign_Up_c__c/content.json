@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Sign Up",
+  "contentBody" : {
+    "activeViewId" : "Sign_Up",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-sign-up",
+    "urlPrefix" : "sign-up"
+  },
+  "urlName" : "sign-up"
+}

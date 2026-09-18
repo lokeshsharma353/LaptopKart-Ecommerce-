@@ -24,8 +24,8 @@
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: #FFFFFF;
-    border: 2px solid #CBD5E1;
+    background: var(--lk-surface, #FFFFFF);
+    border: 2px solid var(--lk-border-strong, #CBD5E1);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -42,33 +42,33 @@
 
 /* Done — filled green, checkmark visible. */
 .tb-progress-step-done .tb-progress-dot {
-    background: #16A34A;
-    border-color: #16A34A;
+    background: var(--lk-success, #16A34A);
+    border-color: var(--lk-success, #16A34A);
 }
-.tb-progress-step-done .tb-progress-check { color: #fff; }
-.tb-progress-step-done .tb-progress-label { color: #0F172A; }
+.tb-progress-step-done .tb-progress-check { color: var(--lk-white-fixed, #fff); }
+.tb-progress-step-done .tb-progress-label { color: var(--lk-text-heading, #0F172A); }
 
 /* Current — blue ring, no check yet. */
 .tb-progress-step-current .tb-progress-dot {
-    background: #2563EB;
-    border-color: #2563EB;
-    box-shadow: 0 0 0 4px #EFF6FF;
+    background: var(--lk-primary, #2563EB);
+    border-color: var(--lk-primary, #2563EB);
+    box-shadow: 0 0 0 4px var(--lk-primary-tint, #EFF6FF);
 }
-.tb-progress-step-current .tb-progress-label { color: #2563EB; font-weight: 700; }
+.tb-progress-step-current .tb-progress-label { color: var(--lk-primary, #2563EB); font-weight: 700; }
 
 /* Issue (e.g. payment marked Failed/Refunded by the admin) */
 .tb-progress-step-issue .tb-progress-dot {
-    background: #DC2626;
-    border-color: #DC2626;
-    box-shadow: 0 0 0 4px #FEF2F2;
+    background: var(--lk-error, #DC2626);
+    border-color: var(--lk-error, #DC2626);
+    box-shadow: 0 0 0 4px var(--lk-error-bg, #FEF2F2);
 }
-.tb-progress-step-issue .tb-progress-label { color: #DC2626; font-weight: 700; }
+.tb-progress-step-issue .tb-progress-label { color: var(--lk-error, #DC2626); font-weight: 700; }
 
 .tb-progress-label {
     margin-top: 0.5rem;
     font-size: 11.5px;
     font-weight: 600;
-    color: #64748B;
+    color: var(--lk-text-muted, #64748B);
     letter-spacing: 0.01em;
     line-height: 1.3;
 }
@@ -76,7 +76,7 @@
 .tb-progress-sublabel {
     margin-top: 0.15rem;
     font-size: 10px;
-    color: #94A3B8;
+    color: var(--lk-text-subtle, #94A3B8);
     letter-spacing: 0.01em;
 }
 
@@ -87,24 +87,24 @@
     left: 50%;
     width: 100%;
     height: 2px;
-    background: #CBD5E1;
+    background: var(--lk-border-strong, #CBD5E1);
     z-index: 0;
 }
 
 .tb-progress-step-done .tb-progress-line,
 .tb-progress-step-current .tb-progress-line {
-    background: #16A34A;
+    background: var(--lk-success, #16A34A);
 }
 
 .tb-progress-cancelled {
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    background: #FEF2F2;
-    border: 1px solid #FECACA;
+    background: var(--lk-error-bg, #FEF2F2);
+    border: 1px solid var(--lk-error-border, #FECACA);
     border-radius: 10px;
     padding: 0.9rem 1.1rem;
-    color: #B91C1C;
+    color: var(--lk-error-text, #B91C1C);
     font-size: 13.5px;
     font-weight: 600;
 }
@@ -116,10 +116,18 @@
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    background: #FECACA;
+    background: var(--lk-error-border, #FECACA);
     font-size: 11px;
     flex-shrink: 0;
 }
+
+.tb-progress-eta {
+    text-align: center;
+    margin: 1.25rem 0 0;
+    font-size: 13px;
+    color: var(--lk-text-muted, #64748B);
+}
+.tb-progress-eta strong { color: var(--lk-text-heading, #0F172A); font-weight: 700; }
 
 @media (max-width: 480px) {
     .tb-progress-label { font-size: 10px; }

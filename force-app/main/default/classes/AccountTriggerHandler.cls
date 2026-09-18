@@ -1,6 +1,12 @@
-// Handler for AccountTrigger. Only updatePhone is currently wired up to the
-// trigger; every other method below is commented out and not running.
+// Handler for AccountTrigger. handleAfterUpdate is wired up to the trigger's
+// after Update context; every other method below (updatePhone included) is
+// legacy/unused and not called from anywhere.
 public class AccountTriggerHandler {
+
+  /** Logs a Loyalty_Point_Transaction__c 'Adjustment' row for any direct Loyalty_Points_Balance__c edit that didn't already come through LoyaltyService (which logs its own precise row and suppresses this). See LoyaltyService.logManualAdjustments. */
+  public static void handleAfterUpdate(List<Account> accList, Map<Id, Account> accOldMap) {
+    LoyaltyService.logManualAdjustments(accList, accOldMap);
+  }
 
   /** Records the old and new phone number in Description whenever an Account's Phone field changes. */
   public static void updatePhone(List<Account> accList , Map<Id,Account> accOldMap){

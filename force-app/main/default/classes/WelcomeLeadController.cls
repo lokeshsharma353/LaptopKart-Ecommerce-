@@ -2,7 +2,7 @@
 // runs as the Site Guest User with no record access of its own.
 public without sharing class WelcomeLeadController {
 
-    private static final String ADMIN_EMAIL = 'lokesh@codleo.org';
+    private static final String ADMIN_EMAIL = EmailSenderService.SUPPORT_EMAIL;
     private static final String DEFAULT_OWNER_USERNAME = 'lokesh@codleo.org';
 
     // Creates a marketing Lead from the homepage welcome popup and notifies
@@ -58,6 +58,7 @@ public without sharing class WelcomeLeadController {
     private static void sendAdminNotification(String name, String email, String laptopType) {
         try {
             Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+            EmailSenderService.applySupportSender(mail);
             mail.setToAddresses(new String[] { ADMIN_EMAIL });
             mail.setSenderDisplayName('LaptopKart Welcome Form');
             mail.setSubject('New website lead: ' + name);

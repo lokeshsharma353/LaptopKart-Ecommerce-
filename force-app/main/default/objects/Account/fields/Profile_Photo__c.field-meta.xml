@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Profile_Photo__c</fullName>
+    <description>A self-contained &quot;data:image/jpeg;base64,...&quot; data URI holding the shopper&apos;s profile photo, resized to ~200x200 and JPEG-compressed client-side (techBasketMyAccount.js) before upload so it comfortably fits this field&apos;s size limit. Deliberately not a Salesforce File/ContentVersion — this login system has no real Salesforce User to own a File under, and Guest User access to Files requires sharing configuration this simple approach avoids entirely, the same reasoning Cart_Items__c already uses for storing structured data as plain text instead of a related object. Blank means the shopper hasn&apos;t uploaded one yet — the UI falls back to a generated initials avatar.</description>
+    <label>Profile Photo</label>
+    <length>131072</length>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>LongTextArea</type>
+    <visibleLines>3</visibleLines>
+</CustomField>

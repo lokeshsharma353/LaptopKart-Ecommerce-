@@ -34,6 +34,16 @@
                 <default>false</default>
                 <label>Cancelled</label>
             </value>
+            <value>
+                <fullName>Return Requested</fullName>
+                <default>false</default>
+                <label>Return Requested</label>
+            </value>
+            <value>
+                <fullName>Returned</fullName>
+                <default>false</default>
+                <label>Returned</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

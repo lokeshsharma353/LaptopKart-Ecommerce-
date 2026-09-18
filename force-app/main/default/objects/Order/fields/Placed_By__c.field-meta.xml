@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Placed_By__c</fullName>
+    <externalId>false</externalId>
+    <label>Placed By</label>
+    <referenceTo>Account</referenceTo>
+    <relationshipLabel>Orders Placed</relationshipLabel>
+    <relationshipName>Orders_Placed</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>The logged-in Account (Customer Account Detail record type) that actually submitted this order — never changes based on who it's for. Distinct from the standard AccountId field, which represents who the order is for/shipped to. See Feature Expansion Plan §5.</description>
+</CustomField>

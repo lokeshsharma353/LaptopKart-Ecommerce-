@@ -8,15 +8,15 @@
     align-items: center;
     gap: 1rem;
     padding: 1.1rem 0;
-    border-bottom: 1px solid #E2E8F0;
+    border-bottom: 1px solid var(--lk-border, #E2E8F0);
 }
 
 .tb-item-image {
     width: 80px;
     height: 80px;
     border-radius: 10px;
-    background: #F8FAFC;
-    border: 1px solid #E2E8F0;
+    background: var(--lk-surface-alt, #F8FAFC);
+    border: 1px solid var(--lk-border, #E2E8F0);
     cursor: pointer;
     flex-shrink: 0;
     overflow: hidden;
@@ -26,7 +26,7 @@
     justify-content: center;
     transition: border-color 0.2s;
 }
-.tb-item-image:hover { border-color: #93C5FD; }
+.tb-item-image:hover { border-color: var(--lk-primary-tint-border, #93C5FD); }
 
 .tb-item-img {
     width: 100%;
@@ -53,7 +53,7 @@
     font-family: inherit;
     font-size: 14px;
     font-weight: 500;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
     padding: 0;
     line-height: 1.4;
     display: -webkit-box;
@@ -62,17 +62,31 @@
     overflow: hidden;
     transition: color 0.2s;
 }
-.tb-item-name:hover { color: #2563EB; }
+.tb-item-name:hover { color: var(--lk-primary, #2563EB); }
 
 .tb-item-price {
     font-size: 12px;
-    color: #64748B;
+    color: var(--lk-text-muted, #64748B);
 }
+
+.tb-item-save-later {
+    display: block;
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--lk-primary, #2563EB);
+    cursor: pointer;
+    padding: 0;
+    margin-top: 0.35rem;
+}
+.tb-item-save-later:hover { text-decoration: underline; }
 
 .tb-item-subtotal {
     font-size: 15px;
     font-weight: 600;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
     width: 90px;
     text-align: right;
     flex-shrink: 0;
@@ -82,7 +96,7 @@
 .tb-item-remove {
     background: none;
     border: none;
-    color: #64748B;
+    color: var(--lk-text-muted, #64748B);
     font-size: 20px;
     line-height: 1;
     cursor: pointer;
@@ -95,7 +109,7 @@
     justify-content: center;
     transition: color 0.2s, background 0.2s;
 }
-.tb-item-remove:hover { color: #DC2626; background: #FEF2F2; }
+.tb-item-remove:hover { color: var(--lk-error, #DC2626); background: var(--lk-error-bg, #FEF2F2); }
 
 @media (max-width: 600px) {
     .tb-cart-item { flex-wrap: wrap; }

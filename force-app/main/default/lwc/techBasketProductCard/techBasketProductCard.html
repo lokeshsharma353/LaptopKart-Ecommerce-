@@ -20,6 +20,12 @@
                 </div>
             </div>
             <span class="tb-category-tag">{product.category}</span>
+            <template if:true={isOutOfStock}>
+                <span class="tb-stock-badge tb-stock-out">Out of Stock</span>
+            </template>
+            <template if:true={isLowStock}>
+                <span class="tb-stock-badge tb-stock-low">Low Stock</span>
+            </template>
             <div class="tb-img-dots">
                 <template for:each={imageDots} for:item="dot">
                     <span key={dot.index} class={dot.cls}></span>
@@ -42,7 +48,7 @@
 
             <div class="tb-actions-row">
                 <template if:false={inCart}>
-                    <button class={addToCartClass} onclick={handleAddToCart}>
+                    <button class={addToCartClass} onclick={handleAddToCart} disabled={isOutOfStock}>
                         {addToCartLabel}
                     </button>
                 </template>
@@ -51,11 +57,11 @@
                     <div class="tb-qty-stepper">
                         <button class="tb-qty-btn" onclick={handleDecrease} aria-label="Decrease">&#8722;</button>
                         <span class="tb-qty-value">{cartQuantity}</span>
-                        <button class="tb-qty-btn" onclick={handleIncrease} aria-label="Increase">+</button>
+                        <button class="tb-qty-btn" onclick={handleIncrease} aria-label="Increase" disabled={isAtStockLimit}>+</button>
                     </div>
                 </template>
 
-                <button class="tb-buy-now" onclick={handleBuyNow}>Buy Now</button>
+                <button class="tb-buy-now" onclick={handleBuyNow} disabled={isOutOfStock}>Buy Now</button>
             </div>
         </div>
     </div>

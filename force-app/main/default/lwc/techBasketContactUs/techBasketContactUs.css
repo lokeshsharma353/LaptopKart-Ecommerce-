@@ -1,11 +1,12 @@
 :host {
-    --tb-primary: #2563EB;
-    --tb-secondary: #16A34A;
-    --tb-text: #0F172A;
-    --tb-danger: #DC2626;
-    --tb-white: #ffffff;
-    --tb-muted: #64748B;
-    --tb-background: #F8FAFC;
+    --tb-primary: var(--lk-primary, #2563EB);
+    --tb-primary-hover: var(--lk-primary-hover, #1D4ED8);
+    --tb-secondary: var(--lk-success, #16A34A);
+    --tb-text: var(--lk-text-heading, #0F172A);
+    --tb-danger: var(--lk-error, #DC2626);
+    --tb-white: var(--lk-surface, #ffffff);
+    --tb-muted: var(--lk-text-muted, #64748B);
+    --tb-background: var(--lk-page-bg, #F8FAFC);
 
     display: block;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -36,7 +37,7 @@
     flex: 1;
     min-width: 0;
     background: var(--tb-white);
-    border: 1px solid #E2E8F0;
+    border: 1px solid var(--lk-border, #E2E8F0);
     border-radius: 12px;
     padding: 1.5rem;
 }
@@ -52,14 +53,14 @@
 .tb-support-card,
 .tb-faq-card {
     background: var(--tb-white);
-    border: 1px solid #E2E8F0;
+    border: 1px solid var(--lk-border, #E2E8F0);
     border-radius: 12px;
     padding: 1.5rem;
 }
 
 .tb-support-card p {
     font-size: 13px;
-    color: #475569;
+    color: var(--lk-text-body, #475569);
     margin: 0.4rem 0;
 }
 
@@ -78,7 +79,7 @@
     display: block;
     font-size: 13px;
     font-weight: 600;
-    color: #334155;
+    color: var(--lk-text-strong, #334155);
     margin-bottom: 0.4rem;
 }
 
@@ -86,11 +87,12 @@
 .tb-field textarea {
     width: 100%;
     padding: 0.6rem 0.75rem;
-    border: 1px solid #CBD5E1;
+    border: 1px solid var(--lk-border-strong, #CBD5E1);
     border-radius: 6px;
     font-size: 14px;
     font-family: inherit;
     color: var(--tb-text);
+    background: var(--tb-white);
     box-sizing: border-box;
     transition: border-color 0.2s;
 }
@@ -118,7 +120,7 @@
 
 .tb-btn-primary {
     background: var(--tb-primary);
-    color: var(--tb-white);
+    color: var(--lk-white-fixed, #fff);
     border: none;
     border-radius: 6px;
     padding: 0.75rem 1.75rem;
@@ -128,7 +130,7 @@
     cursor: pointer;
     transition: background 0.2s;
 }
-.tb-btn-primary:hover { background: #1D4ED8; }
+.tb-btn-primary:hover { background: var(--tb-primary-hover); }
 
 .tb-btn-secondary {
     background: var(--tb-white);
@@ -143,11 +145,11 @@
     margin-top: 0.75rem;
     transition: background 0.2s;
 }
-.tb-btn-secondary:hover { background: #EFF6FF; }
+.tb-btn-secondary:hover { background: var(--lk-primary-tint, #EFF6FF); }
 
 .tb-faq {
     padding: 0.75rem 0;
-    border-bottom: 1px solid #E2E8F0;
+    border-bottom: 1px solid var(--lk-border, #E2E8F0);
 }
 
 .tb-faq-question {

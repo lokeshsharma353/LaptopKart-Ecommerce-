@@ -89,51 +89,164 @@
             </div>
         </template>
 
-        <!-- ═══════════════ LOGGED IN: sidebar dashboard ═══════════════ -->
+        <!-- ═══════════════ LOGGED IN: left sidebar + content ═══════════════ -->
         <template if:true={isLoggedIn}>
-            <h1 class="tb-page-title">My Account</h1>
-
             <div class="tb-dashboard">
-                <!-- Sidebar -->
+
+                <!-- Sidebar: identity (no colored banner — a plain card) + nav -->
                 <div class="tb-sidebar">
                     <div class="tb-sidebar-identity">
-                        <span class="tb-sidebar-avatar">{session.name}</span>
+                        <div class="tb-sidebar-avatar-wrap">
+                            <template if:true={hasProfilePhoto}>
+                                <img src={session.profilePhoto} alt={session.name} class="tb-avatar tb-avatar-lg tb-avatar-img" />
+                            </template>
+                            <template if:false={hasProfilePhoto}>
+                                <div class="tb-avatar tb-avatar-lg" style={avatarStyle}>{avatarInitials}</div>
+                            </template>
+                            <button class="tb-avatar-edit-btn" onclick={handleChoosePhoto} disabled={isUploadingPhoto} title="Change photo" aria-label="Change profile photo">
+                                <c-tech-basket-icon name="camera"></c-tech-basket-icon>
+                            </button>
+                            <input type="file" accept="image/*" data-id="profilePhotoInput" class="tb-avatar-file-input" onchange={handlePhotoSelect} />
+                        </div>
+                        <span class="tb-sidebar-badge">Customer Account</span>
+                        <span class="tb-sidebar-name">{session.name}</span>
                         <span class="tb-sidebar-email">{session.email}</span>
+                        <button class="tb-link-btn tb-sidebar-change-photo" onclick={handleChoosePhoto} disabled={isUploadingPhoto}>
+                            {changePhotoLabel}
+                        </button>
                     </div>
                     <nav class="tb-nav">
                         <template for:each={navItems} for:item="item">
-                            <button key={item.key} class={item.className} data-key={item.key} onclick={handleNavClick}>{item.label}</button>
+                            <button key={item.key} class={item.className} data-key={item.key} onclick={handleNavClick}>
+                                <span class="tb-nav-icon"><c-tech-basket-icon name={item.icon}></c-tech-basket-icon></span>{item.label}
+                            </button>
                         </template>
-                        <button class="tb-nav-btn tb-nav-btn-logout" onclick={handleLogout}>Log Out</button>
+                        <button class="tb-nav-btn tb-nav-btn-logout" onclick={handleLogout}>
+                            <span class="tb-nav-icon"><c-tech-basket-icon name="logout"></c-tech-basket-icon></span>Log Out
+                        </button>
                     </nav>
                 </div>
 
                 <!-- Content -->
                 <div class="tb-content">
 
-                    <!-- Profile -->
-                    <template if:true={isProfileSection}>
+                    <!-- Dashboard summary — shown by default on login -->
+                    <template if:true={isDashboardSection}>
                         <div class="tb-panel">
-                            <h2 class="tb-panel-title">Profile</h2>
-                            <div class="tb-profile-row">
-                                <span class="tb-profile-label">Name</span>
-                                <span class="tb-profile-value">{session.name}</span>
+                            <h2 class="tb-panel-title">Overview</h2>
+                            <p class="tb-panel-sub">Here's what's happening with your account.</p>
+                            <div class="tb-dashboard-tiles">
+                                <button class="tb-dashboard-tile" data-key="orders" onclick={handleNavClick}>
+                                    <span class="tb-tile-icon"><c-tech-basket-icon name="package"></c-tech-basket-icon></span>
+                                    <span class="tb-tile-label">My Orders</span>
+                                    <span class="tb-tile-value">{ordersCount}</span>
+                                </button>
+                                <button class="tb-dashboard-tile" data-key="wishlist" onclick={handleNavClick}>
+                                    <span class="tb-tile-icon"><c-tech-basket-icon name="heart"></c-tech-basket-icon></span>
+                                    <span class="tb-tile-label">Wishlist</span>
+                                    <span class="tb-tile-value">{wishlistCount}</span>
+                                </button>
+                                <button class="tb-dashboard-tile" data-key="rewards" onclick={handleNavClick}>
+                                    <span class="tb-tile-icon"><c-tech-basket-icon name="gift"></c-tech-basket-icon></span>
+                                    <span class="tb-tile-label">Reward Points</span>
+                                    <span class="tb-tile-value">{loyaltyWallet.balance}</span>
+                                </button>
+                                <button class="tb-dashboard-tile" data-key="addresses" onclick={handleNavClick}>
+                                    <span class="tb-tile-icon"><c-tech-basket-icon name="pin"></c-tech-basket-icon></span>
+                                    <span class="tb-tile-label">Addresses</span>
+                                    <span class="tb-tile-value">{addressesCount}</span>
+                                </button>
+                                <button class="tb-dashboard-tile" data-key="payments" onclick={handleNavClick}>
+                                    <span class="tb-tile-icon"><c-tech-basket-icon name="card"></c-tech-basket-icon></span>
+                                    <span class="tb-tile-label">Payments</span>
+                                    <span class="tb-tile-value-text">Available</span>
+                                </button>
                             </div>
-                            <div class="tb-profile-row">
-                                <span class="tb-profile-label">Email</span>
-                                <span class="tb-profile-value">{session.email}</span>
-                            </div>
-                            <div class="tb-profile-row">
-                                <span class="tb-profile-label">Phone</span>
-                                <span class="tb-profile-value">{session.phone}</span>
-                            </div>
+
+                            <template if:true={hasRecentOrder}>
+                                <h3 class="tb-dashboard-recent-heading">Recent Order</h3>
+                                <div class="tb-order-card">
+                                    <div class="tb-order-card-top">
+                                        <span class="tb-order-number">Order #{recentOrder.orderNumber}</span>
+                                        <span class={recentOrder.statusClass}>{recentOrder.status}</span>
+                                    </div>
+                                    <p class="tb-order-items">{recentOrder.itemsSummary}</p>
+                                    <div class="tb-order-card-bottom">
+                                        <span class="tb-order-amount">&#8377;{recentOrder.displayAmount}</span>
+                                        <button class="tb-link-btn" data-id={recentOrder.orderId} onclick={handleViewOrder}>View Order</button>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </template>
 
-                    <!-- Order History -->
+                    <!-- Profile — avatar/name/email/stats live in the persistent
+                         identity header above; this section is purely the
+                         editable Account Information card. -->
+                    <template if:true={isProfileSection}>
+                        <div class="tb-panel tb-profile-info-panel">
+                            <div class="tb-profile-info-header">
+                                <h3 class="tb-dashboard-recent-heading">Account Information</h3>
+                                <template if:false={isEditingProfile}>
+                                    <button class="tb-btn-secondary" onclick={handleEditProfile}>Edit</button>
+                                </template>
+                            </div>
+
+                            <template if:false={isEditingProfile}>
+                                <div class="tb-profile-info-grid">
+                                    <div class="tb-profile-info-item">
+                                        <span class="tb-profile-info-icon"><c-tech-basket-icon name="user"></c-tech-basket-icon></span>
+                                        <div class="tb-profile-info-text">
+                                            <span class="tb-profile-info-label">Full Name</span>
+                                            <span class="tb-profile-info-value">{session.name}</span>
+                                        </div>
+                                    </div>
+                                    <div class="tb-profile-info-item">
+                                        <span class="tb-profile-info-icon"><c-tech-basket-icon name="mail"></c-tech-basket-icon></span>
+                                        <div class="tb-profile-info-text">
+                                            <span class="tb-profile-info-label">Email Address</span>
+                                            <span class="tb-profile-info-value">{session.email}</span>
+                                        </div>
+                                    </div>
+                                    <div class="tb-profile-info-item">
+                                        <span class="tb-profile-info-icon"><c-tech-basket-icon name="phone"></c-tech-basket-icon></span>
+                                        <div class="tb-profile-info-text">
+                                            <span class="tb-profile-info-label">Phone Number</span>
+                                            <span class="tb-profile-info-value">{session.phone}</span>
+                                        </div>
+                                    </div>
+                                    <div class="tb-profile-info-item">
+                                        <span class="tb-profile-info-icon"><c-tech-basket-icon name="lock"></c-tech-basket-icon></span>
+                                        <div class="tb-profile-info-text">
+                                            <span class="tb-profile-info-label">Account Type</span>
+                                            <span class="tb-profile-info-value">Customer Account</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template if:true={isEditingProfile}>
+                                <div class="tb-form">
+                                    <label class="tb-field-label">Full Name</label>
+                                    <input class="tb-input" type="text" data-field="profileName" value={session.name} />
+                                    <label class="tb-field-label">Email Address</label>
+                                    <input class="tb-input" type="email" data-field="profileEmail" value={session.email} />
+                                    <label class="tb-field-label">Phone Number</label>
+                                    <input class="tb-input" type="tel" inputmode="numeric" maxlength="10" data-field="profilePhone" value={session.phone} oninput={handlePhoneInput} />
+                                    <div class="tb-address-actions">
+                                        <button class="tb-btn-secondary" onclick={handleCancelEditProfile} disabled={isSavingProfile}>Cancel</button>
+                                        <button class="tb-btn-primary" onclick={handleSaveProfile} disabled={isSavingProfile}>{saveProfileLabel}</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- My Orders -->
                     <template if:true={isOrdersSection}>
                         <div class="tb-panel">
-                            <h2 class="tb-panel-title">Order History</h2>
+                            <h2 class="tb-panel-title">My Orders</h2>
+                            <p class="tb-panel-sub">Track and manage your purchases</p>
 
                             <template if:true={isLoadingOrders}>
                                 <p class="tb-empty-text">Loading your orders…</p>
@@ -141,31 +254,37 @@
 
                             <template if:false={isLoadingOrders}>
                                 <template if:true={hasOrders}>
-                                    <div class="tb-table-wrap">
-                                        <table class="tb-orders-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Order #</th>
-                                                    <th>Date</th>
-                                                    <th>Amount</th>
-                                                    <th>Status</th>
-                                                    <th></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <template for:each={orders} for:item="order">
-                                                    <tr key={order.orderId}>
-                                                        <td>{order.orderNumber}</td>
-                                                        <td>{order.orderDate}</td>
-                                                        <td>&#8377;{order.totalAmount}</td>
-                                                        <td><span class={order.statusClass}>{order.status}</span></td>
-                                                        <td>
-                                                            <button class="tb-link-btn" data-id={order.orderId} onclick={handleViewOrder}>View</button>
-                                                        </td>
-                                                    </tr>
+                                    <div class="tb-order-list">
+                                        <template for:each={orders} for:item="order">
+                                            <div key={order.orderId} class="tb-order-card">
+                                                <div class="tb-order-card-top">
+                                                    <span class="tb-order-number">Order #{order.orderNumber}</span>
+                                                    <span class={order.statusClass}>{order.status}</span>
+                                                </div>
+                                                <p class="tb-order-date">{order.orderDate}</p>
+                                                <p class="tb-order-items">{order.itemsSummary}</p>
+                                                <div class="tb-order-card-bottom">
+                                                    <span class="tb-order-amount">&#8377;{order.displayAmount}</span>
+                                                    <div class="tb-order-actions">
+                                                        <button class="tb-link-btn" data-id={order.orderId} onclick={handleViewOrder}>View Order</button>
+                                                        <button class="tb-link-btn" data-id={order.orderId} onclick={handleTrackOrder}>Track Order</button>
+                                                        <template if:true={order.canReturn}>
+                                                            <button class="tb-link-btn" data-id={order.orderId} onclick={handleShowReturnForm}>Request Return</button>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                                <template if:true={order.isRequestingReturn}>
+                                                    <div class="tb-return-form">
+                                                        <label class="tb-return-form-label">Why are you returning this order?</label>
+                                                        <textarea class="tb-return-form-textarea" data-id={order.orderId} data-field="returnReason"></textarea>
+                                                        <div class="tb-return-form-actions">
+                                                            <button class="tb-btn-secondary" data-id={order.orderId} onclick={handleCancelReturnForm}>Cancel</button>
+                                                            <button class="tb-btn-primary" data-id={order.orderId} onclick={handleSubmitReturn}>Submit Return Request</button>
+                                                        </div>
+                                                    </div>
                                                 </template>
-                                            </tbody>
-                                        </table>
+                                            </div>
+                                        </template>
                                     </div>
                                 </template>
                                 <template if:false={hasOrders}>
@@ -175,16 +294,65 @@
                         </div>
                     </template>
 
+                    <!-- Rewards Wallet -->
+                    <template if:true={isRewardsSection}>
+                        <div class="tb-panel">
+                            <h2 class="tb-panel-title">Rewards Wallet</h2>
+                            <p class="tb-panel-sub">Earn 1 point for every ₹1,000 you spend — redeem points for instant discounts at checkout</p>
+
+                            <div class="tb-rewards-balance-card">
+                                <span class="tb-rewards-balance-label">Available Balance</span>
+                                <span class="tb-rewards-balance-value">{loyaltyWallet.balance} pts</span>
+                                <span class="tb-rewards-balance-worth">Worth &#8377;{loyaltyWallet.pointsValueRupees}</span>
+                            </div>
+
+                            <h3 class="tb-dashboard-recent-heading">Points History</h3>
+                            <template if:true={isLoadingRewards}>
+                                <p class="tb-empty-text">Loading your rewards…</p>
+                            </template>
+                            <template if:false={isLoadingRewards}>
+                                <template if:true={hasLoyaltyTransactions}>
+                                    <div class="tb-rewards-history">
+                                        <template for:each={loyaltyWallet.transactions} for:item="txn">
+                                            <div key={txn.id} class="tb-rewards-row">
+                                                <div class="tb-rewards-row-main">
+                                                    <span class="tb-rewards-row-type">{txn.type}</span>
+                                                    <span class="tb-rewards-row-notes">{txn.notes}</span>
+                                                </div>
+                                                <span class={txn.pointsClass}>{txn.pointsDisplay} pts</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template if:false={hasLoyaltyTransactions}>
+                                    <p class="tb-empty-text">You haven't earned any points yet — place an order to start earning!</p>
+                                </template>
+                            </template>
+                        </div>
+                    </template>
+
                     <!-- Saved Addresses -->
                     <template if:true={isAddressesSection}>
                         <div class="tb-panel">
-                            <h2 class="tb-panel-title">Saved Addresses</h2>
+                            <div class="tb-panel-header-row">
+                                <div>
+                                    <h2 class="tb-panel-title">Saved Addresses</h2>
+                                    <p class="tb-panel-sub">Manage your delivery addresses</p>
+                                </div>
+                                <button class="tb-btn-secondary" onclick={handleAddAddress}>+ Add Address</button>
+                            </div>
 
                             <template if:true={hasAddresses}>
                                 <div class="tb-address-grid">
-                                    <template for:each={addresses} for:item="addr">
+                                    <template for:each={addressesDisplay} for:item="addr">
                                         <div key={addr.id} class="tb-address-card">
                                             <template if:false={addr.editing}>
+                                                <template if:true={addr.isDefault}>
+                                                    <div class="tb-address-card-header">
+                                                        <span class="tb-address-tag">HOME</span>
+                                                        <span class="tb-default-badge">DEFAULT</span>
+                                                    </div>
+                                                </template>
                                                 <p class="tb-address-line">{addr.line1}</p>
                                                 <p class="tb-address-line">{addr.city}</p>
                                                 <p class="tb-address-line">{addr.phone}</p>
@@ -211,8 +379,6 @@
                             <template if:false={hasAddresses}>
                                 <p class="tb-empty-text">No saved addresses yet.</p>
                             </template>
-
-                            <button class="tb-btn-secondary" onclick={handleAddAddress}>Add Address</button>
                         </div>
                     </template>
 
@@ -220,14 +386,21 @@
                     <template if:true={isWishlistSection}>
                         <div class="tb-panel">
                             <h2 class="tb-panel-title">Wishlist</h2>
+                            <p class="tb-panel-sub">Products you've saved</p>
 
                             <template if:true={hasWishlistItems}>
                                 <div class="tb-wishlist-grid">
                                     <template for:each={wishlistProducts} for:item="product">
                                         <div key={product.productId} class="tb-wishlist-card">
+                                            <div class="tb-wishlist-image-wrap">
+                                                <button class="tb-wishlist-image-btn" data-id={product.productId} onclick={handleViewWishlistProduct}>
+                                                    <img src={product.imageUrl} alt={product.productName} class="tb-wishlist-img" />
+                                                </button>
+                                                <button class="tb-wishlist-remove" data-id={product.productId} onclick={handleRemoveWishlistItem} aria-label="Remove from wishlist">♥</button>
+                                            </div>
                                             <button class="tb-wishlist-name" data-id={product.productId} onclick={handleViewWishlistProduct}>{product.productName}</button>
                                             <span class="tb-wishlist-price">&#8377;{product.price}</span>
-                                            <button class="tb-link-btn tb-link-danger" data-id={product.productId} onclick={handleRemoveWishlistItem}>Remove</button>
+                                            <button class="tb-wishlist-add-cart" data-id={product.productId} onclick={handleAddWishlistToCart}>Add to Cart</button>
                                         </div>
                                     </template>
                                 </div>
@@ -242,15 +415,23 @@
                     <template if:true={isPaymentsSection}>
                         <div class="tb-panel">
                             <h2 class="tb-panel-title">Payment Methods</h2>
-                            <p class="tb-empty-text">LaptopKart doesn't store card or payment details. At checkout, choose Cash on Delivery or pay by UPI/QR each time — nothing is saved here.</p>
-                        </div>
-                    </template>
+                            <p class="tb-panel-sub">Manage your payment preferences</p>
 
-                    <!-- Reviews & Ratings -->
-                    <template if:true={isReviewsSection}>
-                        <div class="tb-panel">
-                            <h2 class="tb-panel-title">Reviews &amp; Ratings</h2>
-                            <p class="tb-empty-text">You haven't written any reviews yet. Product reviews aren't available on LaptopKart yet — check back soon.</p>
+                            <div class="tb-payment-method-card">
+                                <span class="tb-payment-method-icon"><c-tech-basket-icon name="card"></c-tech-basket-icon></span>
+                                <div class="tb-payment-method-info">
+                                    <span class="tb-payment-method-name">Online Payment</span>
+                                    <span class="tb-payment-method-desc">Pay by UPI/QR — available for online orders</span>
+                                </div>
+                            </div>
+                            <div class="tb-payment-method-card">
+                                <span class="tb-payment-method-icon"><c-tech-basket-icon name="cash"></c-tech-basket-icon></span>
+                                <div class="tb-payment-method-info">
+                                    <span class="tb-payment-method-name">Cash on Delivery</span>
+                                    <span class="tb-payment-method-desc">Available for eligible orders</span>
+                                </div>
+                            </div>
+                            <p class="tb-empty-text tb-payment-note">LaptopKart doesn't store card or payment details — you choose one of these each time at checkout, nothing is saved here.</p>
                         </div>
                     </template>
 
@@ -258,13 +439,10 @@
                     <template if:true={isSettingsSection}>
                         <div class="tb-panel">
                             <h2 class="tb-panel-title">Account Settings</h2>
+                            <p class="tb-panel-sub">Manage your notification preferences</p>
                             <div class="tb-setting-row">
                                 <span>Email notifications</span>
                                 <input type="checkbox" checked={settings.emailNotifications} data-field="emailNotifications" onchange={handleSettingChange} />
-                            </div>
-                            <div class="tb-setting-row">
-                                <span>SMS notifications</span>
-                                <input type="checkbox" checked={settings.smsNotifications} data-field="smsNotifications" onchange={handleSettingChange} />
                             </div>
                             <button class="tb-btn-secondary" onclick={handleSaveSettings}>Save Changes</button>
                         </div>

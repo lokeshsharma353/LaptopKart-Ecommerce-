@@ -68,6 +68,16 @@ export default class TechBasketCart extends NavigationMixin(LightningElement) {
         showToast('Product removed from cart.', 'success');
     }
 
+    /**
+     * Handles a saveforlater event bubbled up from a techBasketCartItem.
+     * The child already moved the product to the wishlist and shown its own
+     * toast — this just removes the line from the cart, no second toast.
+     * @param {CustomEvent} event - detail.productId
+     */
+    handleSaveForLater(event) {
+        removeItem(event.detail.productId);
+    }
+
     /** Navigates back to the Product Catalog page. */
     handleContinueShopping() {
         this[NavigationMixin.Navigate](getShopRef());

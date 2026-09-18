@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>Razorpay_Key_Id</fullName>
+        <categories>Payments</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Razorpay Key Id (public, not the secret)</shortDescription>
+        <!-- Not sensitive — Razorpay's Key Id is meant to be embedded in the
+             checkout page, the same way it is on every Razorpay merchant's
+             site. The Key Secret never appears here or anywhere else in the
+             codebase; it lives only in the Razorpay Named Credential. Update
+             this value's Setup UI text (Setup -> Custom Labels -> Razorpay_Key_Id)
+             to your real rzp_test_... / rzp_live_... Key Id after deploying. -->
+        <value>rzp_test_TchPhlodfb2wpt</value>
+    </labels>
+</CustomLabels>

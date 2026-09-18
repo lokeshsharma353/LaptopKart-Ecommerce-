@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Running_Balance__c</fullName>
+    <externalId>false</externalId>
+    <label>Balance After</label>
+    <precision>18</precision>
+    <scale>0</scale>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+    <description>Snapshot of Product2.Stock_Quantity__c immediately after this movement was applied. Exact for a single-order movement; when a bulk trigger batch restores stock for more than one order against the same product in the same transaction, this reflects the batch's final balance rather than each row's own intermediate step — an accepted simplification for a rare edge case.</description>
+</CustomField>

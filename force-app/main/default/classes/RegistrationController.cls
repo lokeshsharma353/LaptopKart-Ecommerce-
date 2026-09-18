@@ -92,6 +92,12 @@ public without sharing class RegistrationController {
         if (newUser.Id == null) {
             throw new AuraHandledException('Unable to create your account. Please try again.');
         }
+
+        try {
+            System.setPassword(newUser.Id, input.password);
+        } catch (Exception e) {
+            // User was created — password set failed. Non-fatal: user can reset via email.
+        }
     }
 
 

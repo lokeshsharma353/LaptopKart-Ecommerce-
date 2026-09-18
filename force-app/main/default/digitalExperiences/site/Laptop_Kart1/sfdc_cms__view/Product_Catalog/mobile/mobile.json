@@ -1,0 +1,30 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Product Catalog",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "attributes" : {
+          "sectionColumnGutterWidth" : "0rem",
+          "componentSpacerSize" : "0rem",
+          "dxpStyle" : {
+            "margin" : {
+              "top" : "0px",
+              "left" : "0px",
+              "bottom" : "0px",
+              "right" : "0px"
+            },
+            "padding" : {
+              "top" : "0px",
+              "left" : "0px",
+              "bottom" : "0px",
+              "right" : "0px"
+            }
+          }
+        },
+        "id" : "bc421a3b-c14f-4a1b-a9af-2b3b77c0d99c"
+      } ]
+    }
+  },
+  "urlName" : "product-catalog"
+}

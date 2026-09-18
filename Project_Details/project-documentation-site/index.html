@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LaptopKart — Project Architecture Reference</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">LK</div>
+      <div class="brand-text">
+        <span class="brand-title">LaptopKart</span>
+        <span class="brand-sub">ARCHITECTURE REFERENCE</span>
+      </div>
+    </div>
+
+    <div class="search-box">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="text" id="navSearch" placeholder="Find a section...">
+    </div>
+
+    <nav class="nav-groups">
+      <div>
+        <div class="nav-group-label">Start</div>
+        <ul class="nav-list">
+          <li><button class="nav-btn" data-target="overview"><span class="nav-dot"></span>Overview</button></li>
+        </ul>
+      </div>
+      <div>
+        <div class="nav-group-label">Architecture Diagrams</div>
+        <ul class="nav-list">
+          <li><button class="nav-btn" data-target="site-map"><span class="nav-dot"></span>Site Navigation Map</button></li>
+          <li><button class="nav-btn" data-target="component-arch"><span class="nav-dot"></span>LWC Component Architecture</button></li>
+          <li><button class="nav-btn" data-target="checkout-flow"><span class="nav-dot"></span>Checkout &amp; Order Pipeline</button></li>
+          <li><button class="nav-btn" data-target="trigger-flow"><span class="nav-dot"></span>Trigger Automation</button></li>
+          <li><button class="nav-btn" data-target="admin-flow"><span class="nav-dot"></span>Admin &amp; Backend Flow</button></li>
+          <li><button class="nav-btn" data-target="payment-gateway"><span class="nav-dot"></span>Razorpay Payment Gateway</button></li>
+          <li><button class="nav-btn" data-target="auth-systems"><span class="nav-dot"></span>Two Authentication Systems</button></li>
+        </ul>
+      </div>
+      <div>
+        <div class="nav-group-label">Reference</div>
+        <ul class="nav-list">
+          <li><button class="nav-btn" data-target="objects"><span class="nav-dot"></span>Object &amp; Field Reference</button></li>
+          <li><button class="nav-btn" data-target="apex"><span class="nav-dot"></span>Apex Class Reference</button></li>
+          <li><button class="nav-btn" data-target="lwc-ref"><span class="nav-dot"></span>LWC &amp; Service Reference</button></li>
+          <li><button class="nav-btn" data-target="issues"><span class="nav-dot"></span>Known Issues &amp; Design Notes</button></li>
+        </ul>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main>
+
+  <!-- ============================================================ OVERVIEW ============================================================ -->
+  <section class="page" id="overview">
+    <p class="page-eyebrow">Project Architecture Reference</p>
+    <h1 class="page-title">LaptopKart — everything about this project, in one place</h1>
+    <p class="page-lede">A Salesforce Experience Cloud (LWR) e-commerce storefront: guest-user checkout, a custom login system, a Razorpay payment-gateway integration, and a full Lead&#8594;Order&#8594;Payment automation chain built on standard and custom objects. Every diagram and table on this site was generated directly from the deployed metadata and Apex/LWC source &#8212; not from memory.</p>
+
+    <div class="card-grid" id="overviewStats"></div>
+
+    <h2 class="section-h">System Overview</h2>
+    <p class="section-sub">The four layers every request passes through, and where each one hands off to the next.</p>
+    <figure class="diagram">
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1120 400" role="img" aria-label="System overview: Shopper browser talks to LWC components, which call Apex controllers, which read and write Salesforce objects and call external services like Razorpay and email.">
+          <defs>
+            <marker id="ov-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-subtle)"/></marker>
+          </defs>
+          <rect x="40" y="60" width="200" height="70" rx="10" class="n-box n-shopper"/>
+          <text x="140" y="88" text-anchor="middle" class="node-label" font-size="13">Shopper</text>
+          <text x="140" y="106" text-anchor="middle" class="node-sub n-muted" font-size="11">Guest User — LWR site</text>
+
+          <rect x="300" y="60" width="200" height="70" rx="10" class="n-box n-lwc"/>
+          <text x="400" y="88" text-anchor="middle" class="node-label" font-size="13">LWC Layer</text>
+          <text x="400" y="106" text-anchor="middle" class="node-sub n-muted" font-size="11">33 components + 14 services</text>
+
+          <rect x="560" y="60" width="200" height="70" rx="10" class="n-box n-apex"/>
+          <text x="660" y="88" text-anchor="middle" class="node-label" font-size="13">Apex Layer</text>
+          <text x="660" y="106" text-anchor="middle" class="node-sub n-muted" font-size="11">Controllers &#8594; Services &#8594; Triggers</text>
+
+          <rect x="860" y="20" width="220" height="60" rx="10" class="n-box n-object"/>
+          <text x="970" y="45" text-anchor="middle" class="node-label" font-size="12.5">Salesforce Objects</text>
+          <text x="970" y="62" text-anchor="middle" class="node-sub n-muted" font-size="10.5">7 custom + standard</text>
+
+          <rect x="860" y="110" width="220" height="60" rx="10" class="n-box n-external"/>
+          <text x="970" y="135" text-anchor="middle" class="node-label" font-size="12.5">External Services</text>
+          <text x="970" y="152" text-anchor="middle" class="node-sub n-muted" font-size="10.5">Razorpay API &middot; Email</text>
+
+          <line x1="240" y1="95" x2="296" y2="95" class="e-line" marker-end="url(#ov-a)"/>
+          <text x="268" y="87" text-anchor="middle" class="edge-label n-subtle" font-size="10">renders / clicks</text>
+          <line x1="500" y1="95" x2="556" y2="95" class="e-line" marker-end="url(#ov-a)"/>
+          <text x="528" y="87" text-anchor="middle" class="edge-label n-subtle" font-size="10">@AuraEnabled</text>
+
+          <polyline points="760,80 800,80 800,50 856,50" class="e-line" fill="none" marker-end="url(#ov-a)"/>
+          <polyline points="760,105 800,105 800,140 856,140" class="e-line" fill="none" marker-end="url(#ov-a)"/>
+          <text x="805" y="72" class="edge-label n-subtle" font-size="10">SOQL / DML</text>
+          <text x="805" y="163" class="edge-label n-subtle" font-size="10">HTTP callout / email</text>
+
+          <polyline points="970,170 970,330 140,330 140,134" class="e-dashed" fill="none" marker-end="url(#ov-a)"/>
+          <text x="555" y="345" text-anchor="middle" class="edge-label n-subtle" font-size="10.5">Razorpay redirects the browser back to the Payment page</text>
+        </svg>
+      </div>
+      <figcaption class="diagram-caption">Salesforce object writes made in the Apex layer are also what triggers react to &#8212; that automation chain (Opportunity &#8594; Order &#8594; Payment) is detailed separately in <strong>Trigger Automation</strong>.</figcaption>
+    </figure>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--surface-3);border:1px solid var(--ink-subtle)"></span>Browser / Shopper</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--purple-soft);border:1px solid var(--purple)"></span>LWC</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--accent-soft);border:1px solid var(--accent)"></span>Apex</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--success-soft);border:1px solid var(--success)"></span>Salesforce Object</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--danger-soft);border:1px solid var(--danger)"></span>External Service</div>
+    </div>
+
+    <h2 class="section-h">How to use this reference</h2>
+    <p class="section-sub" style="margin-bottom:8px;">Everything is clickable. Use the sidebar (or the search box above it) to jump between diagrams and reference tables — each reference card expands on click, and the reference sections each have their own filter box for finding one object, class, or component by name.</p>
+
+    <footer class="page-footer">Generated from the deployed org metadata and Apex/LWC source under <code>force-app/main/default</code>. Org alias <code>vs</code> &middot; site <code>techbasketvforcesite</code>.</footer>
+  </section>
+
+  <!-- ============================================================ SITE MAP ============================================================ -->
+  <section class="page" id="site-map">
+    <p class="page-eyebrow">Diagram 1 of 7</p>
+    <h1 class="page-title">Site Navigation Map</h1>
+    <p class="page-lede">Every page in the LWR site is reached through a single source of truth &#8212; <code>navigationService.js</code> &#8212; which wraps Experience Builder's page references. This is the full graph of where a shopper can go from where.</p>
+
+    <figure class="diagram">
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1420 430" role="img" aria-label="Site navigation map showing the primary shopping funnel from Home through Shop, Product Detail, Cart, Checkout, Payment, Order Confirmation, and secondary pages like About, Contact, My Account, Sign Up and Login.">
+          <defs>
+            <marker id="sm-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker>
+            <marker id="sm-b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-subtle)"/></marker>
+          </defs>
+
+          <!-- Row A: secondary pages -->
+          <g>
+            <rect x="40" y="40" width="160" height="50" rx="9" class="n-box n-lwc"/><text x="120" y="70" text-anchor="middle" class="node-label" font-size="12">About</text>
+            <rect x="230" y="40" width="160" height="50" rx="9" class="n-box n-lwc"/><text x="310" y="70" text-anchor="middle" class="node-label" font-size="12">Contact Us</text>
+            <rect x="420" y="40" width="160" height="50" rx="9" class="n-box n-lwc"/><text x="500" y="70" text-anchor="middle" class="node-label" font-size="12">My Account</text>
+            <rect x="610" y="40" width="160" height="50" rx="9" class="n-box n-lwc"/><text x="690" y="70" text-anchor="middle" class="node-label" font-size="12">Sign Up</text>
+            <rect x="800" y="40" width="160" height="50" rx="9" class="n-box n-shopper"/><text x="880" y="70" text-anchor="middle" class="node-label" font-size="12">Login (native)</text>
+          </g>
+
+          <!-- Row B: primary spine -->
+          <g>
+            <rect x="40" y="170" width="160" height="64" rx="10" class="n-box n-apex"/><text x="120" y="198" text-anchor="middle" class="node-label" font-size="12.5">Home</text>
+            <rect x="240" y="170" width="160" height="64" rx="10" class="n-box n-apex"/><text x="320" y="198" text-anchor="middle" class="node-label" font-size="12.5">Shop / Catalog</text>
+            <rect x="440" y="170" width="160" height="64" rx="10" class="n-box n-apex"/><text x="520" y="198" text-anchor="middle" class="node-label" font-size="12.5">Product Detail</text>
+            <rect x="640" y="170" width="160" height="64" rx="10" class="n-box n-apex"/><text x="720" y="198" text-anchor="middle" class="node-label" font-size="12.5">Cart</text>
+            <rect x="840" y="170" width="160" height="64" rx="10" class="n-box n-apex"/><text x="920" y="198" text-anchor="middle" class="node-label" font-size="12.5">Checkout</text>
+            <rect x="1040" y="170" width="160" height="64" rx="10" class="n-box n-apex"/><text x="1120" y="198" text-anchor="middle" class="node-label" font-size="12.5">Payment</text>
+            <text x="120" y="216" text-anchor="middle" class="node-sub n-muted" font-size="10">Home</text>
+            <text x="320" y="216" text-anchor="middle" class="node-sub n-muted" font-size="10">Product_Catalog__c</text>
+            <text x="520" y="216" text-anchor="middle" class="node-sub n-muted" font-size="10">Product_Detail__c</text>
+            <text x="720" y="216" text-anchor="middle" class="node-sub n-muted" font-size="10">Shopping_Cart__c</text>
+            <text x="920" y="216" text-anchor="middle" class="node-sub n-muted" font-size="10">Checkout__c</text>
+            <text x="1120" y="216" text-anchor="middle" class="node-sub n-muted" font-size="10">Payment__c</text>
+          </g>
+
+          <!-- Row C: end states -->
+          <g>
+            <rect x="800" y="330" width="160" height="56" rx="9" class="n-box n-teal"/><text x="880" y="360" text-anchor="middle" class="node-label" font-size="12">Order History</text>
+            <rect x="1040" y="330" width="160" height="56" rx="9" class="n-box n-teal"/><text x="1120" y="358" text-anchor="middle" class="node-label" font-size="12">Order</text><text x="1120" y="373" text-anchor="middle" class="node-label" font-size="12">Confirmation</text>
+            <rect x="1280" y="330" width="130" height="56" rx="9" class="n-box n-teal"/><text x="1345" y="360" text-anchor="middle" class="node-label" font-size="12">Order Tracking</text>
+          </g>
+
+          <!-- Spine arrows -->
+          <line x1="200" y1="202" x2="236" y2="202" class="e-accent" marker-end="url(#sm-a)"/>
+          <line x1="400" y1="202" x2="436" y2="202" class="e-accent" marker-end="url(#sm-a)"/>
+          <line x1="600" y1="202" x2="636" y2="202" class="e-accent" marker-end="url(#sm-a)"/>
+          <line x1="800" y1="202" x2="836" y2="202" class="e-accent" marker-end="url(#sm-a)"/>
+          <line x1="1000" y1="202" x2="1036" y2="202" class="e-accent" marker-end="url(#sm-a)"/>
+          <line x1="1120" y1="234" x2="1120" y2="326" class="e-accent" marker-end="url(#sm-a)"/>
+
+          <line x1="1040" y1="358" x2="964" y2="358" class="e-line" marker-end="url(#sm-b)"/>
+          <text x="1000" y="350" text-anchor="middle" class="edge-label n-subtle" font-size="9.5">view order</text>
+          <line x1="1200" y1="358" x2="1276" y2="358" class="e-line" marker-end="url(#sm-b)"/>
+
+          <!-- Secondary dashed connections -->
+          <polyline points="120,90 120,140 320,140 320,166" class="e-dashed" fill="none" marker-end="url(#sm-b)"/>
+          <text x="220" y="132" text-anchor="middle" class="edge-label n-subtle" font-size="9.5">"Shop Now" CTA</text>
+
+          <polyline points="500,90 500,120 920,120 920,166" class="e-dashed" fill="none" marker-end="url(#sm-b)"/>
+          <text x="710" y="112" text-anchor="middle" class="edge-label n-subtle" font-size="9.5">must be logged in to reach Checkout</text>
+
+          <polyline points="500,90 500,300 880,300 880,326" class="e-dashed" fill="none" marker-end="url(#sm-b)"/>
+          <text x="690" y="293" text-anchor="middle" class="edge-label n-subtle" font-size="9.5">also links to Order Tracking, Product Detail</text>
+
+          <line x1="770" y1="65" x2="796" y2="65" class="e-dashed" marker-end="url(#sm-b)"/>
+          <text x="785" y="52" text-anchor="middle" class="edge-label n-subtle" font-size="9">after registration</text>
+        </svg>
+      </div>
+      <figcaption class="diagram-caption">Blue arrows: the primary purchase funnel. Gray dashed arrows: secondary navigation. <code>techBasketHeader</code> and <code>techBasketFooter</code> are mounted globally and link to Home / Shop / About / Contact / Account / Cart / Order Tracking from every page &mdash; not drawn individually here for clarity.</figcaption>
+    </figure>
+
+    <h2 class="section-h">Route table</h2>
+    <p class="section-sub">Every getter exported by <code>navigationService.js</code>, with the Experience Builder page API name and URL state key it uses.</p>
+    <div class="table-wrap">
+      <table class="schema">
+        <thead><tr><th>Function</th><th>Page API Name</th><th>State key</th><th>Notes</th></tr></thead>
+        <tbody id="routesTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================================================ COMPONENT ARCHITECTURE ============================================================ -->
+  <section class="page" id="component-arch">
+    <p class="page-eyebrow">Diagram 2 of 7</p>
+    <h1 class="page-title">LWC Component Architecture</h1>
+    <p class="page-lede">Eight top-level page components, each composed from smaller child components. The full per-component breakdown (including every service-module dependency) is in the <a href="#" data-jump="lwc-ref">LWC &amp; Service Reference</a> table below.</p>
+
+    <figure class="diagram">
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1450 340" role="img" aria-label="Eight page-level LWC components, each with its direct child components stacked beneath it.">
+          <defs><marker id="ca-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-subtle)"/></marker></defs>
+
+          <!-- columns -->
+          <!-- Home -->
+          <g>
+            <rect x="20" y="30" width="160" height="54" rx="9" class="n-box n-apex"/><text x="100" y="61" text-anchor="middle" class="node-label" font-size="12">Home</text>
+            <line x1="100" y1="84" x2="100" y2="106" class="e-line" marker-end="url(#ca-a)"/>
+            <rect x="20" y="110" width="160" height="40" rx="7" class="n-box n-lwc"/><text x="100" y="134" text-anchor="middle" class="node-mono" font-size="10.5">WelcomePopup</text>
+          </g>
+          <!-- Catalog -->
+          <g>
+            <rect x="200" y="30" width="160" height="54" rx="9" class="n-box n-apex"/><text x="280" y="55" text-anchor="middle" class="node-label" font-size="12">Product</text><text x="280" y="70" text-anchor="middle" class="node-label" font-size="12">Catalog</text>
+            <line x1="280" y1="84" x2="280" y2="106" class="e-line" marker-end="url(#ca-a)"/>
+            <rect x="200" y="110" width="160" height="40" rx="7" class="n-box n-lwc"/><text x="280" y="134" text-anchor="middle" class="node-mono" font-size="10.5">ProductCard &times;N</text>
+          </g>
+          <!-- Product Detail -->
+          <g>
+            <rect x="380" y="30" width="160" height="54" rx="9" class="n-box n-apex"/><text x="460" y="55" text-anchor="middle" class="node-label" font-size="12">Product</text><text x="460" y="70" text-anchor="middle" class="node-label" font-size="12">Detail</text>
+            <line x1="460" y1="84" x2="460" y2="106" class="e-line" marker-end="url(#ca-a)"/>
+            <rect x="380" y="110" width="160" height="40" rx="7" class="n-box n-lwc"/><text x="460" y="134" text-anchor="middle" class="node-mono" font-size="10.5">QuantitySelector</text>
+            <line x1="460" y1="150" x2="460" y2="164" class="e-line" marker-end="url(#ca-a)"/>
+            <rect x="380" y="168" width="160" height="40" rx="7" class="n-box n-lwc"/><text x="460" y="192" text-anchor="middle" class="node-mono" font-size="10.5">ProductCard (related)</text>
+          </g>
+          <!-- Cart -->
+          <g>
+            <rect x="560" y="30" width="160" height="54" rx="9" class="n-box n-apex"/><text x="640" y="61" text-anchor="middle" class="node-label" font-size="12">Cart</text>
+            <line x1="640" y1="84" x2="640" y2="106" class="e-line" marker-end="url(#ca-a)"/>
+            <rect x="560" y="110" width="160" height="40" rx="7" class="n-box n-lwc"/><text x="640" y="134" text-anchor="middle" class="node-mono" font-size="10.5">CartItem &times;N</text>
+            <line x1="640" y1="150" x2="640" y2="164" class="e-line" marker-end="url(#ca-a)"/>
+            <rect x="560" y="168" width="160" height="40" rx="7" class="n-box n-lwc"/><text x="640" y="192" text-anchor="middle" class="node-mono" font-size="10.5">OrderSummary</text>
+            <line x1="640" y1="208" x2="640" y2="222" class="e-line" marker-end="url(#ca-a)"/>
+            <rect x="560" y="226" width="160" height="40" rx="7" class="n-box n-lwc"/><text x="640" y="250" text-anchor="middle" class="node-mono" font-size="10.5">Modal (clear cart)</text>
+          </g>
+          <!-- Checkout -->
+          <g>
+            <rect x="740" y="30" width="160" height="54" rx="9" class="n-box n-apex"/><text x="820" y="61" text-anchor="middle" class="node-label" font-size="12">Checkout</text>
+            <line x1="820" y1="84" x2="820" y2="106" class="e-line" marker-end="url(#ca-a)"/>
+            <rect x="740" y="110" width="160" height="40" rx="7" class="n-box n-lwc"/><text x="820" y="134" text-anchor="middle" class="node-mono" font-size="10.5">ShippingForm</text>
+            <line x1="820" y1="150" x2="820" y2="164" class="e-line" marker-end="url(#ca-a)"/>
+            <rect x="740" y="168" width="160" height="40" rx="7" class="n-box n-lwc"/><text x="820" y="192" text-anchor="middle" class="node-mono" font-size="10.5">BillingForm</text>
+            <line x1="820" y1="208" x2="820" y2="222" class="e-line" marker-end="url(#ca-a)"/>
+            <rect x="740" y="226" width="160" height="40" rx="7" class="n-box n-lwc"/><text x="820" y="250" text-anchor="middle" class="node-mono" font-size="10.5">ShippingMethod</text>
+            <line x1="820" y1="266" x2="820" y2="280" class="e-line" marker-end="url(#ca-a)"/>
+            <rect x="740" y="284" width="160" height="40" rx="7" class="n-box n-lwc"/><text x="820" y="308" text-anchor="middle" class="node-mono" font-size="10.5">OrderSummary</text>
+          </g>
+          <!-- Payment -->
+          <g>
+            <rect x="920" y="30" width="160" height="54" rx="9" class="n-box n-apex"/><text x="1000" y="61" text-anchor="middle" class="node-label" font-size="12">Payment</text>
+            <line x1="1000" y1="84" x2="1000" y2="106" class="e-line" marker-end="url(#ca-a)"/>
+            <rect x="920" y="110" width="160" height="40" rx="7" class="n-box n-lwc"/><text x="1000" y="134" text-anchor="middle" class="node-mono" font-size="10.5">PaymentMethod</text>
+          </g>
+          <!-- Order Confirmation -->
+          <g>
+            <rect x="1100" y="30" width="160" height="54" rx="9" class="n-box n-apex"/><text x="1180" y="55" text-anchor="middle" class="node-label" font-size="12">Order</text><text x="1180" y="70" text-anchor="middle" class="node-label" font-size="12">Confirmation</text>
+            <line x1="1180" y1="84" x2="1180" y2="106" class="e-line" marker-end="url(#ca-a)"/>
+            <rect x="1100" y="110" width="160" height="40" rx="7" class="n-box n-lwc"/><text x="1180" y="134" text-anchor="middle" class="node-mono" font-size="10.5">OrderProgress</text>
+          </g>
+          <!-- My Account -->
+          <g>
+            <rect x="1280" y="30" width="150" height="54" rx="9" class="n-box n-apex"/><text x="1355" y="61" text-anchor="middle" class="node-label" font-size="12">My Account</text>
+            <text x="1355" y="128" text-anchor="middle" class="node-sub n-subtle" font-size="10" font-style="italic">all inline —</text>
+            <text x="1355" y="142" text-anchor="middle" class="node-sub n-subtle" font-size="10" font-style="italic">no child components</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption class="diagram-caption"><code>ProductCard</code> is reused across Home, Catalog and Product Detail; <code>QuantitySelector</code> across Cart Item and Product Detail; <code>OrderSummary</code> across Cart and Checkout; <code>OrderProgress</code> across Order Confirmation and Order Tracking. <code>techBasketToast</code> and <code>techBasketModal</code> are global/generic and not tied to one page.</figcaption>
+    </figure>
+
+    <div class="callout info"><strong>Two catalogs exist.</strong> The real, Apex-backed catalog flows <code>ProductCatalogController.getProducts()</code> &#8594; <code>productDataService.js</code>. A separate <code>mockProductData.js</code> module (12 hardcoded non-laptop products) is a legacy/demo artifact not wired into any page read in this audit.</div>
+  </section>
+
+  <!-- ============================================================ CHECKOUT FLOW ============================================================ -->
+  <section class="page" id="checkout-flow">
+    <p class="page-eyebrow">Diagram 3 of 7</p>
+    <h1 class="page-title">Checkout &amp; Order Pipeline</h1>
+    <p class="page-lede">Every one of the 14 sequential steps inside <code>CheckoutController.submitOrder</code> &#8212; the single Apex method that turns a cart into a Lead, an Account/Contact/Opportunity, an Order, a tracking record and a payment, in one transaction.</p>
+
+    <figure class="diagram">
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1200 1180" role="img" aria-label="The fourteen sequential steps of CheckoutController.submitOrder, with side annotations showing which steps fire trigger automation.">
+          <defs><marker id="cf-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker>
+          <marker id="cf-b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--amber)"/></marker></defs>
+
+          <!-- generate steps programmatically-equivalent hand-written -->
+          <!-- step boxes: x=40 w=800 h=60, y = 30 + i*80 -->
+          <!-- 0 -->
+          <rect x="40" y="30" width="800" height="56" rx="9" class="n-box n-shopper"/>
+          <text x="60" y="63" class="node-label" font-size="12.5">0. Validate cart &#8212; throw AuraHandledException if empty</text>
+          <!-- 1 -->
+          <rect x="40" y="110" width="800" height="56" rx="9" class="n-box n-external"/>
+          <text x="60" y="135" class="node-label" font-size="12.5">1. If paying online: RazorpayService.fetchPayment(id)</text>
+          <text x="60" y="152" class="node-sub n-muted" font-size="10.5">verify status == 'captured' — done before ANY DML (callout-after-DML is disallowed)</text>
+          <!-- 2 -->
+          <rect x="40" y="190" width="800" height="56" rx="9" class="n-box n-apex"/>
+          <text x="60" y="223" class="node-label" font-size="12.5">STEP 1 &#8212; insert Lead (Guest owner, SYSTEM_MODE)</text>
+          <!-- 3 -->
+          <rect x="40" y="270" width="800" height="56" rx="9" class="n-box n-apex"/>
+          <text x="60" y="295" class="node-label" font-size="12.5">STEP 2 &#8212; Database.convertLead()</text>
+          <text x="60" y="312" class="node-sub n-muted" font-size="10.5">reuses an existing Contact/Account if found by email &#8594; Account, Contact, Opportunity</text>
+          <!-- 4 -->
+          <rect x="40" y="350" width="800" height="56" rx="9" class="n-box n-apex"/>
+          <text x="60" y="383" class="node-label" font-size="12.5">STEP 3 &#8212; set Opportunity.Pricebook2Id (Standard Price Book)</text>
+          <!-- 5 -->
+          <rect x="40" y="430" width="800" height="56" rx="9" class="n-box n-apex"/>
+          <text x="60" y="455" class="node-label" font-size="12.5">STEP 4 &#8212; query PricebookEntry per cart line</text>
+          <text x="60" y="472" class="node-sub n-muted" font-size="10.5">server-side pricing only &#8594; insert OpportunityLineItems</text>
+          <!-- 6 (fires opp trigger) -->
+          <rect x="40" y="510" width="800" height="56" rx="9" class="n-box n-apex"/>
+          <text x="60" y="535" class="node-label" font-size="12.5">STEP 5 &#8212; Opportunity.StageName = 'Closed Won'</text>
+          <text x="60" y="552" class="node-sub n-muted" font-size="10.5">this DML fires OpportunityTrigger</text>
+          <rect x="860" y="510" width="300" height="56" rx="9" class="n-box n-trigger"/>
+          <text x="880" y="533" class="node-label" font-size="11">fires OpportunityTrigger &#8594;</text>
+          <text x="880" y="550" class="node-label" font-size="11">OrderService.createOrders()</text>
+          <path d="M840,538 L860,538" class="e-dashed" marker-end="url(#cf-b)"/>
+          <!-- 7 -->
+          <rect x="40" y="590" width="800" height="56" rx="9" class="n-box n-apex"/>
+          <text x="60" y="623" class="node-label" font-size="12.5">STEP 6 &#8212; query the newly-created Draft Order</text>
+          <!-- 8 (fires order trigger) -->
+          <rect x="40" y="670" width="800" height="56" rx="9" class="n-box n-apex"/>
+          <text x="60" y="695" class="node-label" font-size="12.5">STEP 7 &#8212; Order.Status = 'Activated', set shipping fields</text>
+          <text x="60" y="712" class="node-sub n-muted" font-size="10.5">Website_Order__c = true &#8212; this DML fires OrderTrigger</text>
+          <rect x="860" y="670" width="300" height="56" rx="9" class="n-box n-trigger"/>
+          <text x="880" y="693" class="node-label" font-size="11">fires OrderTrigger &#8594;</text>
+          <text x="880" y="710" class="node-label" font-size="11">creates Order_Tracking__c</text>
+          <path d="M840,698 L860,698" class="e-dashed" marker-end="url(#cf-b)"/>
+          <!-- 9 -->
+          <rect x="40" y="750" width="800" height="56" rx="9" class="n-box n-apex"/>
+          <text x="60" y="775" class="node-label" font-size="12.5">STEP 8 &#8212; set Tracking_NUmber__c + Delivery_Date__c</text>
+          <text x="60" y="792" class="node-sub n-muted" font-size="10.5">(today + 5 days) on the new Order_Tracking__c</text>
+          <!-- 10 (fires payment trigger) -->
+          <rect x="40" y="830" width="800" height="56" rx="9" class="n-box n-apex"/>
+          <text x="60" y="855" class="node-label" font-size="12.5">STEP 9 &#8212; verify Razorpay amount vs Order.TotalAmount</text>
+          <text x="60" y="872" class="node-sub n-muted" font-size="10.5">insert Payment__c &#8212; this DML fires PaymentTrigger</text>
+          <rect x="860" y="830" width="300" height="56" rx="9" class="n-box n-trigger"/>
+          <text x="880" y="850" class="node-label" font-size="11">fires PaymentTrigger &#8594;</text>
+          <text x="880" y="864" class="node-label" font-size="11">validate + recalc totals</text>
+          <text x="880" y="878" class="node-label" font-size="11">+ confirmation email</text>
+          <path d="M840,858 L860,858" class="e-dashed" marker-end="url(#cf-b)"/>
+          <!-- 11 -->
+          <rect x="40" y="910" width="800" height="56" rx="9" class="n-box n-external"/>
+          <text x="60" y="935" class="node-label" font-size="12.5">STEP 9.5 &#8212; sendConfirmationEmail()</text>
+          <text x="60" y="952" class="node-sub n-muted" font-size="10.5">best-effort, wrapped in try/catch &#8212; failure never rolls back the order</text>
+          <!-- 12 -->
+          <rect x="40" y="990" width="800" height="56" rx="9" class="n-box n-apex"/>
+          <text x="60" y="1015" class="node-label" font-size="12.5">STEP 10 &#8212; reassign ownership</text>
+          <text x="60" y="1032" class="node-sub n-muted" font-size="10.5">Account, Contact, Opportunity, Order, Order_Tracking__c, Payment__c &#8594; admin user, one bulk update</text>
+          <!-- 13 -->
+          <rect x="40" y="1070" width="800" height="56" rx="9" class="n-box n-shopper"/>
+          <text x="60" y="1103" class="node-label" font-size="12.5">Return OrderResult{orderId, orderNumber, trackingNumber, deliveryDate, totalAmount}</text>
+
+          <!-- connecting chain arrows -->
+          <line x1="440" y1="86" x2="440" y2="106" class="e-accent" marker-end="url(#cf-a)"/>
+          <line x1="440" y1="166" x2="440" y2="186" class="e-accent" marker-end="url(#cf-a)"/>
+          <line x1="440" y1="246" x2="440" y2="266" class="e-accent" marker-end="url(#cf-a)"/>
+          <line x1="440" y1="326" x2="440" y2="346" class="e-accent" marker-end="url(#cf-a)"/>
+          <line x1="440" y1="406" x2="440" y2="426" class="e-accent" marker-end="url(#cf-a)"/>
+          <line x1="440" y1="486" x2="440" y2="506" class="e-accent" marker-end="url(#cf-a)"/>
+          <line x1="440" y1="566" x2="440" y2="586" class="e-accent" marker-end="url(#cf-a)"/>
+          <line x1="440" y1="646" x2="440" y2="666" class="e-accent" marker-end="url(#cf-a)"/>
+          <line x1="440" y1="726" x2="440" y2="746" class="e-accent" marker-end="url(#cf-a)"/>
+          <line x1="440" y1="806" x2="440" y2="826" class="e-accent" marker-end="url(#cf-a)"/>
+          <line x1="440" y1="886" x2="440" y2="906" class="e-accent" marker-end="url(#cf-a)"/>
+          <line x1="440" y1="966" x2="440" y2="986" class="e-accent" marker-end="url(#cf-a)"/>
+          <line x1="440" y1="1046" x2="440" y2="1066" class="e-accent" marker-end="url(#cf-a)"/>
+        </svg>
+      </div>
+      <figcaption class="diagram-caption">If verification fails at Step 1 or the amount check at Step 9, an exception is thrown and the <strong>entire transaction rolls back</strong> &#8212; nothing from Steps 2&#8211;9 persists. The three amber boxes are detailed fully in <strong>Trigger Automation</strong>.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================================================ TRIGGER AUTOMATION ============================================================ -->
+  <section class="page" id="trigger-flow">
+    <p class="page-eyebrow">Diagram 4 of 7</p>
+    <h1 class="page-title">Trigger Automation</h1>
+    <p class="page-lede">Three independent automation chains, each kicked off by a different object's <code>after update</code>, plus two dead triggers whose bodies are fully commented out.</p>
+
+    <figure class="diagram">
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1400 700" role="img" aria-label="Trigger automation flowchart: Opportunity closed-won creates Order and OrderItems, Order activation creates Order Tracking, and Payment insert or update validates and recalculates totals then sends a confirmation email. Two dead triggers on Account and Contact have no logic.">
+          <defs><marker id="tr-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-subtle)"/></marker></defs>
+
+          <text x="20" y="24" class="lane-label n-subtle" font-size="10.5">OPPORTUNITY &#8594; ORDER AUTOMATION</text>
+          <rect x="20" y="40" width="170" height="56" rx="9" class="n-box n-object"/><text x="105" y="63" text-anchor="middle" class="node-label" font-size="11">Opportunity</text><text x="105" y="78" text-anchor="middle" class="node-sub n-muted" font-size="9.5">StageName &#8594; Closed Won</text>
+          <rect x="220" y="40" width="170" height="56" rx="9" class="n-box n-trigger"/><text x="305" y="63" text-anchor="middle" class="node-label" font-size="11">OpportunityTrigger</text><text x="305" y="78" text-anchor="middle" class="node-sub n-muted" font-size="9.5">after update</text>
+          <rect x="420" y="40" width="170" height="56" rx="9" class="n-box n-apex"/><text x="505" y="63" text-anchor="middle" class="node-label" font-size="11">OpportunityTrigger-</text><text x="505" y="78" text-anchor="middle" class="node-label" font-size="11">Handler</text>
+          <rect x="620" y="40" width="170" height="56" rx="9" class="n-box n-apex"/><text x="705" y="63" text-anchor="middle" class="node-label" font-size="11">OrderService.</text><text x="705" y="78" text-anchor="middle" class="node-label" font-size="11">createOrders()</text>
+          <rect x="820" y="40" width="190" height="56" rx="9" class="n-box n-object"/><text x="915" y="63" text-anchor="middle" class="node-label" font-size="11">Order (Draft)</text><text x="915" y="78" text-anchor="middle" class="node-sub n-muted" font-size="9.5">+ OrderItems</text>
+          <line x1="190" y1="68" x2="216" y2="68" class="e-line" marker-end="url(#tr-a)"/>
+          <line x1="390" y1="68" x2="416" y2="68" class="e-line" marker-end="url(#tr-a)"/>
+          <line x1="590" y1="68" x2="616" y2="68" class="e-line" marker-end="url(#tr-a)"/>
+          <line x1="790" y1="68" x2="816" y2="68" class="e-line" marker-end="url(#tr-a)"/>
+
+          <text x="20" y="150" class="lane-label n-subtle" font-size="10.5">ORDER &#8594; TRACKING AUTOMATION (separately, once the Order above is later Activated)</text>
+          <rect x="20" y="166" width="170" height="56" rx="9" class="n-box n-object"/><text x="105" y="189" text-anchor="middle" class="node-label" font-size="11">Order</text><text x="105" y="204" text-anchor="middle" class="node-sub n-muted" font-size="9.5">Status &#8594; Activated</text>
+          <rect x="220" y="166" width="170" height="56" rx="9" class="n-box n-trigger"/><text x="305" y="189" text-anchor="middle" class="node-label" font-size="11">OrderTrigger</text><text x="305" y="204" text-anchor="middle" class="node-sub n-muted" font-size="9.5">after update</text>
+          <rect x="420" y="166" width="170" height="56" rx="9" class="n-box n-apex"/><text x="505" y="189" text-anchor="middle" class="node-label" font-size="11">OrderTriggerHandler</text><text x="505" y="204" text-anchor="middle" class="node-sub n-muted" font-size="9.5">pass-through, no filtering</text>
+          <rect x="620" y="166" width="170" height="56" rx="9" class="n-box n-apex"/><text x="705" y="189" text-anchor="middle" class="node-label" font-size="11">OrderTrackingService.</text><text x="705" y="204" text-anchor="middle" class="node-label" font-size="11">handleStatusChanges()</text>
+          <rect x="820" y="166" width="190" height="56" rx="9" class="n-box n-object"/><text x="915" y="189" text-anchor="middle" class="node-label" font-size="11">Order_Tracking__c</text><text x="915" y="204" text-anchor="middle" class="node-sub n-muted" font-size="9.5">Delivery_Status__c = Pending</text>
+          <line x1="190" y1="194" x2="216" y2="194" class="e-line" marker-end="url(#tr-a)"/>
+          <line x1="390" y1="194" x2="416" y2="194" class="e-line" marker-end="url(#tr-a)"/>
+          <line x1="590" y1="194" x2="616" y2="194" class="e-line" marker-end="url(#tr-a)"/>
+          <line x1="790" y1="194" x2="816" y2="194" class="e-line" marker-end="url(#tr-a)"/>
+
+          <text x="20" y="290" class="lane-label n-subtle" font-size="10.5">PAYMENT AUTOMATION (separately, when Payment__c is inserted or updated — the only before+after trigger)</text>
+          <rect x="20" y="330" width="170" height="140" rx="9" class="n-box n-object"/><text x="105" y="390" text-anchor="middle" class="node-label" font-size="11">Payment__c</text><text x="105" y="406" text-anchor="middle" class="node-sub n-muted" font-size="9.5">insert / update</text>
+
+          <text x="250" y="322" class="n-subtle" font-size="9.5" font-style="italic">before</text>
+          <rect x="250" y="330" width="200" height="56" rx="9" class="n-box n-trigger"/><text x="350" y="353" text-anchor="middle" class="node-label" font-size="10.5">PaymentTriggerHandler.</text><text x="350" y="368" text-anchor="middle" class="node-label" font-size="10.5">validatePayments()</text>
+          <rect x="470" y="330" width="220" height="56" rx="9" class="n-box n-apex"/><text x="580" y="353" text-anchor="middle" class="node-label" font-size="10.5">PaymentService.validate-</text><text x="580" y="368" text-anchor="middle" class="node-label" font-size="10.5">SuccessfulPayments()</text>
+          <rect x="710" y="330" width="230" height="56" rx="9" class="n-box n-trigger"/><text x="825" y="353" text-anchor="middle" class="node-label" font-size="10.5">addError() if total would</text><text x="825" y="368" text-anchor="middle" class="node-label" font-size="10.5">exceed Order.TotalAmount</text>
+
+          <text x="250" y="412" class="n-subtle" font-size="9.5" font-style="italic">after</text>
+          <rect x="250" y="420" width="200" height="56" rx="9" class="n-box n-trigger"/><text x="350" y="443" text-anchor="middle" class="node-label" font-size="10.5">PaymentTriggerHandler.</text><text x="350" y="458" text-anchor="middle" class="node-label" font-size="10.5">handleAfterInsertOrUpdate()</text>
+          <rect x="470" y="420" width="220" height="56" rx="9" class="n-box n-apex"/><text x="580" y="443" text-anchor="middle" class="node-label" font-size="10.5">PaymentService.calculate-</text><text x="580" y="458" text-anchor="middle" class="node-label" font-size="10.5">OrderPayments()</text>
+          <rect x="710" y="420" width="230" height="56" rx="9" class="n-box n-apex"/><text x="825" y="443" text-anchor="middle" class="node-label" font-size="10.5">PaymentService.sendPayment-</text><text x="825" y="458" text-anchor="middle" class="node-label" font-size="10.5">ConfirmationEmails()</text>
+          <rect x="960" y="420" width="220" height="56" rx="9" class="n-box n-external"/><text x="1070" y="443" text-anchor="middle" class="node-label" font-size="10.5">OrderInvoiceController</text><text x="1070" y="458" text-anchor="middle" class="node-label" font-size="10.5">PDF &#8594; email sent</text>
+
+          <path d="M190,358 220,358 220,358 246,358" class="e-line" marker-end="url(#tr-a)"/>
+          <path d="M190,400 220,400 220,448 246,448" class="e-line" marker-end="url(#tr-a)"/>
+          <line x1="450" y1="358" x2="466" y2="358" class="e-line" marker-end="url(#tr-a)"/>
+          <line x1="690" y1="358" x2="706" y2="358" class="e-line" marker-end="url(#tr-a)"/>
+          <line x1="450" y1="448" x2="466" y2="448" class="e-line" marker-end="url(#tr-a)"/>
+          <line x1="690" y1="448" x2="706" y2="448" class="e-line" marker-end="url(#tr-a)"/>
+          <line x1="940" y1="448" x2="956" y2="448" class="e-line" marker-end="url(#tr-a)"/>
+
+          <text x="20" y="530" class="lane-label n-subtle" font-size="10.5">DEAD TRIGGERS — deployed and active on their object, but the entire body is commented out</text>
+          <rect x="20" y="546" width="200" height="50" rx="9" class="n-box n-dead"/><text x="120" y="576" text-anchor="middle" class="node-label n-dead" font-size="11">accountTrigger</text>
+          <rect x="240" y="546" width="200" height="50" rx="9" class="n-box n-dead"/><text x="340" y="576" text-anchor="middle" class="node-label n-dead" font-size="11">contactTrigger</text>
+          <rect x="460" y="546" width="480" height="50" rx="9" class="n-box n-dead"/><text x="700" y="576" text-anchor="middle" class="node-label n-dead" font-size="11">Fires on nothing — no logic ever executes</text>
+          <line x1="220" y1="571" x2="456" y2="571" class="e-dashed" marker-end="url(#tr-a)"/>
+          <line x1="440" y1="571" x2="456" y2="571" class="e-dashed" marker-end="url(#tr-a)"/>
+        </svg>
+      </div>
+      <figcaption class="diagram-caption">Each lane runs in a different transaction than the one before it &#8212; Opportunity&#8594;Order and Order&#8594;Tracking happen inside the same <code>submitOrder</code> call (Steps 5 and 7), but Payment automation is a third, later DML in that same call (Step 9).</figcaption>
+    </figure>
+
+    <h2 class="section-h">Trigger map</h2>
+    <div class="table-wrap">
+      <table class="schema">
+        <thead><tr><th>Trigger</th><th>Object</th><th>Events</th><th>Handler</th><th>Status</th></tr></thead>
+        <tbody id="triggersTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================================================ ADMIN & BACKEND FLOW ============================================================ -->
+  <section class="page" id="admin-flow">
+    <p class="page-eyebrow">Diagram 5 of 7</p>
+    <h1 class="page-title">Admin &amp; Backend Flow</h1>
+    <p class="page-lede">Guest Users can't own records long-term, so every record created during checkout is reassigned to a real admin user at the end of the pipeline (Step 10). This is what the admin actually sees and can act on afterward.</p>
+
+    <figure class="diagram">
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1200 560" role="img" aria-label="Records created by the Guest User during checkout are bulk-reassigned to the admin user, who views them via the Order record page dashboard, list views and reports, or a nightly reconciliation batch that is not currently auto-scheduled.">
+          <defs><marker id="ad-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-subtle)"/></marker></defs>
+
+          <rect x="40" y="20" width="300" height="56" rx="10" class="n-box n-shopper"/>
+          <text x="190" y="43" text-anchor="middle" class="node-label" font-size="12.5">Guest User</text>
+          <text x="190" y="60" text-anchor="middle" class="node-sub n-muted" font-size="10.5">running context during checkout</text>
+
+          <line x1="190" y1="76" x2="190" y2="100" class="e-line"/>
+          <line x1="110" y1="100" x2="860" y2="100" class="e-line"/>
+          <line x1="110" y1="100" x2="110" y2="118" class="e-line" marker-end="url(#ad-a)"/>
+          <line x1="260" y1="100" x2="260" y2="118" class="e-line" marker-end="url(#ad-a)"/>
+          <line x1="410" y1="100" x2="410" y2="118" class="e-line" marker-end="url(#ad-a)"/>
+          <line x1="560" y1="100" x2="560" y2="118" class="e-line" marker-end="url(#ad-a)"/>
+          <line x1="710" y1="100" x2="710" y2="118" class="e-line" marker-end="url(#ad-a)"/>
+          <line x1="860" y1="100" x2="860" y2="118" class="e-line" marker-end="url(#ad-a)"/>
+
+          <rect x="40" y="122" width="140" height="44" rx="8" class="n-box n-object"/><text x="110" y="149" text-anchor="middle" class="node-mono" font-size="10.5">Lead</text>
+          <rect x="190" y="122" width="140" height="44" rx="8" class="n-box n-object"/><text x="260" y="149" text-anchor="middle" class="node-mono" font-size="10.5">Account</text>
+          <rect x="340" y="122" width="140" height="44" rx="8" class="n-box n-object"/><text x="410" y="149" text-anchor="middle" class="node-mono" font-size="10.5">Contact</text>
+          <rect x="490" y="122" width="140" height="44" rx="8" class="n-box n-object"/><text x="560" y="149" text-anchor="middle" class="node-mono" font-size="10.5">Opportunity</text>
+          <rect x="640" y="122" width="140" height="44" rx="8" class="n-box n-object"/><text x="710" y="142" text-anchor="middle" class="node-mono" font-size="10.5">Order +</text><text x="710" y="155" text-anchor="middle" class="node-mono" font-size="10.5">Tracking</text>
+          <rect x="790" y="122" width="140" height="44" rx="8" class="n-box n-object"/><text x="860" y="149" text-anchor="middle" class="node-mono" font-size="10.5">Payment__c</text>
+
+          <line x1="110" y1="166" x2="110" y2="186" class="e-line"/>
+          <line x1="860" y1="166" x2="860" y2="186" class="e-line"/>
+          <line x1="110" y1="186" x2="860" y2="186" class="e-line"/>
+          <line x1="485" y1="186" x2="485" y2="204" class="e-accent" marker-end="url(#ad-a)"/>
+          <text x="600" y="180" text-anchor="middle" class="edge-label n-subtle" font-size="10">STEP 10 &#8212; bulk reassign owner</text>
+
+          <rect x="335" y="208" width="300" height="56" rx="10" class="n-box n-apex"/>
+          <text x="485" y="231" text-anchor="middle" class="node-label" font-size="12.5">Admin User</text>
+          <text x="485" y="248" text-anchor="middle" class="node-sub n-muted" font-size="10.5">defaultOwnerId</text>
+
+          <line x1="485" y1="264" x2="485" y2="288" class="e-line"/>
+          <line x1="240" y1="288" x2="940" y2="288" class="e-line"/>
+          <line x1="240" y1="288" x2="240" y2="306" class="e-line" marker-end="url(#ad-a)"/>
+          <line x1="610" y1="288" x2="610" y2="306" class="e-line" marker-end="url(#ad-a)"/>
+          <line x1="940" y1="288" x2="940" y2="306" class="e-line" marker-end="url(#ad-a)"/>
+
+          <rect x="100" y="310" width="280" height="66" rx="9" class="n-box n-lwc"/>
+          <text x="240" y="333" text-anchor="middle" class="node-label" font-size="11.5">Order record page</text>
+          <text x="240" y="349" text-anchor="middle" class="node-sub n-muted" font-size="10">orderPaymentDashboard LWC</text>
+          <line x1="240" y1="376" x2="240" y2="392" class="e-line" marker-end="url(#ad-a)"/>
+          <rect x="100" y="396" width="280" height="50" rx="8" class="n-box n-apex"/>
+          <text x="240" y="416" text-anchor="middle" class="node-label" font-size="10.5">OrderPaymentController</text>
+          <text x="240" y="431" text-anchor="middle" class="node-sub n-muted" font-size="9.5">getOrderDetails / getPayments (USER_MODE)</text>
+
+          <rect x="470" y="310" width="280" height="66" rx="9" class="n-box n-trigger"/>
+          <text x="610" y="333" text-anchor="middle" class="node-label" font-size="11.5">OrderPaymentReconciliation-</text>
+          <text x="610" y="349" text-anchor="middle" class="node-label" font-size="11.5">Scheduler &#9888;</text>
+          <text x="610" y="365" text-anchor="middle" class="node-sub n-muted" font-size="9.5">not currently auto-scheduled</text>
+          <line x1="610" y1="376" x2="610" y2="392" class="e-line" marker-end="url(#ad-a)"/>
+          <rect x="470" y="396" width="280" height="66" rx="8" class="n-box n-apex"/>
+          <text x="610" y="418" text-anchor="middle" class="node-label" font-size="10.5">OrderPaymentReconciliationBatch</text>
+          <text x="610" y="434" text-anchor="middle" class="node-sub n-muted" font-size="9.5">recomputes Total_Paid__c /</text>
+          <text x="610" y="448" text-anchor="middle" class="node-sub n-muted" font-size="9.5">Payment_Status__c nightly</text>
+
+          <rect x="800" y="310" width="280" height="66" rx="9" class="n-box n-shopper"/>
+          <text x="940" y="333" text-anchor="middle" class="node-label" font-size="11.5">List Views &amp; Reports</text>
+          <text x="940" y="349" text-anchor="middle" class="node-sub n-muted" font-size="10">Order / Payment__c, standard UI</text>
+        </svg>
+      </div>
+      <figcaption class="diagram-caption">The reconciliation batch is a real safety net &#8212; but with no <code>System.schedule</code> call or CronTrigger metadata deployed anywhere in the project, it only runs when someone schedules it manually in Setup.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================================================ PAYMENT GATEWAY ============================================================ -->
+  <section class="page" id="payment-gateway">
+    <p class="page-eyebrow">Diagram 6 of 7</p>
+    <h1 class="page-title">Razorpay Payment Gateway</h1>
+    <p class="page-lede">A full-page redirect flow, not an embedded widget &#8212; this org's Lightning Web Security blocks the dynamic <code>&lt;script&gt;</code> injection Razorpay's Checkout.js needs, so the gateway's own JS never loads inside the Salesforce page at all.</p>
+
+    <figure class="diagram">
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1300 1040" role="img" aria-label="Sequence diagram of the Razorpay payment flow: the shopper is redirected to a Razorpay-hosted Payment Link, pays there, is redirected back, and the payment is re-verified server-side before the order is created.">
+          <defs>
+            <marker id="pg-s" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink)"/></marker>
+            <marker id="pg-d" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-subtle)"/></marker>
+          </defs>
+          <!-- lifelines -->
+          <g font-size="11">
+            <rect x="40" y="20" width="190" height="50" rx="8" class="n-box n-shopper"/><text x="135" y="50" text-anchor="middle" class="node-label" font-size="11.5">Shopper</text>
+            <rect x="280" y="20" width="210" height="50" rx="8" class="n-box n-lwc"/><text x="385" y="42" text-anchor="middle" class="node-label" font-size="11">techBasketPayment</text><text x="385" y="58" text-anchor="middle" class="node-sub n-muted" font-size="9.5">LWC</text>
+            <rect x="540" y="20" width="230" height="50" rx="8" class="n-box n-apex"/><text x="655" y="42" text-anchor="middle" class="node-label" font-size="11">CheckoutController</text><text x="655" y="58" text-anchor="middle" class="node-sub n-muted" font-size="9.5">Apex</text>
+            <rect x="820" y="20" width="210" height="50" rx="8" class="n-box n-apex"/><text x="925" y="42" text-anchor="middle" class="node-label" font-size="11">RazorpayService</text><text x="925" y="58" text-anchor="middle" class="node-sub n-muted" font-size="9.5">Apex</text>
+            <rect x="1080" y="20" width="190" height="50" rx="8" class="n-box n-external"/><text x="1175" y="50" text-anchor="middle" class="node-label" font-size="11.5">Razorpay API</text>
+          </g>
+          <line x1="135" y1="70" x2="135" y2="960" class="e-dashed"/>
+          <line x1="385" y1="70" x2="385" y2="960" class="e-dashed"/>
+          <line x1="655" y1="70" x2="655" y2="960" class="e-dashed"/>
+          <line x1="925" y1="70" x2="925" y2="960" class="e-dashed"/>
+          <line x1="1175" y1="70" x2="1175" y2="960" class="e-dashed"/>
+
+          <!-- arrows -->
+          <g font-size="10.5">
+            <line x1="135" y1="110" x2="379" y2="110" class="e-line" marker-end="url(#pg-s)"/><text x="257" y="103" text-anchor="middle" class="edge-label n-ink">Click "Place Order" (Online)</text>
+            <line x1="385" y1="170" x2="649" y2="170" class="e-line" marker-end="url(#pg-s)"/><text x="517" y="163" text-anchor="middle" class="edge-label n-ink">createRazorpayPaymentLink(subtotal, name, email, phone, callbackUrl)</text>
+            <line x1="655" y1="230" x2="919" y2="230" class="e-line" marker-end="url(#pg-s)"/><text x="787" y="223" text-anchor="middle" class="edge-label n-ink">createPaymentLink(...)</text>
+            <line x1="925" y1="290" x2="1169" y2="290" class="e-line" marker-end="url(#pg-s)"/><text x="1047" y="283" text-anchor="middle" class="edge-label n-ink">POST /payment_links (Named Credential auth)</text>
+            <line x1="1175" y1="350" x2="931" y2="350" class="e-dashed" marker-end="url(#pg-d)"/><text x="1047" y="343" text-anchor="middle" class="edge-label n-subtle">200 { id, short_url }</text>
+            <line x1="925" y1="410" x2="661" y2="410" class="e-dashed" marker-end="url(#pg-d)"/><text x="787" y="403" text-anchor="middle" class="edge-label n-subtle">PaymentLinkResult</text>
+            <line x1="655" y1="470" x2="391" y2="470" class="e-dashed" marker-end="url(#pg-d)"/><text x="517" y="463" text-anchor="middle" class="edge-label n-subtle">shortUrl</text>
+            <line x1="385" y1="530" x2="141" y2="530" class="e-line" marker-end="url(#pg-s)"/><text x="257" y="523" text-anchor="middle" class="edge-label n-ink">window.location.href = shortUrl (full-page redirect)</text>
+            <line x1="135" y1="590" x2="1169" y2="590" class="e-line" marker-end="url(#pg-s)"/><text x="655" y="583" text-anchor="middle" class="edge-label n-ink">Pays on Razorpay-hosted page (UPI / card / netbanking)</text>
+            <line x1="1175" y1="650" x2="141" y2="650" class="e-dashed" marker-end="url(#pg-d)"/><text x="655" y="643" text-anchor="middle" class="edge-label n-subtle">Redirects to callback_url?razorpay_payment_id=...&amp;razorpay_payment_link_status=paid</text>
+            <line x1="135" y1="710" x2="379" y2="710" class="e-line" marker-end="url(#pg-s)"/><text x="257" y="703" text-anchor="middle" class="edge-label n-ink">Page reloads &#8594; checkForGatewayReturn() detects params</text>
+            <line x1="385" y1="770" x2="649" y2="770" class="e-line" marker-end="url(#pg-s)"/><text x="517" y="763" text-anchor="middle" class="edge-label n-ink">submitOrder(inputJson incl. razorpayPaymentId)</text>
+            <line x1="655" y1="830" x2="919" y2="830" class="e-line" marker-end="url(#pg-s)"/><text x="787" y="823" text-anchor="middle" class="edge-label n-ink">fetchPayment(id) &#8212; re-verify BEFORE any DML</text>
+            <line x1="925" y1="890" x2="1169" y2="890" class="e-line" marker-end="url(#pg-s)"/><text x="1047" y="883" text-anchor="middle" class="edge-label n-ink">GET /payments/{id}</text>
+            <line x1="1175" y1="930" x2="931" y2="930" class="e-dashed" marker-end="url(#pg-d)"/><text x="1047" y="923" text-anchor="middle" class="edge-label n-subtle">status: captured, amount</text>
+          </g>
+
+          <rect x="40" y="970" width="1230" height="56" rx="9" class="n-box n-trigger"/>
+          <text x="655" y="993" text-anchor="middle" class="node-label" font-size="11.5">If status == 'captured' AND amount matches Order.TotalAmount &times; 100 (paise): Payment__c inserted as Successful &#8212; PaymentTrigger fires.</text>
+          <text x="655" y="1010" text-anchor="middle" class="node-sub n-muted" font-size="10.5">If not verified: the exception rolls back the entire transaction and the shopper sees "We could not verify your payment."</text>
+        </svg>
+      </div>
+      <figcaption class="diagram-caption">Solid arrows = calls, dashed arrows = returns/redirects. The amount check compares against <code>Order.TotalAmount</code>, which is the <strong>product subtotal only</strong> &mdash; see Known Issues for why shipping is charged nowhere in this flow.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================================================ AUTH SYSTEMS ============================================================ -->
+  <section class="page" id="auth-systems">
+    <p class="page-eyebrow">Diagram 7 of 7</p>
+    <h1 class="page-title">Two Authentication Systems</h1>
+    <p class="page-lede">A common point of confusion in this codebase: two completely independent login systems coexist, and a shopper can have an account in one without ever touching the other.</p>
+
+    <figure class="diagram">
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1200 600" role="img" aria-label="Two independent authentication systems: a custom Login_Credentials__c based login used by My Account and checkout gating, versus real Salesforce Experience Cloud login used only by the standalone Sign Up page.">
+          <defs><marker id="au-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-subtle)"/></marker></defs>
+          <line x1="600" y1="20" x2="600" y2="500" class="e-dashed"/>
+
+          <rect x="40" y="30" width="500" height="50" rx="9" class="n-box n-teal"/>
+          <text x="290" y="60" text-anchor="middle" class="node-label" font-size="13">Custom Storefront Login</text>
+
+          <rect x="40" y="110" width="500" height="54" rx="9" class="n-box n-lwc"/><text x="290" y="142" text-anchor="middle" class="node-label" font-size="12">techBasketMyAccount</text>
+          <line x1="290" y1="164" x2="290" y2="186" class="e-line" marker-end="url(#au-a)"/>
+          <rect x="40" y="190" width="500" height="54" rx="9" class="n-box n-apex"/><text x="290" y="222" text-anchor="middle" class="node-label" font-size="12">LoginCredentialsController.signUp / logIn</text>
+          <line x1="290" y1="244" x2="290" y2="266" class="e-line" marker-end="url(#au-a)"/>
+          <rect x="40" y="270" width="500" height="54" rx="9" class="n-box n-object"/><text x="290" y="297" text-anchor="middle" class="node-label" font-size="12">Login_Credentials__c</text><text x="290" y="313" text-anchor="middle" class="node-sub n-muted" font-size="10">Password_Text__c stored in plain text</text>
+          <line x1="290" y1="324" x2="290" y2="346" class="e-line" marker-end="url(#au-a)"/>
+          <rect x="40" y="350" width="500" height="54" rx="9" class="n-box n-lwc"/><text x="290" y="382" text-anchor="middle" class="node-label" font-size="12">authService — localStorage session</text>
+          <line x1="290" y1="404" x2="290" y2="426" class="e-line" marker-end="url(#au-a)"/>
+          <rect x="40" y="430" width="500" height="54" rx="9" class="n-box n-shopper"/><text x="290" y="457" text-anchor="middle" class="node-label" font-size="11.5">Gates: Checkout, cart persistence,</text><text x="290" y="473" text-anchor="middle" class="node-label" font-size="11.5">My Account dashboard</text>
+
+          <rect x="660" y="30" width="500" height="50" rx="9" class="n-box n-teal"/>
+          <text x="910" y="60" text-anchor="middle" class="node-label" font-size="13">Real Salesforce Login (Experience Cloud)</text>
+
+          <rect x="660" y="110" width="500" height="54" rx="9" class="n-box n-lwc"/><text x="910" y="142" text-anchor="middle" class="node-label" font-size="12">techBasketSignUp</text>
+          <line x1="910" y1="164" x2="910" y2="186" class="e-line" marker-end="url(#au-a)"/>
+          <rect x="660" y="190" width="500" height="54" rx="9" class="n-box n-apex"/><text x="910" y="222" text-anchor="middle" class="node-label" font-size="12">RegistrationController.registerUser()</text>
+          <line x1="910" y1="244" x2="910" y2="266" class="e-line" marker-end="url(#au-a)"/>
+          <rect x="660" y="270" width="500" height="54" rx="9" class="n-box n-external"/><text x="910" y="297" text-anchor="middle" class="node-label" font-size="12">Site.createExternalUser()</text><text x="910" y="313" text-anchor="middle" class="node-sub n-muted" font-size="10">platform API</text>
+          <line x1="910" y1="324" x2="910" y2="346" class="e-line" marker-end="url(#au-a)"/>
+          <rect x="660" y="350" width="500" height="54" rx="9" class="n-box n-object"/><text x="910" y="382" text-anchor="middle" class="node-label" font-size="12">Real Salesforce User</text><text x="910" y="398" text-anchor="middle" class="node-sub n-muted" font-size="10">Customer Community Login license</text>
+          <line x1="910" y1="404" x2="910" y2="426" class="e-line" marker-end="url(#au-a)"/>
+          <rect x="660" y="430" width="500" height="54" rx="9" class="n-box n-shopper"/><text x="910" y="457" text-anchor="middle" class="node-label" font-size="11.5">getLoginRef() &#8594; Salesforce native</text><text x="910" y="473" text-anchor="middle" class="node-label" font-size="11.5">login page (comm__loginPage)</text>
+
+          <rect x="40" y="510" width="1120" height="66" rx="10" class="n-box n-dead"/>
+          <text x="600" y="536" text-anchor="middle" class="node-label n-dead" font-size="12">These two systems are completely independent.</text>
+          <text x="600" y="554" text-anchor="middle" class="node-sub n-dead" font-size="11">A shopper can have a Login_Credentials__c account without ever having a real Salesforce User, and vice versa &#8212; there is no shared identity between them.</text>
+        </svg>
+      </div>
+      <figcaption class="diagram-caption">Most of the storefront (Checkout, Cart persistence, My Account) is gated by the left-hand custom system. The right-hand real-login path exists only via the standalone Sign Up page and is not otherwise used by the storefront today.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================================================ OBJECTS ============================================================ -->
+  <section class="page" id="objects">
+    <p class="page-eyebrow">Reference</p>
+    <h1 class="page-title">Object &amp; Field Reference</h1>
+    <p class="page-lede">All 7 objects the app writes to, field by field, read directly from the deployed metadata. Click any object to expand its full field table.</p>
+    <div class="ref-toolbar">
+      <input type="text" class="filter-input" id="objectsFilter" placeholder="Filter by object or field name...">
+      <span class="filter-count" id="objectsCount"></span>
+    </div>
+    <div id="objectsList"></div>
+  </section>
+
+  <!-- ============================================================ APEX ============================================================ -->
+  <section class="page" id="apex">
+    <p class="page-eyebrow">Reference</p>
+    <h1 class="page-title">Apex Class Reference</h1>
+    <p class="page-lede">All 30 classes, grouped by role. Each card lists its methods and, where relevant, which classes it calls or is called by, so you can trace a call graph without opening the source.</p>
+    <div class="ref-toolbar">
+      <input type="text" class="filter-input" id="apexFilter" placeholder="Filter by class or method name...">
+      <span class="filter-count" id="apexCount"></span>
+    </div>
+    <div id="apexList"></div>
+  </section>
+
+  <!-- ============================================================ LWC REFERENCE ============================================================ -->
+  <section class="page" id="lwc-ref">
+    <p class="page-eyebrow">Reference</p>
+    <h1 class="page-title">LWC &amp; Service Reference</h1>
+    <p class="page-lede">Every page component and every reusable service module, with their real dependencies.</p>
+
+    <h2 class="section-h">Page &amp; feature components</h2>
+    <div class="ref-toolbar">
+      <input type="text" class="filter-input" id="lwcPagesFilter" placeholder="Filter components...">
+      <span class="filter-count" id="lwcPagesCount"></span>
+    </div>
+    <div id="lwcPagesList"></div>
+
+    <h2 class="section-h">Service modules</h2>
+    <p class="section-sub">Plain JS utility modules (no template) that page components import from.</p>
+    <div class="ref-toolbar">
+      <input type="text" class="filter-input" id="lwcServicesFilter" placeholder="Filter services...">
+      <span class="filter-count" id="lwcServicesCount"></span>
+    </div>
+    <div id="lwcServicesList"></div>
+  </section>
+
+  <!-- ============================================================ ISSUES ============================================================ -->
+  <section class="page" id="issues">
+    <p class="page-eyebrow">Reference</p>
+    <h1 class="page-title">Known Issues &amp; Design Notes</h1>
+    <p class="page-lede">Anomalies, deliberate design decisions, external limitations, and resolved bugs found while building this reference &#8212; kept in one place so they don't need rediscovering.</p>
+    <div id="issuesList"></div>
+    <footer class="page-footer">Last generated 2026-09-15 from the deployed org metadata and Apex/LWC source.</footer>
+  </section>
+
+  </main>
+</div>
+
+<script src="data.js"></script>
+<script src="script.js"></script>
+<script>
+  document.addEventListener('click', function (e) {
+    var jump = e.target.closest('[data-jump]');
+    if (!jump) return;
+    e.preventDefault();
+    var btn = document.querySelector('.nav-btn[data-target="' + jump.dataset.jump + '"]');
+    if (btn) btn.click();
+  });
+</script>
+</body>
+</html>

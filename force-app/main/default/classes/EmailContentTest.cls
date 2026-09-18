@@ -51,12 +51,23 @@ private class EmailContentTest {
 
         List<String> emailLines = new List<String>{ '2 x ' + pbe.Product2.Name + ' - Rs. ' + (ord.TotalAmount / 2).setScale(2) };
 
-        String html = CheckoutController.buildConfirmationHtmlBody(input, ord, tracking, emailLines);
+        List<OrderPricingService.PricingLine> pricingLines = new List<OrderPricingService.PricingLine>();
+        OrderPricingService.PricingLine pricingLine = new OrderPricingService.PricingLine();
+        pricingLine.productId = pbe.Product2Id;
+        pricingLine.quantity = 2;
+        pricingLine.unitPrice = ord.TotalAmount / 2;
+        pricingLine.gstRatePercent = null;
+        pricingLine.lineSubtotal = ord.TotalAmount;
+        pricingLines.add(pricingLine);
+        OrderPricingService.PricingResult pricing =
+            OrderPricingService.calculate(pricingLines, 'Uttar Pradesh', null, null, null, null);
+
+        String html = CheckoutController.buildConfirmationHtmlBody(input, ord, tracking, emailLines, pricing);
 
         System.assert(html.contains(ord.OrderNumber), 'HTML body must contain the real order number.');
         System.assert(html.contains(pbe.Product2.Name), 'HTML body must contain the real product name.');
         System.assert(html.contains('Noida'), 'HTML body must contain the real shipping city.');
-        System.assert(html.contains(String.valueOf(ord.TotalAmount.setScale(2))), 'HTML body must contain the real order total.');
+        System.assert(html.contains(String.valueOf(pricing.amountPayable.setScale(2))), 'HTML body must contain the real amount payable.');
         System.assert(html.length() > 500, 'HTML body must be substantial, not a near-empty stub (was ' + html.length() + ' chars).');
     }
 

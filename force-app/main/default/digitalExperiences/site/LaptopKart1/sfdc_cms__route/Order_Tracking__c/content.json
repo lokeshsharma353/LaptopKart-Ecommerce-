@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Order Tracking",
+  "contentBody" : {
+    "activeViewId" : "Order_Tracking",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-order-tracking",
+    "urlPrefix" : "order-tracking"
+  },
+  "urlName" : "order-tracking"
+}

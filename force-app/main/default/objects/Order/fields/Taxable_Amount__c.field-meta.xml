@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Taxable_Amount__c</fullName>
+    <externalId>false</externalId>
+    <label>Taxable Amount</label>
+    <precision>16</precision>
+    <scale>2</scale>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Currency</type>
+    <description>Subtotal minus Discount_Amount__c, before GST. See Feature Expansion Plan §3.</description>
+</CustomField>

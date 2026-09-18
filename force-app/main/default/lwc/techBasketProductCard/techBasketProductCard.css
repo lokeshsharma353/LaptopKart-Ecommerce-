@@ -1,15 +1,15 @@
 :host {
-    --card-bg: #FFFFFF;
-    --image-bg: #FFFFFF;
-    --border: #E2E8F0;
-    --text-primary: #0F172A;
-    --text-secondary: #475569;
-    --text-muted: #94A3B8;
-    --primary: #2563EB;
-    --primary-hover: #1D4ED8;
-    --primary-tint: #EFF6FF;
-    --success: #16A34A;
-    --wishlist: #E11D48;
+    --card-bg: var(--lk-surface, #FFFFFF);
+    --image-bg: var(--lk-surface, #FFFFFF);
+    --border: var(--lk-border, #E2E8F0);
+    --text-primary: var(--lk-text-heading, #0F172A);
+    --text-secondary: var(--lk-text-body, #475569);
+    --text-muted: var(--lk-text-muted, #94A3B8);
+    --primary: var(--lk-primary, #2563EB);
+    --primary-hover: var(--lk-primary-hover, #1D4ED8);
+    --primary-tint: var(--lk-primary-tint, #EFF6FF);
+    --success: var(--lk-success, #16A34A);
+    --wishlist: var(--lk-wishlist, #E11D48);
     display: block;
     font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
     height: 100%;
@@ -28,8 +28,8 @@
 }
 
 .tb-product-card-hovered {
-    border-color: #CBD5E1;
-    box-shadow: 0 14px 32px rgba(15,23,42,0.1), 0 0 0 1px rgba(15,23,42,0.04);
+    border-color: var(--lk-border-strong, #CBD5E1);
+    box-shadow: 0 14px 32px var(--lk-shadow-color, rgba(15,23,42,0.1)), 0 0 0 1px rgba(15,23,42,0.04);
 }
 
 .tb-card-glow { display: none; }
@@ -58,7 +58,7 @@
     height: 100%;
     border-radius: 14px 14px 0 0;
     overflow: hidden;
-    background: #F8FAFC;
+    background: var(--lk-surface-alt, #F8FAFC);
 }
 
 .tb-image-wrap { width: 100%; height: 100%; overflow: hidden; }
@@ -235,7 +235,7 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.9);
+    background: var(--card-bg);
     border: 1px solid var(--border);
     color: var(--text-muted);
     font-size: 15px;
@@ -260,7 +260,7 @@
     align-items: center;
     justify-content: center;
     gap: 0.4rem;
-    background: #fff;
+    background: var(--card-bg);
     color: var(--primary);
     border: 1px solid var(--primary);
     border-radius: 10px;
@@ -273,6 +273,27 @@
     letter-spacing: -0.01em;
 }
 .tb-add-to-cart:hover { background: var(--primary-tint); }
+.tb-add-to-cart:disabled, .tb-buy-now:disabled, .tb-qty-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.tb-stock-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #fff;
+    padding: 3px 9px;
+    border-radius: 980px;
+    border: 1px solid rgba(255,255,255,0.25);
+}
+.tb-stock-out { background: rgba(185,28,28,0.9); }
+.tb-stock-low { background: rgba(217,119,6,0.9); }
 .tb-added { background: var(--success) !important; border-color: var(--success) !important; color: #fff !important; }
 
 .tb-qty-stepper {
@@ -280,7 +301,7 @@
     align-items: center;
     justify-content: space-between;
     background: var(--primary-tint);
-    border: 1px solid #BFDBFE;
+    border: 1px solid var(--lk-primary-tint-border, #BFDBFE);
     border-radius: 10px;
     padding: 0.3rem 0.5rem;
     box-sizing: border-box;
@@ -288,7 +309,7 @@
 
 .tb-qty-btn {
     width: 28px; height: 28px;
-    background: #fff;
+    background: var(--card-bg);
     border: none;
     border-radius: 7px;
     color: var(--primary);
@@ -301,7 +322,7 @@
     transition: background 0.2s;
     line-height: 1;
 }
-.tb-qty-btn:hover { background: #DBEAFE; }
+.tb-qty-btn:hover { background: var(--lk-primary-tint-hover, #DBEAFE); }
 
 .tb-qty-value {
     color: var(--text-primary);

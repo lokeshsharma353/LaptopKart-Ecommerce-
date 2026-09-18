@@ -85,6 +85,19 @@ export default class TechBasketProductCard extends NavigationMixin(LightningElem
     /** True when this product has at least one unit in the cart. */
     get inCart() { return this.cartQuantity > 0; }
 
+    /** True when the product is fully out of tracked stock — disables Add to Cart/Buy Now/increment. Untracked stock (stockStatus absent/'In Stock') never blocks. See Feature Expansion Plan §3.3/§12. */
+    get isOutOfStock() { return this.product && this.product.stockStatus === 'Out of Stock'; }
+    /** True for a low (but not zero) tracked stock level — shows an urgency badge. */
+    get isLowStock() { return this.product && this.product.stockStatus === 'Low Stock'; }
+    /** CSS class for the stock badge. */
+    get stockBadgeClass() {
+        return this.isOutOfStock ? 'tb-stock-badge tb-stock-out' : 'tb-stock-badge tb-stock-low';
+    }
+    /** True once the quantity already in cart has reached the tracked stock ceiling — disables the "+" stepper button. */
+    get isAtStockLimit() {
+        return this.product && this.product.stockQuantity != null && this.cartQuantity >= this.product.stockQuantity;
+    }
+
     /** Returns the card's CSS class, adding a hover modifier when the mouse is over it. */
     get cardClass() {
         return this.isHovered ? 'tb-product-card tb-product-card-hovered' : 'tb-product-card';
@@ -135,6 +148,10 @@ export default class TechBasketProductCard extends NavigationMixin(LightningElem
      * and briefly switches the button label to "✓ Added!" for 2 seconds.
      */
     handleAddToCart() {
+        if (this.isOutOfStock) {
+            showToast(`${this.product.productName} is currently out of stock.`, 'error');
+            return;
+        }
         addItem(this.product, 1);
         showToast(`${this.product.productName} added to cart!`, 'success');
         this.justAdded = true;
@@ -164,6 +181,10 @@ export default class TechBasketProductCard extends NavigationMixin(LightningElem
      * quantity through, not reset it), then jumps straight to Checkout.
      */
     handleBuyNow() {
+        if (this.isOutOfStock) {
+            showToast(`${this.product.productName} is currently out of stock.`, 'error');
+            return;
+        }
         if (!isLoggedIn()) {
             showToast('Please log in to continue.', 'info');
             this[NavigationMixin.Navigate](getAccountRef());
@@ -175,8 +196,14 @@ export default class TechBasketProductCard extends NavigationMixin(LightningElem
         this[NavigationMixin.Navigate](getCheckoutRef());
     }
 
-    /** Increments the cart quantity by 1 (used by the in-cart stepper). */
-    handleIncrease() { addItem(this.product, 1); }
+    /** Increments the cart quantity by 1 (used by the in-cart stepper) — capped at tracked stock, same limit CheckoutController enforces server-side. */
+    handleIncrease() {
+        if (this.isAtStockLimit) {
+            showToast(`Only ${this.product.stockQuantity} in stock.`, 'error');
+            return;
+        }
+        addItem(this.product, 1);
+    }
 
     /**
      * Decrements the cart quantity by 1.

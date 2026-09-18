@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Reorder_Level__c</fullName>
+    <externalId>false</externalId>
+    <label>Reorder Level</label>
+    <precision>18</precision>
+    <scale>0</scale>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+    <description>The Stock_Quantity__c threshold at or below which this product is considered low on stock — ProductCatalogController's "Low Stock" badge uses this per-product when set, falling back to a store-wide default otherwise. Also the threshold a future low-stock report/batch would compare against.</description>
+</CustomField>

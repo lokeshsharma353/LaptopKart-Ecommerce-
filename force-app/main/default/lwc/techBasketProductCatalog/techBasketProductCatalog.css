@@ -1,12 +1,12 @@
 :host {
-    --tb-primary: #2563EB;
-    --tb-secondary: #0F172A;
-    --tb-accent: #2563EB;
-    --tb-text: #0F172A;
-    --tb-background: #F8FAFC;
-    --tb-danger: #DC2626;
-    --tb-white: #ffffff;
-    --tb-muted: #64748B;
+    --tb-primary: var(--lk-primary, #2563EB);
+    --tb-secondary: var(--lk-secondary, #0F172A);
+    --tb-accent: var(--lk-primary, #2563EB);
+    --tb-text: var(--lk-text-heading, #0F172A);
+    --tb-background: var(--lk-page-bg, #F8FAFC);
+    --tb-danger: var(--lk-error, #DC2626);
+    --tb-white: var(--lk-surface, #ffffff);
+    --tb-muted: var(--lk-text-muted, #64748B);
 
     display: block;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -26,7 +26,7 @@
     flex-shrink: 0;
     background: var(--tb-white);
     border-radius: 8px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 4px var(--lk-shadow-color, rgba(0, 0, 0, 0.08));
     padding: 1.5rem;
 }
 
@@ -54,11 +54,13 @@
     width: 100%;
     height: 38px;
     padding: 0 0.6rem;
-    border: 1px solid #CBD5E1;
+    border: 1px solid var(--lk-border-strong, #CBD5E1);
     border-radius: 6px;
     font-size: 13px;
     font-family: inherit;
     box-sizing: border-box;
+    background: var(--tb-white);
+    color: var(--tb-text);
 }
 
 .tb-price-inputs {
@@ -91,7 +93,7 @@
 
 .tb-btn-primary {
     background: var(--tb-primary);
-    color: var(--tb-white);
+    color: var(--lk-white-fixed, #fff);
     border: none;
     border-radius: 6px;
     padding: 0.65rem;
@@ -146,7 +148,7 @@
 .tb-view-btn {
     width: 36px;
     height: 36px;
-    border: 1px solid #CBD5E1;
+    border: 1px solid var(--lk-border-strong, #CBD5E1);
     background: var(--tb-white);
     border-radius: 6px;
     cursor: pointer;
@@ -154,7 +156,7 @@
 
 .tb-view-btn-active {
     background: var(--tb-primary);
-    color: var(--tb-white);
+    color: var(--lk-white-fixed, #fff);
     border-color: var(--tb-primary);
 }
 
@@ -177,7 +179,7 @@
     gap: 1rem;
     background: var(--tb-white);
     border-radius: 8px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 4px var(--lk-shadow-color, rgba(0, 0, 0, 0.08));
     padding: 0.75rem 1rem;
 }
 
@@ -190,7 +192,7 @@
     border-radius: 6px;
     background: var(--tb-background);
     font-weight: 700;
-    color: #94A3B8;
+    color: var(--lk-text-subtle, #94A3B8);
     flex-shrink: 0;
 }
 
@@ -233,7 +235,7 @@
 
 .tb-add-to-cart {
     background: var(--tb-accent);
-    color: var(--tb-white);
+    color: var(--lk-white-fixed, #fff);
     border: none;
     border-radius: 6px;
     padding: 0.6rem 1rem;
@@ -245,7 +247,7 @@
 }
 
 .tb-add-to-cart:disabled {
-    background: #CBD5E1;
+    background: var(--lk-border-strong, #CBD5E1);
     cursor: not-allowed;
 }
 
@@ -266,7 +268,7 @@
     background: rgba(255, 255, 255, 0.25);
     border: none;
     border-radius: 4px;
-    color: var(--tb-white);
+    color: var(--lk-white-fixed, #fff);
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
@@ -278,7 +280,7 @@
 }
 
 .tb-qty-value {
-    color: var(--tb-white);
+    color: var(--lk-white-fixed, #fff);
     font-size: 13px;
     font-weight: 700;
 }
@@ -294,7 +296,7 @@
 .tb-page-btn {
     min-width: 36px;
     height: 36px;
-    border: 1px solid #CBD5E1;
+    border: 1px solid var(--lk-border-strong, #CBD5E1);
     background: var(--tb-white);
     color: var(--tb-text);
     border-radius: 6px;
@@ -309,7 +311,7 @@
 
 .tb-page-btn-active {
     background: var(--tb-primary);
-    color: var(--tb-white);
+    color: var(--lk-white-fixed, #fff);
     border-color: var(--tb-primary);
 }
 

@@ -24,7 +24,10 @@ public without sharing class OrderInvoiceController {
         List<Order> orders = [
             SELECT Id, OrderNumber, CreatedDate, Status, TotalAmount, Total_Paid__c,
                    Payment_Status__c, ShippingStreet, ShippingCity, ShippingState,
-                   ShippingPostalCode, ShippingCountry, AccountId, Account.Name
+                   ShippingPostalCode, ShippingCountry, AccountId, Account.Name,
+                   Amount_Payable__c, Discount_Amount__c, Taxable_Amount__c,
+                   CGST_Amount__c, SGST_Amount__c, IGST_Amount__c,
+                   Shipping_Cost__c, Shipping_Method__c, Coupon_Code_Applied__c
             FROM Order
             WHERE Id = :orderId
             WITH SYSTEM_MODE
@@ -122,11 +125,41 @@ public without sharing class OrderInvoiceController {
         return ord.CreatedDate.date();
     }
 
-    /** Order total minus what's actually been paid so far. */
+    /**
+     * The real, final charged amount minus what's actually been paid so
+     * far — Amount_Payable__c (GST-inclusive, net of any coupon/loyalty
+     * discount, plus shipping), never the raw Order.TotalAmount, which is
+     * only the undiscounted pre-tax product-line sum and would understate
+     * what a Cash on Delivery customer actually needs to pay by the full
+     * GST amount (and now shipping). Falls back to TotalAmount only for an
+     * order that predates the pricing engine (Amount_Payable__c blank).
+     */
     public Decimal getBalanceDue() {
         Decimal paid = ord.Total_Paid__c == null ? 0 : ord.Total_Paid__c;
-        Decimal total = ord.TotalAmount == null ? 0 : ord.TotalAmount;
+        Decimal total = ord.Amount_Payable__c != null ? ord.Amount_Payable__c : (ord.TotalAmount == null ? 0 : ord.TotalAmount);
         return total - paid;
+    }
+
+    /** The real, final charged amount — see getBalanceDue's comment for why this is never the raw TotalAmount. */
+    public Decimal getAmountPayable() {
+        return ord.Amount_Payable__c != null ? ord.Amount_Payable__c : (ord.TotalAmount == null ? 0 : ord.TotalAmount);
+    }
+
+    /** True when this order has a full GST/discount/shipping breakdown to show (predates-the-pricing-engine orders fall back to the simple Total/Paid/Balance rows only). */
+    public Boolean getHasPricingBreakdown() {
+        return ord.Amount_Payable__c != null;
+    }
+
+    public Boolean getHasDiscount() {
+        return ord.Discount_Amount__c != null && ord.Discount_Amount__c > 0;
+    }
+
+    public Boolean getHasShippingCost() {
+        return ord.Shipping_Cost__c != null && ord.Shipping_Cost__c > 0;
+    }
+
+    public Boolean getIsIntrastate() {
+        return ord.IGST_Amount__c == null || ord.IGST_Amount__c == 0;
     }
 
     // True when this order is being paid for in cash at delivery — the
@@ -141,9 +174,10 @@ public without sharing class OrderInvoiceController {
         return payment != null && !getIsCashOnDelivery();
     }
 
-    // Friendly label for payment.Payment_Status__c ('Pending' until an
-    // admin manually confirms it — see PaymentService — 'Successful' once
-    // they have).
+    // Friendly label for payment.Payment_Status__c — 'Successful' either
+    // because Razorpay verified it automatically at checkout, or because an
+    // admin manually confirmed a Cash on Delivery payment (see
+    // PaymentService); 'Pending' until either of those happens.
     public String getPaymentStatusLabel() {
         if (payment == null || String.isBlank(payment.Payment_Status__c)) {
             return 'Pending';

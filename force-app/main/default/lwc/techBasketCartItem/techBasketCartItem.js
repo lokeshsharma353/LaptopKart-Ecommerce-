@@ -2,6 +2,9 @@ import { LightningElement, api, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { getProductRef } from 'c/navigationService';
 import { getProductImages } from 'c/brandService';
+import { toggleWishlist, isWishlisted } from 'c/wishlistService';
+import { showToast } from 'c/toastService';
+import { loadProducts, findById } from 'c/productDataService';
 
 /**
  * TechBasketCartItem — a single row in the Shopping Cart.
@@ -14,6 +17,23 @@ export default class TechBasketCartItem extends NavigationMixin(LightningElement
     @api item;
     /** True when the product image fails to load — hides the img element. */
     @track imgError = false;
+    /** Real tracked stock ceiling for this line's product — null (untracked) falls back to the quantity selector's own default. */
+    @track maxQuantity = 99;
+
+    /**
+     * Lifecycle: looks up this line's real current stock so the +/-
+     * stepper can't be pushed past what's actually available — cart items
+     * only ever carry {productId, productName, price, quantity}, not stock,
+     * so this is the one place in the cart that needs the full catalog.
+     */
+    connectedCallback() {
+        loadProducts().then((products) => {
+            const product = findById(products, this.item.productId);
+            if (product && product.stockQuantity != null) {
+                this.maxQuantity = product.stockQuantity;
+            }
+        });
+    }
 
     /**
      * Returns the first product image URL from brandService.
@@ -64,5 +84,19 @@ export default class TechBasketCartItem extends NavigationMixin(LightningElement
      */
     handleRemove() {
         this.dispatchEvent(new CustomEvent('remove', { detail: { productId: this.item.productId } }));
+    }
+
+    /**
+     * Moves this line to the wishlist: adds it there (unless already saved)
+     * and removes it from the cart via the same 'remove' event the Remove
+     * button uses, so techBasketCart's existing cart-mutation handling
+     * doesn't need a second code path.
+     */
+    handleSaveForLater() {
+        if (!isWishlisted(this.item.productId)) {
+            toggleWishlist(this.item.productId);
+        }
+        showToast(`${this.item.productName} saved for later — moved to your wishlist.`, 'success');
+        this.dispatchEvent(new CustomEvent('saveforlater', { detail: { productId: this.item.productId } }));
     }
 }

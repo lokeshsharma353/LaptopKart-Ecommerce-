@@ -7,10 +7,13 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 // Order Payment Dashboard — shown on the Order record page in the internal
 // Enterprise app. Read-only summary + payment history: there is no "Make
-// Payment" button here anymore — every Payment__c record is created only
-// by the real website checkout (as 'Pending'), and an admin confirms one by
-// editing its Payment_Status__c field directly on the record, not by
-// creating a new one from this dashboard.
+// Payment" button here anymore — every Payment__c record is created only by
+// the real website checkout. A Razorpay payment arrives already
+// 'Successful' (CheckoutController re-verifies it with Razorpay before
+// creating the record); Cash on Delivery still arrives 'Pending', and an
+// admin confirms it the same way as before — editing its Payment_Status__c
+// field directly on the record — not by creating a new one from this
+// dashboard.
 export default class OrderPaymentDashboard extends LightningElement {
 
     @api recordId;

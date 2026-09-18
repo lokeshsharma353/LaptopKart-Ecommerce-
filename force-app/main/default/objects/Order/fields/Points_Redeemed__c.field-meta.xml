@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Points_Redeemed__c</fullName>
+    <defaultValue>0</defaultValue>
+    <externalId>false</externalId>
+    <label>Points Redeemed</label>
+    <precision>8</precision>
+    <scale>0</scale>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+    <description>Loyalty points redeemed against this order at checkout (1 point = ₹1). Used by OrderTrackingService to restore points to the customer's balance if the order is cancelled before delivery. See Feature Expansion Plan §2.6.</description>
+</CustomField>

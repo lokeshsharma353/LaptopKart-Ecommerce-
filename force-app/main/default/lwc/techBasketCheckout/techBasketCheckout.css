@@ -1,14 +1,14 @@
 :host {
     display: block;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-    background: #F8FAFC;
+    background: var(--lk-page-bg, #F8FAFC);
     min-height: 100vh;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
 }
 
 .tb-checkout { max-width: 1280px; margin: 0 auto; padding: 2.5rem 1.5rem; }
 
-.tb-page-title { font-size: 30px; font-weight: 700; color: #0F172A; margin: 0 0 1.75rem; letter-spacing: -0.025em; }
+.tb-page-title { font-size: 30px; font-weight: 700; color: var(--lk-text-heading, #0F172A); margin: 0 0 1.75rem; letter-spacing: -0.025em; }
 
 .tb-progress { display: flex; justify-content: space-between; margin-bottom: 2.5rem; gap: 0.5rem; }
 
@@ -16,31 +16,31 @@
 
 .tb-progress-dot {
     width: 32px; height: 32px; border-radius: 50%;
-    background: #FFFFFF; border: 1px solid #CBD5E1;
-    color: #64748B; display: flex; align-items: center; justify-content: center;
+    background: var(--lk-surface, #FFFFFF); border: 1px solid var(--lk-border-strong, #CBD5E1);
+    color: var(--lk-text-muted, #64748B); display: flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 700;
 }
 
-.tb-progress-label { font-size: 11px; color: #64748B; }
+.tb-progress-label { font-size: 11px; color: var(--lk-text-muted, #64748B); }
 
-.tb-progress-step-active .tb-progress-dot { background: #2563EB; border-color: #2563EB; color: #fff; }
-.tb-progress-step-active .tb-progress-label { color: #2563EB; font-weight: 600; }
-.tb-progress-step-done .tb-progress-dot { background: #16A34A; border-color: #16A34A; color: #fff; }
-.tb-progress-step-done .tb-progress-label { color: #16A34A; }
+.tb-progress-step-active .tb-progress-dot { background: var(--lk-primary, #2563EB); border-color: var(--lk-primary, #2563EB); color: var(--lk-white-fixed, #fff); }
+.tb-progress-step-active .tb-progress-label { color: var(--lk-primary, #2563EB); font-weight: 600; }
+.tb-progress-step-done .tb-progress-dot { background: var(--lk-success, #16A34A); border-color: var(--lk-success, #16A34A); color: var(--lk-white-fixed, #fff); }
+.tb-progress-step-done .tb-progress-label { color: var(--lk-success, #16A34A); }
 
 .tb-checkout-layout { display: flex; gap: 2rem; align-items: flex-start; }
 .tb-checkout-steps { flex: 1; min-width: 0; }
 .tb-checkout-summary { width: 340px; flex-shrink: 0; position: sticky; top: 80px; }
 
-.tb-empty-notice { text-align: center; padding: 5rem 1rem; color: #64748B; }
-.tb-empty-notice p { font-size: 16px; margin: 0 0 1.5rem; color: #0F172A; }
+.tb-empty-notice { text-align: center; padding: 5rem 1rem; color: var(--lk-text-muted, #64748B); }
+.tb-empty-notice p { font-size: 16px; margin: 0 0 1.5rem; color: var(--lk-text-heading, #0F172A); }
 
 .tb-btn-primary {
-    background: #2563EB; color: #fff; border: none; border-radius: 980px;
+    background: var(--lk-primary, #2563EB); color: var(--lk-white-fixed, #fff); border: none; border-radius: 980px;
     padding: 0.75rem 1.75rem; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer;
     transition: background 0.2s;
 }
-.tb-btn-primary:hover { background: #1D4ED8; }
+.tb-btn-primary:hover { background: var(--lk-primary-hover, #1D4ED8); }
 
 @media (max-width: 900px) {
     .tb-checkout-layout { flex-direction: column; }

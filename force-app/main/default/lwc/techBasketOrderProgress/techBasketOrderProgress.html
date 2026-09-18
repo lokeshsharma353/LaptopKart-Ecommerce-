@@ -23,5 +23,9 @@
                 </div>
             </template>
         </div>
+
+        <template if:true={showDeliveryEstimate}>
+            <p class="tb-progress-eta">Estimated delivery: <strong>{deliveryDateDisplay}</strong></p>
+        </template>
     </template>
 </template>

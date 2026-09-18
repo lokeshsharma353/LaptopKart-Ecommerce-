@@ -4,8 +4,8 @@
 }
 
 .tb-summary {
-    background: #FFFFFF;
-    border: 1px solid #E2E8F0;
+    background: var(--lk-surface, #FFFFFF);
+    border: 1px solid var(--lk-border, #E2E8F0);
     border-radius: 14px;
     padding: 1.5rem;
 }
@@ -13,7 +13,7 @@
 .tb-summary-heading {
     font-size: 17px;
     font-weight: 600;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
     margin: 0 0 1rem;
     letter-spacing: -0.01em;
 }
@@ -22,26 +22,26 @@
     display: flex;
     justify-content: space-between;
     font-size: 14px;
-    color: #64748B;
+    color: var(--lk-text-muted, #64748B);
     padding: 0.5rem 0;
-    border-bottom: 1px solid #F1F5F9;
+    border-bottom: 1px solid var(--lk-divider, #F1F5F9);
 }
 .tb-summary-row:last-of-type { border-bottom: none; }
 
 .tb-summary-total {
-    border-top: 1px solid #E2E8F0;
+    border-top: 1px solid var(--lk-border, #E2E8F0);
     margin-top: 0.5rem;
     padding-top: 0.85rem;
     font-size: 18px;
     font-weight: 700;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
     letter-spacing: -0.02em;
 }
 
 .tb-checkout-btn {
     width: 100%;
-    background: #2563EB;
-    color: #fff;
+    background: var(--lk-primary, #2563EB);
+    color: var(--lk-white-fixed, #fff);
     border: none;
     border-radius: 980px;
     padding: 0.9rem;
@@ -53,7 +53,7 @@
     transition: background 0.2s, transform 0.15s;
     letter-spacing: -0.01em;
 }
-.tb-checkout-btn:hover { background: #1D4ED8; transform: scale(1.01); }
+.tb-checkout-btn:hover { background: var(--lk-primary-hover, #1D4ED8); transform: scale(1.01); }
 .tb-checkout-btn:active { transform: scale(0.99); }
 
 @media (max-width: 480px) {

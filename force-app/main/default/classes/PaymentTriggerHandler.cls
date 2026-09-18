@@ -16,7 +16,7 @@ public without sharing class PaymentTriggerHandler {
     }
 
 
-    /** Recalculates the parent Order's paid total and sends the customer their payment-confirmed email. */
+    /** Recalculates Order totals and sends the customer the appropriate payment-status email. */
     public static void handleAfterInsertOrUpdate(
         List<Payment__c> newPayments,
         Map<Id, Payment__c> oldPaymentMap
@@ -28,6 +28,10 @@ public without sharing class PaymentTriggerHandler {
         );
 
         PaymentService.sendPaymentConfirmationEmails(
+            newPayments,
+            oldPaymentMap
+        );
+        PaymentService.sendPaymentIssueEmails(
             newPayments,
             oldPaymentMap
         );

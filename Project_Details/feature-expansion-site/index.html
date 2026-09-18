@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LaptopKart — Feature Expansion Plan</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <p class="eyebrow">LaptopKart &middot; Status: Plan Only — Nothing Built Yet</p>
+    <h1>Feature Expansion Plan</h1>
+    <p class="lede">Six requested additions, researched against the real, current codebase — not guessed. Every flow below reflects how the app actually works today, and two of the six sections (§3 and §6) turned up real gaps in the existing code along the way, called out explicitly as audit findings rather than folded silently into the new design.</p>
+  </header>
+
+  <nav class="toc" aria-label="Table of contents">
+    <span class="toc-label">Jump to</span>
+    <a href="#discounts">1. Discounts &amp; Coupons</a>
+    <a href="#loyalty">2. Loyalty Points</a>
+    <a href="#gst">3. GST &amp; Billing</a>
+    <a href="#profile">4. Profile Page</a>
+    <a href="#recipient">5. Order For Someone Else</a>
+    <a href="#cart">6. Cart Fix</a>
+    <a href="#buildorder">Suggested Build Order</a>
+  </nav>
+
+  <!-- ============================================================ 1. DISCOUNTS ============================================================ -->
+  <section id="discounts">
+    <h2><span class="section-num">1</span>Discount Campaigns &amp; Coupon Codes</h2>
+    <p class="section-sub">Standard <code>Campaign</code> stands in for "Diwali Offer 2026" — Name, StartDate, EndDate, IsActive, Description all map directly. A coupon code (e.g. <code>DIWALI10</code>) is a new object, Master-Detail to that Campaign. Every redemption is logged on standard <code>CampaignMember</code>, extended with 3 fields, rather than a new custom ledger object — every checkout already produces a real Contact, and CampaignMember exists purely to link a Contact to a Campaign.</p>
+
+    <div class="callout assumption">
+      <span class="callout-tag">Assumption made explicit</span>
+      "One code is valid only one time for the users" is read here as <strong>per customer</strong> — <code>DIWALI10</code> can be used once by every customer, not once total across the whole store. If you meant a single global use (first customer only), that's a one-line change to the validation query in Build Order step 4.
+    </div>
+
+    <figure>
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1020 700" role="img" aria-label="Discount campaign flow: admin creates a campaign and coupon code, shopper enters the code at checkout, the system checks it is active and not already redeemed by this customer, then applies the discount and logs the redemption.">
+          <defs><marker id="d1-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-subtle)"/></marker></defs>
+
+          <rect x="40" y="30" width="620" height="58" rx="9" class="n-box n-object"/>
+          <text x="60" y="53" class="node-label" font-size="12.5">Admin creates a Campaign (standard object)</text>
+          <text x="60" y="70" class="node-sub" font-size="10.5">e.g. "Diwali Offer 2026" — StartDate/EndDate/IsActive + new Discount_Type__c, Discount_Value__c</text>
+
+          <rect x="40" y="108" width="620" height="58" rx="9" class="n-box n-object"/>
+          <text x="60" y="131" class="node-label" font-size="12.5">Admin creates Coupon_Code__c</text>
+          <text x="60" y="148" class="node-sub" font-size="10.5">e.g. DIWALI10 — Master-Detail to the Campaign, Max_Uses_Per_Customer__c = 1</text>
+
+          <rect x="40" y="186" width="620" height="54" rx="9" class="n-box n-shopper"/>
+          <text x="60" y="218" class="node-label" font-size="12.5">Shopper enters code at Checkout</text>
+
+          <rect x="40" y="260" width="620" height="72" rx="9" class="n-box n-decision"/>
+          <text x="60" y="290" class="node-label" font-size="12.5">Campaign Active?</text>
+          <text x="60" y="308" class="node-sub" font-size="10.5">today between StartDate/EndDate AND IsActive AND Coupon_Code__c.Is_Active__c</text>
+
+          <rect x="700" y="266" width="280" height="58" rx="9" class="n-box n-reject"/>
+          <text x="720" y="290" class="node-label" font-size="11.5">"Not valid or expired"</text>
+          <text x="720" y="307" class="node-sub" font-size="10">checkout blocked, cart unaffected</text>
+
+          <rect x="40" y="352" width="620" height="72" rx="9" class="n-box n-decision"/>
+          <text x="60" y="380" class="node-label" font-size="12.5">Already redeemed by THIS customer?</text>
+          <text x="60" y="398" class="node-sub" font-size="10.5">query CampaignMember by ContactId + CampaignId + Coupon_Code__c</text>
+
+          <rect x="700" y="358" width="280" height="58" rx="9" class="n-box n-reject"/>
+          <text x="720" y="382" class="node-label" font-size="11.5">"You've already used this code"</text>
+
+          <rect x="40" y="444" width="620" height="58" rx="9" class="n-box n-apex"/>
+          <text x="60" y="478" class="node-label" font-size="12.5">Apply discount to cart total (Percentage or Flat)</text>
+
+          <rect x="40" y="522" width="620" height="58" rx="9" class="n-box n-apex"/>
+          <text x="60" y="556" class="node-label" font-size="12.5">CheckoutController.submitOrder sets Order.Discount_Amount__c</text>
+
+          <rect x="40" y="600" width="620" height="58" rx="9" class="n-box n-object"/>
+          <text x="60" y="624" class="node-label" font-size="12">Insert a CampaignMember row (standard, extended)</text>
+          <text x="60" y="641" class="node-sub" font-size="10">ContactId + CampaignId + Coupon_Code__c + Order__c + Discount_Applied__c, Status = 'Redeemed'</text>
+
+          <line x1="350" y1="88" x2="350" y2="104" class="e-line" marker-end="url(#d1-a)"/>
+          <line x1="350" y1="166" x2="350" y2="182" class="e-line" marker-end="url(#d1-a)"/>
+          <line x1="350" y1="240" x2="350" y2="256" class="e-line" marker-end="url(#d1-a)"/>
+          <line x1="350" y1="332" x2="350" y2="348" class="e-line" marker-end="url(#d1-a)"/>
+          <text x="360" y="343" class="edge-label" font-size="10">active</text>
+          <line x1="660" y1="296" x2="696" y2="296" class="e-line" marker-end="url(#d1-a)"/>
+          <text x="668" y="288" class="edge-label" font-size="10">not active</text>
+          <line x1="350" y1="424" x2="350" y2="440" class="e-line" marker-end="url(#d1-a)"/>
+          <text x="360" y="436" class="edge-label" font-size="10">not yet used</text>
+          <line x1="660" y1="388" x2="696" y2="388" class="e-line" marker-end="url(#d1-a)"/>
+          <text x="668" y="380" class="edge-label" font-size="10">already used</text>
+          <line x1="350" y1="502" x2="350" y2="518" class="e-line" marker-end="url(#d1-a)"/>
+          <line x1="350" y1="580" x2="350" y2="596" class="e-line" marker-end="url(#d1-a)"/>
+        </svg>
+      </div>
+      <figcaption>Amber boxes are the two guard checks; red boxes are where checkout stops. Both checks pass silently into the green/blue happy path below them.</figcaption>
+    </figure>
+
+    <h3 class="sub-h">Object reference</h3>
+
+    <div class="schema-card">
+      <div class="schema-card-head"><span class="obj-name">Campaign</span><span class="obj-label">standard object, extended</span><span class="tag tag-extend">Extend</span></div>
+      <div class="table-wrap"><table class="schema">
+        <thead><tr><th>Field</th><th>Label</th><th>Type</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="fname">Name</td><td class="flabel">Campaign Name</td><td class="ftype">standard, reused</td><td class="fnotes">e.g. "Diwali Offer 2026"</td></tr>
+          <tr><td class="fname">StartDate / EndDate</td><td class="flabel">Start/End Date</td><td class="ftype">standard, reused</td><td class="fnotes">Campaign's usable window</td></tr>
+          <tr><td class="fname">IsActive</td><td class="flabel">Active</td><td class="ftype">standard, reused</td><td class="fnotes">On/off switch</td></tr>
+          <tr><td class="fname">Status</td><td class="flabel">Status</td><td class="ftype">standard picklist, re-valued</td><td class="fnotes">Replace defaults with Draft, Active, Expired, Cancelled</td></tr>
+          <tr><td class="fname">Description</td><td class="flabel">Description</td><td class="ftype">standard, reused</td><td class="fnotes">Internal note</td></tr>
+          <tr><td class="fname">Discount_Type__c</td><td class="flabel">Discount Type</td><td class="ftype">Picklist — new field</td><td class="fnotes">Percentage, Flat Amount — restricted, required</td></tr>
+          <tr><td class="fname">Discount_Value__c</td><td class="flabel">Discount Value</td><td class="ftype">Number(18,2) — new field</td><td class="fnotes">e.g. 10 for 10%, or 500 for flat ₹500 off</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="schema-card">
+      <div class="schema-card-head"><span class="obj-name">Coupon_Code__c</span><span class="obj-label">new object, child of Campaign</span><span class="tag tag-new">New</span></div>
+      <div class="table-wrap"><table class="schema">
+        <thead><tr><th>Field</th><th>Label</th><th>Type</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="fname">Code__c</td><td class="flabel">Code</td><td class="ftype">Text(30), Unique</td><td class="fnotes">e.g. DIWALI10 — what the shopper types</td></tr>
+          <tr><td class="fname">Campaign__c</td><td class="flabel">Campaign</td><td class="ftype">Master-Detail(Campaign, standard)</td><td class="fnotes">Deleted along with its campaign</td></tr>
+          <tr><td class="fname">Is_Active__c</td><td class="flabel">Active</td><td class="ftype">Checkbox</td><td class="fnotes">Disable one code without touching the campaign</td></tr>
+          <tr><td class="fname">Max_Uses_Per_Customer__c</td><td class="flabel">Max Uses Per Customer</td><td class="ftype">Number(18,0)</td><td class="fnotes">Default 1 — enforces "one time per user"</td></tr>
+          <tr><td class="fname">Max_Total_Uses__c</td><td class="flabel">Max Total Uses</td><td class="ftype">Number(18,0)</td><td class="fnotes">Optional org-wide cap; blank = unlimited</td></tr>
+          <tr><td class="fname">Total_Redemptions__c</td><td class="flabel">Total Redemptions</td><td class="ftype">Roll-Up Summary (COUNT)</td><td class="fnotes">Counts child CampaignMember rows</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="schema-card">
+      <div class="schema-card-head"><span class="obj-name">CampaignMember</span><span class="obj-label">standard object, extended — the audit ledger</span><span class="tag tag-extend">Extend</span></div>
+      <div class="table-wrap"><table class="schema">
+        <thead><tr><th>Field</th><th>Label</th><th>Type</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="fname">ContactId</td><td class="flabel">Contact</td><td class="ftype">standard, reused</td><td class="fnotes">Who redeemed it — every checkout already produces a real Contact</td></tr>
+          <tr><td class="fname">CampaignId</td><td class="flabel">Campaign</td><td class="ftype">standard, reused</td><td class="fnotes">Required by the object</td></tr>
+          <tr><td class="fname">Status</td><td class="flabel">Status</td><td class="ftype">standard picklist, re-valued</td><td class="fnotes">Add/use a "Redeemed" value</td></tr>
+          <tr><td class="fname">Coupon_Code__c</td><td class="flabel">Coupon Code</td><td class="ftype">Lookup(Coupon_Code__c) — new field</td><td class="fnotes">Which specific code was used</td></tr>
+          <tr><td class="fname">Order__c</td><td class="flabel">Order</td><td class="ftype">Lookup(Order) — new field</td><td class="fnotes">Which order it was applied to</td></tr>
+          <tr><td class="fname">Discount_Applied__c</td><td class="flabel">Discount Applied</td><td class="ftype">Currency(16,2) — new field</td><td class="fnotes">Actual ₹ amount this redemption knocked off</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="schema-card">
+      <div class="schema-card-head"><span class="obj-name">Order</span><span class="obj-label">new field</span><span class="tag tag-extend">Extend</span></div>
+      <div class="table-wrap"><table class="schema">
+        <tbody>
+          <tr><td class="fname">Discount_Amount__c</td><td class="flabel">Discount Amount</td><td class="ftype">Currency(16,2)</td><td class="fnotes">Total discount applied (coupon and/or loyalty points, see §2)</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <h3 class="sub-h">Build order</h3>
+    <ol class="order-list">
+      <li><strong>Campaign</strong> <span class="phase-tag phase-schema">schema</span> — add Discount_Type__c + Discount_Value__c; re-value the standard Status picklist.</li>
+      <li><strong>Coupon_Code__c</strong> <span class="phase-tag phase-schema">schema</span> — 6 fields above, the one genuinely new object here.</li>
+      <li><strong>CampaignMember</strong> <span class="phase-tag phase-schema">schema</span> — add Coupon_Code__c, Order__c, Discount_Applied__c; re-value Status to include "Redeemed."</li>
+      <li><strong>Order.Discount_Amount__c</strong> <span class="phase-tag phase-schema">schema</span></li>
+      <li><strong>DiscountService.cls</strong> <span class="phase-tag phase-logic">logic</span> — validates a code (active, in-date, not already redeemed by this customer via a CampaignMember query, under any total cap) and computes the discount; called from <code>submitOrder</code> before the Payment__c amount is finalized.</li>
+      <li><strong>LWC</strong> <span class="phase-tag phase-logic">logic</span> — "Have a coupon code?" input on Cart or Checkout, validated instantly via an <code>@AuraEnabled</code> method, then passed through to <code>submitOrder</code>.</li>
+    </ol>
+
+    <div class="decisions">
+      <h3>Decisions only you can make</h3>
+      <ul>
+        <li><strong>Stacking:</strong> can a coupon and loyalty points (§2) be used on the same order, or is it one or the other?</li>
+        <li><strong>Scope:</strong> should a campaign ever apply automatically to certain categories/products only, or is every coupon store-wide?</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================ 2. LOYALTY ============================================================ -->
+  <section id="loyalty">
+    <h2><span class="section-num">2</span>Loyalty Points</h2>
+    <p class="section-sub">One live number per customer and one ledger (<code>Loyalty_Point_Transaction__c</code>) that logs every earn and redeem — the same pattern §1's coupon ledger uses. The balance lives on standard <code>Account</code> (Customer Account Detail record type, per the Account consolidation decision) — no standard object covers a points ledger, so the transaction log stays a new custom object.</p>
+
+    <div class="callout assumption">
+      <span class="callout-tag">Assumption made explicit</span>
+      "1 point when order someone" is read as <strong>1 point per ₹1,000 spent</strong>, earned once the order is actually <strong>Fully Paid</strong> — not at the moment of placing the order — since Cash on Delivery orders shouldn't earn points before the cash is collected. The redemption value (how much ₹1-off 1 point is worth) is listed as an open decision below.
+    </div>
+
+    <figure>
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1020 790" role="img" aria-label="Loyalty points flow: an order becoming fully paid earns points logged to a ledger and added to the customer's balance; later at checkout the shopper can redeem points as a discount if their balance is sufficient, logged as a separate ledger entry.">
+          <defs><marker id="d2-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-subtle)"/></marker></defs>
+
+          <rect x="40" y="30" width="620" height="58" rx="9" class="n-box n-apex"/>
+          <text x="60" y="53" class="node-label" font-size="12.5">Order becomes Fully Paid</text>
+          <text x="60" y="70" class="node-sub" font-size="10.5">PaymentService.calculateOrderPayments</text>
+
+          <rect x="40" y="108" width="620" height="58" rx="9" class="n-box n-apex"/>
+          <text x="60" y="142" class="node-label" font-size="12.5">Points Earned = FLOOR(Order.TotalAmount / 1000)</text>
+
+          <rect x="40" y="186" width="620" height="58" rx="9" class="n-box n-object"/>
+          <text x="60" y="210" class="node-label" font-size="12.5">Insert Loyalty_Point_Transaction__c</text>
+          <text x="60" y="227" class="node-sub" font-size="10.5">Type = Earned, +points, Related_Order__c</text>
+
+          <rect x="40" y="264" width="620" height="58" rx="9" class="n-box n-object"/>
+          <text x="60" y="298" class="node-label" font-size="12.5">Account.Loyalty_Points_Balance__c += points (Customer Account Detail)</text>
+
+          <rect x="40" y="342" width="620" height="58" rx="9" class="n-box n-lwc"/>
+          <text x="60" y="376" class="node-label" font-size="12.5">My Account shows the live balance</text>
+
+          <line x1="350" y1="400" x2="350" y2="436" class="e-dashed" marker-end="url(#d2-a)"/>
+          <text x="365" y="422" class="edge-label" font-size="10">later, at checkout</text>
+
+          <rect x="40" y="440" width="620" height="72" rx="9" class="n-box n-decision"/>
+          <text x="60" y="470" class="node-label" font-size="12.5">Shopper redeems points at Checkout</text>
+          <text x="60" y="488" class="node-sub" font-size="10.5">is the balance enough for what's being redeemed?</text>
+
+          <rect x="700" y="446" width="280" height="58" rx="9" class="n-box n-reject"/>
+          <text x="720" y="470" class="node-label" font-size="11.5">Insufficient balance</text>
+          <text x="720" y="487" class="node-sub" font-size="10">redemption blocked</text>
+
+          <rect x="40" y="532" width="620" height="58" rx="9" class="n-box n-apex"/>
+          <text x="60" y="556" class="node-label" font-size="12.5">Apply points value as a discount</text>
+          <text x="60" y="573" class="node-sub" font-size="10.5">added into Order.Discount_Amount__c</text>
+
+          <rect x="40" y="610" width="620" height="58" rx="9" class="n-box n-object"/>
+          <text x="60" y="634" class="node-label" font-size="12.5">Insert Loyalty_Point_Transaction__c</text>
+          <text x="60" y="651" class="node-sub" font-size="10.5">Type = Redeemed, -points, Related_Order__c</text>
+
+          <rect x="40" y="688" width="620" height="58" rx="9" class="n-box n-object"/>
+          <text x="60" y="722" class="node-label" font-size="12.5">Account.Loyalty_Points_Balance__c -= points</text>
+
+          <line x1="350" y1="88" x2="350" y2="104" class="e-line" marker-end="url(#d2-a)"/>
+          <line x1="350" y1="166" x2="350" y2="182" class="e-line" marker-end="url(#d2-a)"/>
+          <line x1="350" y1="244" x2="350" y2="260" class="e-line" marker-end="url(#d2-a)"/>
+          <line x1="350" y1="322" x2="350" y2="338" class="e-line" marker-end="url(#d2-a)"/>
+          <line x1="350" y1="512" x2="350" y2="528" class="e-line" marker-end="url(#d2-a)"/>
+          <text x="360" y="524" class="edge-label" font-size="10">sufficient</text>
+          <line x1="660" y1="476" x2="696" y2="476" class="e-line" marker-end="url(#d2-a)"/>
+          <line x1="350" y1="590" x2="350" y2="606" class="e-line" marker-end="url(#d2-a)"/>
+          <line x1="350" y1="668" x2="350" y2="684" class="e-line" marker-end="url(#d2-a)"/>
+        </svg>
+      </div>
+      <figcaption>Earning (top, blue/green) is fully automatic and tied to payment confirmation. Redemption (bottom) is shopper-initiated and gated on balance.</figcaption>
+    </figure>
+
+    <h3 class="sub-h">Object reference</h3>
+
+    <div class="schema-card">
+      <div class="schema-card-head"><span class="obj-name">Account</span><span class="obj-label">new field — Customer Account Detail record type</span><span class="tag tag-extend">Extend</span></div>
+      <div class="table-wrap"><table class="schema">
+        <tbody>
+          <tr><td class="fname">Loyalty_Points_Balance__c</td><td class="flabel">Loyalty Points Balance</td><td class="ftype">Number(18,0)</td><td class="fnotes">Default 0 — the live, current balance</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="schema-card">
+      <div class="schema-card-head"><span class="obj-name">Loyalty_Point_Transaction__c</span><span class="obj-label">new object — the ledger</span><span class="tag tag-new">New</span></div>
+      <div class="table-wrap"><table class="schema">
+        <thead><tr><th>Field</th><th>Label</th><th>Type</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="fname">Customer__c</td><td class="flabel">Customer</td><td class="ftype">Lookup(Account)</td><td class="fnotes">Required — the Customer Account Detail record</td></tr>
+          <tr><td class="fname">Points__c</td><td class="flabel">Points</td><td class="ftype">Number(18,0)</td><td class="fnotes">Signed — negative for Redeemed</td></tr>
+          <tr><td class="fname">Type__c</td><td class="flabel">Type</td><td class="ftype">Picklist</td><td class="fnotes">Earned, Redeemed, Expired, Adjustment</td></tr>
+          <tr><td class="fname">Related_Order__c</td><td class="flabel">Related Order</td><td class="ftype">Lookup(Order)</td><td class="fnotes">Set for Earned/Redeemed rows</td></tr>
+          <tr><td class="fname">Transaction_Date__c</td><td class="flabel">Transaction Date</td><td class="ftype">Date/Time</td><td class="fnotes">Defaults to now</td></tr>
+          <tr><td class="fname">Notes__c</td><td class="flabel">Notes</td><td class="ftype">Text(255)</td><td class="fnotes">e.g. reason for a manual Adjustment</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <h3 class="sub-h">Build order</h3>
+    <ol class="order-list">
+      <li><strong>Account.Loyalty_Points_Balance__c</strong> <span class="phase-tag phase-schema">schema</span></li>
+      <li><strong>Loyalty_Point_Transaction__c</strong> <span class="phase-tag phase-schema">schema</span> — 6 fields above.</li>
+      <li><strong>LoyaltyService.cls</strong> <span class="phase-tag phase-logic">logic</span> — <code>awardPoints(orderId)</code> called from <code>PaymentService.calculateOrderPayments</code> the moment an Order rolls up to Fully Paid; <code>redeemPoints(accountId, points)</code> called from checkout.</li>
+      <li><strong>My Account (LWC)</strong> <span class="phase-tag phase-logic">logic</span> — show the balance on Profile/Dashboard, plus a small transaction history reading Loyalty_Point_Transaction__c.</li>
+      <li><strong>Checkout/Payment (LWC)</strong> <span class="phase-tag phase-logic">logic</span> — a "Use N points (₹X off)" toggle, same place the §1 coupon input lives.</li>
+    </ol>
+
+    <div class="decisions">
+      <h3>Decisions only you can make</h3>
+      <ul>
+        <li><strong>Redemption rate:</strong> how much is 1 point worth when spent? (1 point = ₹1 is simplest to reason about.)</li>
+        <li><strong>Expiry:</strong> do points ever expire, or last forever? (The Expired picklist value is ready either way.)</li>
+        <li><strong>Minimum redemption:</strong> can a shopper redeem 1 point, or only in blocks (e.g. minimum 100)?</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================ 3. GST ============================================================ -->
+  <section id="gst">
+    <h2><span class="section-num">3</span>GST / Tax System, and Fixing Billing vs Shipping Address</h2>
+
+    <div class="callout finding">
+      <span class="callout-tag">What the audit found — not a design choice, a real gap</span>
+      <code>CheckoutController.CheckoutInput</code> has <strong>no billing-address fields at all</strong> — only <code>shippingStreet/City/State/PostalCode/Country</code>. The Billing Address <em>form</em> already exists in the UI (<code>techBasketBillingForm</code>) and the shopper's input is held in <code>techBasketCheckout</code>'s draft — but <code>techBasketPayment.js</code>'s <code>completeOrder()</code> builds the Apex payload from <code>this.draft.shippingAddress</code> only. <code>this.draft.billingAddress</code> is read nowhere. The standard <code>Order.Billing*</code> fields exist on the object but are simply never set. This has to be fixed as part of this feature — a GST invoice legally needs a real billing address.
+    </div>
+
+    <p class="section-sub">India's GST is <strong>place-of-supply</strong> based for physical goods: the split between CGST+SGST (intrastate) vs IGST (interstate) is decided by comparing the seller's registered state to the <strong>shipping</strong> (delivery) state — not the billing state. Billing address is what's printed on the invoice as who is being billed; it can legitimately differ from where goods ship, and doesn't change the tax split. Each product carries its own GST rate (laptops are typically the 18% slab, but this varies by HSN code, so it's a per-product field).</p>
+
+    <figure>
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1020 660" role="img" aria-label="GST flow: taxable amount is computed from cart subtotal minus discount, then split into CGST+SGST for intrastate orders or IGST for interstate orders based on comparing the seller's state to the shipping state, then totaled and shown on the invoice along with the fixed billing address.">
+          <defs><marker id="d3-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-subtle)"/></marker></defs>
+
+          <rect x="40" y="30" width="620" height="58" rx="9" class="n-box n-shopper"/>
+          <text x="60" y="54" class="node-label" font-size="12.5">Checkout: cart items</text>
+          <text x="60" y="71" class="node-sub" font-size="10.5">each Product2 has GST_Rate__c</text>
+
+          <rect x="40" y="108" width="620" height="58" rx="9" class="n-box n-apex"/>
+          <text x="60" y="142" class="node-label" font-size="12.5">Taxable Amount = Subtotal − Discount_Amount__c</text>
+
+          <rect x="40" y="186" width="620" height="72" rx="9" class="n-box n-decision"/>
+          <text x="60" y="216" class="node-label" font-size="12.5">Seller's Registered State == Order's SHIPPING State?</text>
+          <text x="60" y="234" class="node-sub" font-size="10.5">place-of-supply for goods is the delivery address, not billing</text>
+
+          <rect x="40" y="292" width="300" height="58" rx="9" class="n-box n-object"/>
+          <text x="60" y="316" class="node-label" font-size="12">CGST = rate ÷ 2</text>
+          <text x="60" y="333" class="node-label" font-size="12">SGST = rate ÷ 2  (intrastate)</text>
+
+          <rect x="380" y="292" width="280" height="58" rx="9" class="n-box n-object"/>
+          <text x="400" y="316" class="node-label" font-size="12">IGST = full rate</text>
+          <text x="400" y="333" class="node-sub" font-size="10.5">(interstate)</text>
+
+          <rect x="40" y="392" width="620" height="58" rx="9" class="n-box n-apex"/>
+          <text x="60" y="426" class="node-label" font-size="12.5">Order Total = Taxable Amount + GST + Shipping</text>
+
+          <rect x="40" y="470" width="620" height="72" rx="9" class="n-box n-decision"/>
+          <text x="60" y="498" class="node-label" font-size="12">FIX: Order.Billing* now actually populated</text>
+          <text x="60" y="516" class="node-sub" font-size="10.5">from the Billing form — previously captured then discarded (see finding above)</text>
+
+          <rect x="40" y="572" width="620" height="58" rx="9" class="n-box n-lwc"/>
+          <text x="60" y="596" class="node-label" font-size="12">OrderInvoiceController PDF shows:</text>
+          <text x="60" y="613" class="node-sub" font-size="10.5">Taxable Value, CGST/SGST or IGST, Total, Billing + Shipping Address</text>
+
+          <line x1="350" y1="88" x2="350" y2="104" class="e-line" marker-end="url(#d3-a)"/>
+          <line x1="350" y1="166" x2="350" y2="182" class="e-line" marker-end="url(#d3-a)"/>
+          <polyline points="350,258 350,272 190,272 190,288" class="e-line" fill="none" marker-end="url(#d3-a)"/>
+          <text x="205" y="266" class="edge-label" font-size="10">same state</text>
+          <polyline points="350,258 350,272 520,272 520,288" class="e-line" fill="none" marker-end="url(#d3-a)"/>
+          <text x="440" y="266" class="edge-label" font-size="10">different state</text>
+          <polyline points="190,350 190,372 520,372 520,350" class="e-line" fill="none" marker-end="url(#d3-a)"/>
+          <line x1="350" y1="372" x2="350" y2="388" class="e-line" marker-end="url(#d3-a)"/>
+          <line x1="350" y1="450" x2="350" y2="466" class="e-line" marker-end="url(#d3-a)"/>
+          <line x1="350" y1="542" x2="350" y2="568" class="e-line" marker-end="url(#d3-a)"/>
+        </svg>
+      </div>
+      <figcaption>The two green boxes are mutually exclusive branches — only one of CGST+SGST or IGST is ever set on a given order, never both.</figcaption>
+    </figure>
+
+    <h3 class="sub-h">Object reference</h3>
+
+    <div class="schema-card">
+      <div class="schema-card-head"><span class="obj-name">Product2</span><span class="obj-label">new fields</span><span class="tag tag-extend">Extend</span></div>
+      <div class="table-wrap"><table class="schema">
+        <tbody>
+          <tr><td class="fname">GST_Rate__c</td><td class="flabel">GST Rate (%)</td><td class="ftype">Percent(5,2)</td><td class="fnotes">e.g. 18.00</td></tr>
+          <tr><td class="fname">HSN_Code__c</td><td class="flabel">HSN Code</td><td class="ftype">Text(10)</td><td class="fnotes">Optional — needed for a fully compliant GST invoice</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="schema-card">
+      <div class="schema-card-head"><span class="obj-name">Order</span><span class="obj-label">new fields</span><span class="tag tag-extend">Extend</span></div>
+      <div class="table-wrap"><table class="schema">
+        <tbody>
+          <tr><td class="fname">Taxable_Amount__c</td><td class="flabel">Taxable Amount</td><td class="ftype">Currency(16,2)</td><td class="fnotes">Subtotal minus Discount_Amount__c, before tax</td></tr>
+          <tr><td class="fname">CGST_Amount__c</td><td class="flabel">CGST Amount</td><td class="ftype">Currency(16,2)</td><td class="fnotes">Set only when intrastate</td></tr>
+          <tr><td class="fname">SGST_Amount__c</td><td class="flabel">SGST Amount</td><td class="ftype">Currency(16,2)</td><td class="fnotes">Set only when intrastate</td></tr>
+          <tr><td class="fname">IGST_Amount__c</td><td class="flabel">IGST Amount</td><td class="ftype">Currency(16,2)</td><td class="fnotes">Set only when interstate</td></tr>
+          <tr><td class="fname">BillingStreet / City / State / PostalCode / Country</td><td class="flabel">Billing Address</td><td class="ftype">Standard, already exists</td><td class="fnotes">No new field — just needs to actually be populated (the fix above)</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <h3 class="sub-h">Build order</h3>
+    <ol class="order-list">
+      <li><strong>Fix billing address pass-through first</strong> <span class="phase-tag phase-logic">logic</span> — add billing fields to CheckoutInput, include <code>this.draft.billingAddress</code> in the LWC payload (falling back to shipping if "same as shipping" was checked), set Order.Billing* in submitOrder STEP 7. Worth doing even before GST — it's a standalone bug.</li>
+      <li><strong>Product2.GST_Rate__c + HSN_Code__c</strong> <span class="phase-tag phase-schema">schema</span></li>
+      <li><strong>Order tax fields</strong> <span class="phase-tag phase-schema">schema</span> — the 4 fields above.</li>
+      <li><strong>TaxService.cls</strong> <span class="phase-tag phase-logic">logic</span> — given cart lines and the shipping state, computes taxable amount and the CGST/SGST vs IGST split.</li>
+      <li><strong>Order Summary / Payment (LWC)</strong> <span class="phase-tag phase-logic">logic</span> — itemize CGST + SGST (or IGST) in the totals panel, not a single "tax" line.</li>
+      <li><strong>Invoice PDF</strong> <span class="phase-tag phase-logic">logic</span> — add the tax breakdown and the now-real billing address to OrderInvoiceController's output.</li>
+    </ol>
+
+    <div class="decisions">
+      <h3>Decisions only you can make</h3>
+      <ul>
+        <li><strong>Seller's registered state:</strong> what is it? (A Custom Setting/Metadata Type record, not a hardcoded constant, so it's editable without a deploy.)</li>
+        <li><strong>Tax-inclusive or exclusive pricing:</strong> do storefront prices already include GST (common in Indian B2C), or is GST added on top at checkout?</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================ 4. PROFILE ============================================================ -->
+  <section id="profile">
+    <h2><span class="section-num">4</span>Profile Page Improvements</h2>
+    <p class="section-sub">The specific example given — a profile photo — doesn't need a new custom object or field: Salesforce Files (<code>ContentVersion</code> + <code>ContentDocumentLink</code>) is the standard mechanism, and <code>lightning-file-upload</code> is a ready-made base component for it. Other profile fields are optional additions, listed since only the photo was given as a concrete example.</p>
+
+    <figure>
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1020 440" role="img" aria-label="Profile photo flow: shopper uploads via the standard file-upload component, Salesforce creates a File linked to their Account record, and Apex retrieves it for display. A side branch notes optional additional profile fields.">
+          <defs><marker id="d4-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-subtle)"/></marker></defs>
+
+          <rect x="40" y="30" width="620" height="58" rx="9" class="n-box n-lwc"/>
+          <text x="60" y="64" class="node-label" font-size="12.5">My Account &gt; Profile tab</text>
+
+          <rect x="700" y="60" width="280" height="70" rx="9" class="n-box n-object" stroke-dasharray="4 3"/>
+          <text x="720" y="85" class="node-label" font-size="11.5">Optional additional fields:</text>
+          <text x="720" y="103" class="node-sub" font-size="10.5">Date_Of_Birth__c, Gender__c, Bio__c</text>
+          <line x1="660" y1="59" x2="696" y2="90" class="e-dashed"/>
+
+          <rect x="40" y="108" width="620" height="58" rx="9" class="n-box n-lwc"/>
+          <text x="60" y="132" class="node-label" font-size="12.5">lightning-file-upload</text>
+          <text x="60" y="149" class="node-sub" font-size="10.5">standard Lightning base component</text>
+
+          <rect x="40" y="186" width="620" height="58" rx="9" class="n-box n-object"/>
+          <text x="60" y="210" class="node-label" font-size="12.5">ContentVersion created</text>
+          <text x="60" y="227" class="node-sub" font-size="10.5">+ ContentDocumentLink to this Account record</text>
+
+          <rect x="40" y="264" width="620" height="58" rx="9" class="n-box n-apex"/>
+          <text x="60" y="298" class="node-label" font-size="12.5">ProfileController.getProfilePhotoUrl(accountId)</text>
+
+          <rect x="40" y="342" width="620" height="58" rx="9" class="n-box n-shopper"/>
+          <text x="60" y="376" class="node-label" font-size="12.5">Photo rendered via the file's standard download URL</text>
+
+          <line x1="350" y1="88" x2="350" y2="104" class="e-line" marker-end="url(#d4-a)"/>
+          <line x1="350" y1="166" x2="350" y2="182" class="e-line" marker-end="url(#d4-a)"/>
+          <line x1="350" y1="244" x2="350" y2="260" class="e-line" marker-end="url(#d4-a)"/>
+          <line x1="350" y1="322" x2="350" y2="338" class="e-line" marker-end="url(#d4-a)"/>
+        </svg>
+      </div>
+      <figcaption>No new object needed for the photo — it's a standard Salesforce File, linked to the customer's Account record.</figcaption>
+    </figure>
+
+    <h3 class="sub-h">Object reference</h3>
+    <div class="schema-card">
+      <div class="schema-card-head"><span class="obj-name">Account</span><span class="obj-label">optional new fields — Customer Account Detail record type</span><span class="tag tag-none">Optional</span></div>
+      <div class="table-wrap"><table class="schema">
+        <tbody>
+          <tr><td class="fname">Date_Of_Birth__c</td><td class="flabel">Date of Birth</td><td class="ftype">Date</td><td class="fnotes">Optional</td></tr>
+          <tr><td class="fname">Gender__c</td><td class="flabel">Gender</td><td class="ftype">Picklist</td><td class="fnotes">Male, Female, Other, Prefer not to say — optional</td></tr>
+          <tr><td class="fname">Bio__c</td><td class="flabel">Bio</td><td class="ftype">Text Area(255)</td><td class="fnotes">Optional short "about me"</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <h3 class="sub-h">Build order</h3>
+    <ol class="order-list">
+      <li><strong>ProfileController.cls</strong> <span class="phase-tag phase-logic">logic</span> — <code>getProfilePhotoUrl(accountId)</code> querying ContentDocumentLink → most recent ContentVersion, with AccessLevel.SYSTEM_MODE like the rest of this app's Guest-context Apex.</li>
+      <li><strong>My Account Profile tab (LWC)</strong> <span class="phase-tag phase-logic">logic</span> — add lightning-file-upload scoped to the logged-in shopper's Account record id, render the photo via the Apex method above.</li>
+      <li><strong>Optional fields</strong> <span class="phase-tag phase-schema">schema</span> — only if wanted, plus matching form inputs.</li>
+    </ol>
+
+    <div class="decisions">
+      <h3>Decisions only you can make</h3>
+      <ul>
+        <li>Beyond a photo, do you want any of DOB / gender / bio — or is the photo the whole ask?</li>
+        <li>Any file-size/type restriction on the upload (images only, via the <code>accept</code> attribute)?</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================ 5. RECIPIENT ============================================================ -->
+  <section id="recipient">
+    <h2><span class="section-num">5</span>Ordering On Behalf Of Someone Else, and "Show All My Orders"</h2>
+
+    <div class="callout finding">
+      <span class="callout-tag">What the audit found</span>
+      There is currently <strong>no link between an Order and the shopper's login identity at all</strong> — <code>submitOrder</code> doesn't even receive a login/session id as a parameter. The only tie between a shopper's login identity and "their" orders is <code>getOrdersByEmail(email)</code>, matched by the email typed at checkout. So today, a logged-in shopper who ships to a different email would find that order missing from their own Order History — there's no record of who actually placed it, only who it's addressed to.
+    </div>
+
+    <div class="callout assumption">
+      <span class="callout-tag">Assumption made explicit — original wording was ambiguous</span>
+      Add a <strong>Placed_By__c</strong> lookup on Order that always stores the actual logged-in <strong>Account</strong> (Customer Account Detail record, per the Account consolidation decision) that submitted the order — separate from Customer_Name__c and the shipping fields, which describe who the order is <em>for</em>. "Show all the orders" is read as: My Account's Order History should list every order a shopper has ever <strong>placed</strong>, which it can't do today.
+    </div>
+
+    <figure>
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1020 550" role="img" aria-label="Order for someone else flow: a logged-in shopper chooses at checkout whether the order is for themself or someone else, entering a separate recipient identity in the latter case, while the order is always tagged with who actually placed it so their order history is complete.">
+          <defs><marker id="d5-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-subtle)"/></marker></defs>
+
+          <rect x="40" y="30" width="620" height="58" rx="9" class="n-box n-shopper"/>
+          <text x="60" y="64" class="node-label" font-size="12.5">Shopper logs in — Account (Customer Account Detail) session</text>
+
+          <rect x="40" y="108" width="620" height="72" rx="9" class="n-box n-decision"/>
+          <text x="60" y="140" class="node-label" font-size="12.5">Checkout: "This order is for..."</text>
+
+          <rect x="40" y="210" width="300" height="58" rx="9" class="n-box n-shopper"/>
+          <text x="60" y="234" class="node-label" font-size="12">Myself</text>
+          <text x="60" y="251" class="node-sub" font-size="10">Recipient = shopper's own info</text>
+
+          <rect x="380" y="210" width="280" height="58" rx="9" class="n-box n-shopper"/>
+          <text x="400" y="234" class="node-label" font-size="12">Someone else</text>
+          <text x="400" y="251" class="node-sub" font-size="10">Separate Recipient Name/Email/Phone form</text>
+
+          <rect x="40" y="298" width="620" height="58" rx="9" class="n-box n-apex"/>
+          <text x="60" y="332" class="node-label" font-size="12.5">submitOrder(inputJson, accountId)</text>
+
+          <rect x="40" y="376" width="620" height="58" rx="9" class="n-box n-apex"/>
+          <text x="60" y="400" class="node-label" font-size="12">Order.Placed_By__c = logged-in account (always)</text>
+          <text x="60" y="417" class="node-sub" font-size="10.5">Order.Customer_Name__c = the recipient's name</text>
+
+          <rect x="40" y="454" width="620" height="58" rx="9" class="n-box n-lwc"/>
+          <text x="60" y="478" class="node-label" font-size="12">Order History queries by Placed_By__c</text>
+          <text x="60" y="495" class="node-sub" font-size="10.5">the placer sees every order they've placed</text>
+
+          <line x1="350" y1="88" x2="350" y2="104" class="e-line" marker-end="url(#d5-a)"/>
+          <polyline points="350,180 350,194 190,194 190,206" class="e-line" fill="none" marker-end="url(#d5-a)"/>
+          <text x="205" y="200" class="edge-label" font-size="10">myself</text>
+          <polyline points="350,180 350,194 520,194 520,206" class="e-line" fill="none" marker-end="url(#d5-a)"/>
+          <text x="440" y="200" class="edge-label" font-size="10">someone else</text>
+          <polyline points="190,268 190,286 520,286 520,268" class="e-line" fill="none" marker-end="url(#d5-a)"/>
+          <line x1="350" y1="286" x2="350" y2="294" class="e-line" marker-end="url(#d5-a)"/>
+          <line x1="350" y1="356" x2="350" y2="372" class="e-line" marker-end="url(#d5-a)"/>
+          <line x1="350" y1="434" x2="350" y2="450" class="e-line" marker-end="url(#d5-a)"/>
+        </svg>
+      </div>
+      <figcaption>Both checkout paths converge on the same submit — the only difference is whose name/contact details end up in the recipient fields.</figcaption>
+    </figure>
+
+    <h3 class="sub-h">Object reference</h3>
+    <div class="schema-card">
+      <div class="schema-card-head"><span class="obj-name">Order</span><span class="obj-label">new field</span><span class="tag tag-extend">Extend</span></div>
+      <div class="table-wrap"><table class="schema">
+        <tbody>
+          <tr><td class="fname">Placed_By__c</td><td class="flabel">Placed By</td><td class="ftype">Lookup(Account)</td><td class="fnotes">The logged-in Account (Customer Account Detail) that actually submitted the order — distinct from the standard AccountId field, which is who the order is for</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <h3 class="sub-h">Build order</h3>
+    <ol class="order-list">
+      <li><strong>Order.Placed_By__c</strong> <span class="phase-tag phase-schema">schema</span></li>
+      <li><strong>CheckoutController.submitOrder</strong> <span class="phase-tag phase-logic">logic</span> — add accountId to CheckoutInput (the LWC already has it via the logged-in session), set orderUpdate.Placed_By__c in STEP 7.</li>
+      <li><strong>getOrdersByAccountId(accountId)</strong> <span class="phase-tag phase-logic">logic</span> — new @AuraEnabled method, alongside (not replacing) getOrdersByEmail.</li>
+      <li><strong>Checkout (LWC)</strong> <span class="phase-tag phase-logic">logic</span> — the "For myself / For someone else" toggle and second recipient form.</li>
+      <li><strong>Order History (LWC)</strong> <span class="phase-tag phase-logic">logic</span> — use getOrdersByAccountId so every placed order shows up, not just email matches.</li>
+    </ol>
+
+    <div class="decisions">
+      <h3>Decisions only you can make</h3>
+      <ul>
+        <li>Should an order placed <em>for</em> someone else also be visible to that recipient if they separately have their own account, or only to whoever placed it?</li>
+        <li>Any limit on how many "for someone else" orders one account can place (fraud consideration), or fully open?</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================ 6. CART ============================================================ -->
+  <section id="cart">
+    <h2><span class="section-num">6</span>Cart System — Audit Findings &amp; Fix Plan</h2>
+
+    <div class="callout finding">
+      <span class="callout-tag">What the audit found — this is a bug fix, not a new feature</span>
+      <code>Cart_Items__c</code> (moving to <code>Account</code> under the Account consolidation decision) is <strong>write-only</strong>. <code>cartService.js</code> writes to it on every cart change and the instant a login session starts — but nothing anywhere reads it back. Confirmed directly: <code>cartService.js</code>'s <code>getCart()</code> reads exclusively from <code>localStorage</code>; the login controller's <code>logIn</code>/<code>signUp</code> don't even <code>SELECT Cart_Items__c</code>; <code>techBasketMyAccount.js</code>'s login handler doesn't import cartService at all. The practical effect: <strong>logging into the same account on a new device or a cleared browser always starts with an empty cart</strong>, even though Salesforce has been faithfully mirroring the cart the whole time.
+    </div>
+
+    <figure>
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1020 570" role="img" aria-label="Cart fix flow: the current write-only mirror leaves a new device login with an empty cart; the fix reads the saved cart back on login and either loads it directly or merges it with whatever is already in the browser's local cart.">
+          <defs><marker id="d6-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-subtle)"/></marker></defs>
+
+          <rect x="40" y="30" width="620" height="58" rx="9" class="n-box n-reject"/>
+          <text x="60" y="54" class="node-label" font-size="12">TODAY: Cart_Items__c is write-only</text>
+          <text x="60" y="71" class="node-sub" font-size="10.5">mirrored TO Salesforce, never read back</text>
+
+          <rect x="40" y="108" width="620" height="58" rx="9" class="n-box n-reject"/>
+          <text x="60" y="132" class="node-label" font-size="12">Gap: new device/browser login = empty cart</text>
+          <text x="60" y="149" class="node-sub" font-size="10.5">even though the account's cart is saved server-side</text>
+
+          <line x1="350" y1="166" x2="350" y2="202" class="e-dashed" marker-end="url(#d6-a)"/>
+          <text x="365" y="188" class="edge-label" font-size="10">FIX: on successful login</text>
+
+          <rect x="40" y="206" width="620" height="58" rx="9" class="n-box n-apex"/>
+          <text x="60" y="240" class="node-label" font-size="12">Login controller's logIn/signUp also SELECT + return Account.Cart_Items__c</text>
+
+          <rect x="40" y="284" width="620" height="72" rx="9" class="n-box n-decision"/>
+          <text x="60" y="316" class="node-label" font-size="12.5">Does this browser's local cart already have items?</text>
+
+          <rect x="40" y="386" width="300" height="58" rx="9" class="n-box n-lwc"/>
+          <text x="60" y="410" class="node-label" font-size="12">No</text>
+          <text x="60" y="427" class="node-sub" font-size="10">Load the account's saved cart into localStorage</text>
+
+          <rect x="380" y="386" width="280" height="58" rx="9" class="n-box n-lwc"/>
+          <text x="400" y="410" class="node-label" font-size="12">Yes</text>
+          <text x="400" y="427" class="node-sub" font-size="10">Merge — add quantities for matching products</text>
+
+          <rect x="40" y="474" width="620" height="58" rx="9" class="n-box n-object"/>
+          <text x="60" y="498" class="node-label" font-size="12">cartService notifies every subscribed component</text>
+          <text x="60" y="515" class="node-sub" font-size="10.5">cart badge, Cart page, etc. update immediately</text>
+
+          <line x1="350" y1="356" x2="350" y2="382" class="e-line" marker-end="url(#d6-a)"/>
+          <polyline points="350,382 350,370 190,370 190,382" class="e-line" fill="none" marker-end="url(#d6-a)"/>
+          <text x="205" y="378" class="edge-label" font-size="10">no</text>
+          <polyline points="350,382 350,370 520,370 520,382" class="e-line" fill="none" marker-end="url(#d6-a)"/>
+          <text x="440" y="378" class="edge-label" font-size="10">yes</text>
+          <polyline points="190,444 190,460 520,460 520,444" class="e-line" fill="none" marker-end="url(#d6-a)"/>
+          <line x1="350" y1="460" x2="350" y2="470" class="e-line" marker-end="url(#d6-a)"/>
+        </svg>
+      </div>
+      <figcaption>Red boxes show the current broken state; blue/purple/green boxes show the fix.</figcaption>
+    </figure>
+
+    <h3 class="sub-h">Object reference</h3>
+    <p class="section-sub" style="margin-bottom:0;">No schema change needed — <code>Cart_Items__c</code> already exists (on Account per the consolidation decision) and is already being written correctly. This is purely an Apex + LWC fix.</p>
+
+    <h3 class="sub-h">Build order</h3>
+    <ol class="order-list">
+      <li><strong>Login controller's logIn / signUp</strong> <span class="phase-tag phase-logic">logic</span> — add Cart_Items__c to the SOQL against Account, add a cartSnapshot field to the session return type.</li>
+      <li><strong>cartService.js</strong> <span class="phase-tag phase-logic">logic</span> — new exported <code>restoreOrMergeCart(cartSnapshotJson)</code> implementing the merge-vs-replace logic above.</li>
+      <li><strong>techBasketMyAccount.js</strong> <span class="phase-tag phase-logic">logic</span> — call restoreOrMergeCart with the returned snapshot right after login succeeds, before setSession fires.</li>
+    </ol>
+
+    <div class="decisions">
+      <h3>Decisions only you can make</h3>
+      <ul>
+        <li><strong>Merge vs. replace:</strong> if the browser already has cart items at login, should the account's saved cart merge with them, or replace them outright? Merge is friendlier but can surprise someone on a shared/public computer.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============================================================ BUILD ORDER ============================================================ -->
+  <section id="buildorder">
+    <h2>Suggested Build Order Across All Six</h2>
+    <p class="section-sub">None of these six depend on each other except where noted below. Roughly cheapest/most isolated first:</p>
+    <ol class="order-list">
+      <li><strong>§6 Cart fix</strong> — pure bug fix, no new schema, immediately valuable.</li>
+      <li><strong>§3's billing-address fix</strong> — same category: real gap, small, self-contained.</li>
+      <li><strong>§5 Placed By</strong> — one new lookup field + one new Apex method.</li>
+      <li><strong>§4 Profile photo</strong> — self-contained, no dependency on anything else here.</li>
+      <li><strong>§1 Discount Campaigns</strong> — mostly extending standard objects (Campaign, CampaignMember); only Coupon_Code__c is genuinely new.</li>
+      <li><strong>§2 Loyalty Points</strong> — depends on §1's Order.Discount_Amount__c if you want them sharing one discount field (or give loyalty its own — your call).</li>
+      <li><strong>§3 full GST calculation</strong> — the most involved: Product2, Order, checkout totals, and the invoice PDF.</li>
+    </ol>
+    <footer class="page-footer">Generated by researching the real, deployed Apex/LWC source under <code>force-app/main/default</code> — not from memory. A companion Markdown version of this same plan lives at <code>Project_Details/FEATURE-EXPANSION-PLAN.md</code>.</footer>
+  </section>
+
+</div>
+</body>
+</html>

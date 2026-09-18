@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Stock_Quantity__c</fullName>
+    <externalId>false</externalId>
+    <label>Stock Quantity</label>
+    <precision>18</precision>
+    <scale>0</scale>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+    <description>Units currently available to sell. Blank means stock isn't tracked for this product yet — checkout treats a blank value as unlimited/always available rather than blocking the sale, the same graceful-fallback approach already used for Price__c/GST_Rate__c. Once set, CheckoutController enforces it with a row lock (SELECT ... FOR UPDATE) so two concurrent checkouts for the last unit can never both succeed, decrements it on a successful order, and OrderTrackingService restores it when an order is Cancelled or Returned.</description>
+</CustomField>

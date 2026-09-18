@@ -120,6 +120,16 @@ export default class TechBasketProductDetail extends NavigationMixin(LightningEl
         return this.product ? Number(this.product.price).toLocaleString('en-IN') : '';
     }
 
+    /**
+     * Caps the quantity selector at real available stock. A product with
+     * untracked stock (stockQuantity null — always "in stock" per
+     * ProductCatalogController) falls back to the selector's own sane
+     * default of 99, same as before this was wired up at all.
+     */
+    get maxSelectableQuantity() {
+        return this.product && this.product.stockQuantity != null ? this.product.stockQuantity : 99;
+    }
+
     /** Wishlist button label — changes based on current wishlist state. */
     get wishlistLabel() {
         return this.wishlisted ? 'Wishlisted' : 'Add to Wishlist';

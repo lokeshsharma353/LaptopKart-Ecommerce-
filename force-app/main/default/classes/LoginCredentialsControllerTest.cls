@@ -33,7 +33,7 @@ private class LoginCredentialsControllerTest {
 
         System.assertEquals(
             1,
-            [SELECT COUNT() FROM Login_Credentials__c WHERE Email__c = 'dup@example.com']
+            [SELECT COUNT() FROM Account WHERE Email__c = 'dup@example.com']
         );
     }
 
@@ -267,5 +267,216 @@ private class LoginCredentialsControllerTest {
             invalidRejected = true;
         }
         System.assert(invalidRejected, 'An invalid email format must be rejected.');
+    }
+
+    /** A fresh sign-up has no profile photo yet; uploading one saves it, and a subsequent logIn returns the same photo. */
+    @isTest
+    static void updateProfilePhotoSavesAndPersistsAcrossLogin() {
+        LoginCredentialsController.AccountSession session = LoginCredentialsController.signUp(
+            'Photo Shopper', 'photo-shopper@example.com', '9999911111', 'SuperSecret123'
+        );
+        System.assertEquals(null, session.profilePhoto, 'A fresh sign-up must have no profile photo yet.');
+
+        String photoDataUri = 'data:image/jpeg;base64,' + 'QQ'.repeat(2000);
+
+        Test.startTest();
+        LoginCredentialsController.updateProfilePhoto(session.id, photoDataUri);
+        LoginCredentialsController.AccountSession loggedIn = LoginCredentialsController.logIn('photo-shopper@example.com', 'SuperSecret123');
+        Test.stopTest();
+
+        System.assertEquals(photoDataUri, loggedIn.profilePhoto, 'logIn must return the just-uploaded profile photo.');
+    }
+
+    /** An oversized photo payload is rejected before any DML runs, rather than failing with a raw field-too-long error. */
+    @isTest
+    static void updateProfilePhotoRejectsOversizedPayload() {
+        LoginCredentialsController.AccountSession session = LoginCredentialsController.signUp(
+            'Oversized Photo Shopper', 'oversized-photo@example.com', '9999911111', 'SuperSecret123'
+        );
+        String tooLarge = 'data:image/jpeg;base64,' + 'A'.repeat(130000);
+
+        Boolean rejected = false;
+        Test.startTest();
+        try {
+            LoginCredentialsController.updateProfilePhoto(session.id, tooLarge);
+        } catch (AuraHandledException e) {
+            rejected = true;
+        }
+        Test.stopTest();
+
+        System.assert(rejected, 'An oversized photo payload must be rejected.');
+        Account afterAttempt = [SELECT Profile_Photo__c FROM Account WHERE Id = :session.id];
+        System.assertEquals(null, afterAttempt.Profile_Photo__c, 'The rejected photo must never be saved.');
+    }
+
+    /** A null accountId is rejected, same defensive guard every other Account-mutating method in this class already has. */
+    @isTest
+    static void updateProfilePhotoRejectsNullAccountId() {
+        Boolean rejected = false;
+        try {
+            LoginCredentialsController.updateProfilePhoto(null, 'data:image/jpeg;base64,QQ==');
+        } catch (AuraHandledException e) {
+            rejected = true;
+        }
+        System.assert(rejected, 'A null accountId must be rejected.');
+    }
+
+    /** Saving a new address (null addressId) creates it under the shopper's own Account, and it shows up in getMyAddresses. */
+    @isTest
+    static void saveMyAddressCreatesNewAddressUnderOwnAccount() {
+        LoginCredentialsController.AccountSession session = LoginCredentialsController.signUp(
+            'Address Shopper', 'address-shopper@example.com', '9999911111', 'SuperSecret123'
+        );
+
+        Test.startTest();
+        Id newId = LoginCredentialsController.saveMyAddress(session.id, null, '221B Baker Street', 'Delhi', '9999911111');
+        Test.stopTest();
+
+        System.assertNotEquals(null, newId, 'saveMyAddress must return the new record id.');
+        List<LoginCredentialsController.SavedAddress> addresses = LoginCredentialsController.getMyAddresses(session.id);
+        System.assertEquals(1, addresses.size());
+        System.assertEquals('221B Baker Street', addresses[0].line1);
+        System.assertEquals(newId, addresses[0].id);
+    }
+
+    /** Passing an existing addressId updates that same record in place rather than creating a second one. */
+    @isTest
+    static void saveMyAddressUpdatesExistingAddressInPlace() {
+        LoginCredentialsController.AccountSession session = LoginCredentialsController.signUp(
+            'Update Address Shopper', 'update-address@example.com', '9999911111', 'SuperSecret123'
+        );
+        Id addressId = LoginCredentialsController.saveMyAddress(session.id, null, 'Old Line', 'Mumbai', '9999911111');
+
+        Test.startTest();
+        Id updatedId = LoginCredentialsController.saveMyAddress(session.id, addressId, 'New Line', 'Pune', '8888822222');
+        Test.stopTest();
+
+        System.assertEquals(addressId, updatedId, 'Updating an existing address must not create a new record.');
+        List<LoginCredentialsController.SavedAddress> addresses = LoginCredentialsController.getMyAddresses(session.id);
+        System.assertEquals(1, addresses.size(), 'There must still be exactly one saved address.');
+        System.assertEquals('New Line', addresses[0].line1);
+        System.assertEquals('Pune', addresses[0].city);
+    }
+
+    /** One shopper's session can never edit or delete another shopper's saved address, even by guessing/reusing its record Id. */
+    @isTest
+    static void savedAddressesAreIsolatedBetweenAccounts() {
+        LoginCredentialsController.AccountSession ownerSession = LoginCredentialsController.signUp(
+            'Owner Shopper', 'owner-shopper@example.com', '9999911111', 'SuperSecret123'
+        );
+        LoginCredentialsController.AccountSession otherSession = LoginCredentialsController.signUp(
+            'Other Shopper', 'other-shopper@example.com', '9999922222', 'SuperSecret123'
+        );
+        Id ownerAddressId = LoginCredentialsController.saveMyAddress(ownerSession.id, null, 'Owner Street', 'Delhi', '9999911111');
+
+        Test.startTest();
+        Boolean editBlocked = false;
+        try {
+            LoginCredentialsController.saveMyAddress(otherSession.id, ownerAddressId, 'Hijacked Street', 'Nowhere', '0000000000');
+        } catch (AuraHandledException e) {
+            editBlocked = true;
+        }
+        LoginCredentialsController.deleteMyAddress(otherSession.id, ownerAddressId);
+        Test.stopTest();
+
+        System.assert(editBlocked, 'Editing another account\'s address by id must be blocked.');
+        List<LoginCredentialsController.SavedAddress> ownerAddresses = LoginCredentialsController.getMyAddresses(ownerSession.id);
+        System.assertEquals(1, ownerAddresses.size(), 'The owner\'s address must survive an unauthorized delete attempt from another account.');
+        System.assertEquals('Owner Street', ownerAddresses[0].line1, 'The owner\'s address must be untouched by the unauthorized edit attempt.');
+    }
+
+    /** Deleting one's own address removes it, and getMyAddresses for a null/no-session account returns an empty list. */
+    @isTest
+    static void deleteMyAddressRemovesOwnAddress() {
+        LoginCredentialsController.AccountSession session = LoginCredentialsController.signUp(
+            'Delete Address Shopper', 'delete-address@example.com', '9999911111', 'SuperSecret123'
+        );
+        Id addressId = LoginCredentialsController.saveMyAddress(session.id, null, 'Temp Street', 'Chennai', '9999911111');
+
+        Test.startTest();
+        LoginCredentialsController.deleteMyAddress(session.id, addressId);
+        Test.stopTest();
+
+        System.assertEquals(0, LoginCredentialsController.getMyAddresses(session.id).size());
+        System.assertEquals(0, LoginCredentialsController.getMyAddresses(null).size());
+    }
+
+    /** Updating profile info changes Name/Email/Phone on both the Account and its linked Contact, and a subsequent logIn uses the new email. */
+    @isTest
+    static void updateProfileInfoUpdatesAccountAndContactAndAllowsLoginWithNewEmail() {
+        LoginCredentialsController.AccountSession session = LoginCredentialsController.signUp(
+            'Old Name', 'old-email@example.com', '9999911111', 'SuperSecret123'
+        );
+
+        Test.startTest();
+        LoginCredentialsController.AccountSession updated = LoginCredentialsController.updateProfileInfo(
+            session.id, 'New Name', 'new-email@example.com', '8888822222'
+        );
+        LoginCredentialsController.AccountSession loggedIn = LoginCredentialsController.logIn('new-email@example.com', 'SuperSecret123');
+        Test.stopTest();
+
+        System.assertEquals('New Name', updated.name);
+        System.assertEquals('new-email@example.com', updated.email);
+        System.assertEquals('8888822222', updated.phone);
+        System.assertEquals(session.id, loggedIn.id, 'Logging in with the new email must return the same account.');
+
+        Contact linkedContact = [SELECT LastName, Email, Phone FROM Contact WHERE AccountId = :session.id LIMIT 1];
+        System.assertEquals('New Name', linkedContact.LastName);
+        System.assertEquals('new-email@example.com', linkedContact.Email);
+        System.assertEquals('8888822222', linkedContact.Phone);
+    }
+
+    /** updateProfileInfo blocks changing to an email another account already uses, leaving the original account untouched. */
+    @isTest
+    static void updateProfileInfoBlocksDuplicateEmail() {
+        LoginCredentialsController.signUp('First Shopper', 'first-shopper@example.com', '9999911111', 'SuperSecret123');
+        LoginCredentialsController.AccountSession session = LoginCredentialsController.signUp(
+            'Second Shopper', 'second-shopper@example.com', '9999922222', 'SuperSecret123'
+        );
+
+        Test.startTest();
+        Boolean blocked = false;
+        try {
+            LoginCredentialsController.updateProfileInfo(session.id, 'Second Shopper', 'first-shopper@example.com', '9999922222');
+        } catch (AuraHandledException e) {
+            blocked = true;
+        }
+        Test.stopTest();
+
+        System.assert(blocked, 'Changing to an email already used by another account must be blocked.');
+        Account unchanged = [SELECT Email__c FROM Account WHERE Id = :session.id];
+        System.assertEquals('second-shopper@example.com', unchanged.Email__c, 'The original email must be unchanged after a blocked update.');
+    }
+
+    /** updateProfileInfo validates required fields and email format, and rejects a null accountId, same as the rest of this class. */
+    @isTest
+    static void updateProfileInfoValidatesInput() {
+        LoginCredentialsController.AccountSession session = LoginCredentialsController.signUp(
+            'Validate Shopper', 'validate-shopper@example.com', '9999911111', 'SuperSecret123'
+        );
+
+        Boolean blankBlocked = false;
+        try {
+            LoginCredentialsController.updateProfileInfo(session.id, '', 'validate-shopper@example.com', '9999911111');
+        } catch (AuraHandledException e) {
+            blankBlocked = true;
+        }
+        System.assert(blankBlocked, 'A blank name must be rejected.');
+
+        Boolean badEmailBlocked = false;
+        try {
+            LoginCredentialsController.updateProfileInfo(session.id, 'Validate Shopper', 'not-an-email', '9999911111');
+        } catch (AuraHandledException e) {
+            badEmailBlocked = true;
+        }
+        System.assert(badEmailBlocked, 'An invalid email format must be rejected.');
+
+        Boolean nullAccountBlocked = false;
+        try {
+            LoginCredentialsController.updateProfileInfo(null, 'Validate Shopper', 'validate-shopper@example.com', '9999911111');
+        } catch (AuraHandledException e) {
+            nullAccountBlocked = true;
+        }
+        System.assert(nullAccountBlocked, 'A null accountId must be rejected.');
     }
 }

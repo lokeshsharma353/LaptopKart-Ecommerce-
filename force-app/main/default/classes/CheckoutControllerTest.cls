@@ -12,11 +12,18 @@ private class CheckoutControllerTest {
 
     private static PricebookEntry getActivePricebookEntry() {
         return [
-            SELECT Id, Product2Id, Product2.Name, UnitPrice
+            SELECT Id, Product2Id, Product2.Name, Product2.Price__c, UnitPrice
             FROM PricebookEntry
             WHERE Pricebook2.IsStandard = true AND IsActive = true AND Product2.IsActive = true
             LIMIT 1
         ];
+    }
+
+    // Matches CheckoutController's own STEP 4 preference exactly: Product2.
+    // Price__c is the real source of truth now, UnitPrice is only a fallback
+    // for a product that predates this field.
+    private static Decimal expectedUnitPrice(PricebookEntry pbe) {
+        return pbe.Product2.Price__c != null ? pbe.Product2.Price__c : pbe.UnitPrice;
     }
 
     private static String buildOrderJson(PricebookEntry pbe, String email, String paymentMethod, String utr) {
@@ -49,7 +56,7 @@ private class CheckoutControllerTest {
         System.assertNotEquals(null, result.orderNumber, 'Order number should be populated.');
         System.assertNotEquals(null, result.trackingNumber, 'Tracking number should be generated.');
         System.assertEquals(Date.today().addDays(5), result.deliveryDate, 'Delivery date should be 5 days out.');
-        System.assertEquals(pbe.UnitPrice * 2, result.totalAmount, 'Total should be unit price x quantity.');
+        System.assertEquals(expectedUnitPrice(pbe) * 2, result.totalAmount, 'Total should be unit price x quantity.');
 
         Order ord = [SELECT Id, Status, TotalAmount, ShippingCity, Website_Order__c FROM Order WHERE Id = :result.orderId];
         System.assertEquals('Activated', ord.Status, 'Order should be activated by checkout.');
@@ -311,5 +318,191 @@ private class CheckoutControllerTest {
     static void getOrdersReturnsEmptyForNullOrEmptyIdList() {
         System.assertEquals(0, CheckoutController.getOrders(null).size(), 'Null id list must return no orders.');
         System.assertEquals(0, CheckoutController.getOrders(new List<Id>()).size(), 'Empty id list must return no orders.');
+    }
+
+
+    /** Creates an active, dated discount Campaign + Coupon_Code__c for the pricing tests below. See Feature Expansion Plan §1. */
+    private static Coupon_Code__c createTestCoupon(String code, String discountType, Decimal discountValue, Decimal minOrder, Decimal maxDiscount) {
+        return createTestCoupon(code, discountType, discountValue, minOrder, maxDiscount, null);
+    }
+
+    /** Same as above, but restricted to one Product2.Family category — see Eligible_Category__c. */
+    private static Coupon_Code__c createTestCoupon(String code, String discountType, Decimal discountValue, Decimal minOrder, Decimal maxDiscount, String eligibleCategory) {
+        Campaign campaign = new Campaign(
+            Name = 'Test Discount Campaign ' + code,
+            IsActive = true,
+            Status = 'Active',
+            StartDate = Date.today().addDays(-1),
+            EndDate = Date.today().addDays(30),
+            Discount_Type__c = discountType,
+            Discount_Value__c = discountValue,
+            Minimum_Order_Value__c = minOrder,
+            Maximum_Discount_Amount__c = maxDiscount,
+            Eligible_Category__c = eligibleCategory
+        );
+        insert campaign;
+
+        Coupon_Code__c coupon = new Coupon_Code__c(
+            Code__c = code,
+            Campaign__c = campaign.Id,
+            Is_Active__c = true,
+            Max_Uses_Per_Customer__c = 1
+        );
+        insert coupon;
+        return coupon;
+    }
+
+
+    @isTest
+    /** A valid coupon reduces Discount_Amount__c/Amount_Payable__c, and GST is calculated on the discounted (taxable) value, not the raw subtotal. */
+    static void submitOrderAppliesCouponAndCalculatesGst() {
+        User guestUser = getGuestUser();
+        PricebookEntry pbe = getActivePricebookEntry();
+        Coupon_Code__c coupon = createTestCoupon('TESTSAVE10', 'Percentage', 10, null, null);
+
+        CheckoutController.OrderResult result;
+
+        System.runAs(guestUser) {
+            String inputJson = '{"customerName":"Coupon Test","customerEmail":"coupon-test@example.com",'
+                + '"customerPhone":"9999900000","paymentMethod":"Cash","shippingStreet":"1 Test Lane",'
+                + '"shippingCity":"Noida","shippingState":"Uttar Pradesh","shippingPostalCode":"201301",'
+                + '"shippingCountry":"India","couponCode":"' + coupon.Code__c + '",'
+                + '"items":[{"productId":"' + pbe.Product2Id + '","quantity":2}]}';
+
+            Test.startTest();
+            result = CheckoutController.submitOrder(inputJson);
+            Test.stopTest();
+        }
+
+        Decimal subtotal = expectedUnitPrice(pbe) * 2;
+        Decimal expectedDiscount = (subtotal * 0.10).setScale(2, System.RoundingMode.HALF_UP);
+
+        Order ord = [
+            SELECT Discount_Amount__c, Taxable_Amount__c, CGST_Amount__c, SGST_Amount__c,
+                   IGST_Amount__c, Amount_Payable__c, Coupon_Code_Applied__c
+            FROM Order WHERE Id = :result.orderId
+        ];
+
+        System.assertEquals(expectedDiscount, ord.Discount_Amount__c, 'A 10% coupon must discount exactly 10% of the subtotal.');
+        System.assertEquals('TESTSAVE10', ord.Coupon_Code_Applied__c, 'The applied coupon code should be stamped on the order.');
+        System.assertEquals(subtotal - expectedDiscount, ord.Taxable_Amount__c, 'Taxable value must be subtotal minus the discount.');
+        System.assert(ord.CGST_Amount__c > 0 || ord.IGST_Amount__c > 0, 'GST must be calculated on the taxable value.');
+        System.assertEquals(
+            (ord.Taxable_Amount__c + ord.CGST_Amount__c + ord.SGST_Amount__c + ord.IGST_Amount__c).setScale(2),
+            ord.Amount_Payable__c.setScale(2),
+            'Amount payable must equal taxable value plus GST when no loyalty points were redeemed.'
+        );
+
+        // Coupon is capped to one use per customer — a second attempt by the
+        // same account must be rejected by the live server preview. Queried
+        // as the running test user (admin), not the Guest User — see
+        // submitOrderReusesExistingAccountForReturningCustomer above for why:
+        // ownership was already reassigned to the admin inside submitOrder's
+        // final step, and Guest User criteria-based sharing-rule
+        // recalculation isn't guaranteed to have caught up within the same
+        // transaction.
+        Id accountId = [SELECT AccountId FROM Order WHERE Id = :result.orderId].AccountId;
+
+        OrderPricingService.PricingLine line = new OrderPricingService.PricingLine();
+        line.productId = pbe.Product2Id;
+        line.quantity = 1;
+        line.unitPrice = expectedUnitPrice(pbe);
+        line.gstRatePercent = null;
+        line.lineSubtotal = expectedUnitPrice(pbe);
+
+        OrderPricingService.PricingResult repeatPreview = OrderPricingService.calculate(
+            new List<OrderPricingService.PricingLine>{ line }, 'Uttar Pradesh', accountId, 'TESTSAVE10', null, null
+        );
+        System.assertEquals(false, repeatPreview.couponValid, 'The same customer must not be able to reuse a single-use coupon.');
+    }
+
+
+    @isTest
+    /** A Percentage coupon's discount is capped at Maximum_Discount_Amount__c. */
+    static void couponDiscountIsCappedByMaximumDiscountAmount() {
+        createTestCoupon('TESTCAP', 'Percentage', 50, null, 100);
+
+        DiscountService.CouponPreview preview = DiscountService.validate('TESTCAP', null, 10000, new Map<String, Decimal>());
+        System.assertEquals(true, preview.valid, 'Coupon should validate against a sufficient subtotal.');
+        System.assertEquals(100, preview.discountAmount, '50% of Rs. 10,000 (Rs. 5,000) must be capped down to the Rs. 100 maximum.');
+    }
+
+
+    @isTest
+    /** A coupon is rejected when the cart subtotal is below Minimum_Order_Value__c. */
+    static void couponRejectsOrderBelowMinimumValue() {
+        createTestCoupon('TESTMIN', 'Flat Amount', 500, 20000, null);
+
+        DiscountService.CouponPreview preview = DiscountService.validate('TESTMIN', null, 5000, new Map<String, Decimal>());
+        System.assertEquals(false, preview.valid, 'A coupon with a minimum order value must reject a smaller cart.');
+        System.assert(preview.message.contains('Minimum purchase'), 'Rejection message should explain the minimum order requirement.');
+    }
+
+
+    @isTest
+    /**
+     * A category-restricted coupon (10% off Laptops only) discounts only the
+     * Laptop line's GST-taxable value — an Accessory line in the same cart
+     * must come through completely untouched, even though its spend still
+     * counted toward the minimum order gate. Matches the discount system's
+     * own worked example (Laptop ₹50,000 + Earbuds ₹2,000 → only the laptop
+     * portion is discounted).
+     */
+    static void categoryRestrictedCouponOnlyDiscountsMatchingLines() {
+        createTestCoupon('TESTLAPTOP', 'Percentage', 10, 30000, 5000, 'Laptop');
+
+        OrderPricingService.PricingLine laptopLine = new OrderPricingService.PricingLine();
+        laptopLine.productId = null;
+        laptopLine.quantity = 1;
+        laptopLine.unitPrice = 50000;
+        laptopLine.gstRatePercent = 18;
+        laptopLine.lineSubtotal = 50000;
+        laptopLine.category = 'Laptop';
+
+        OrderPricingService.PricingLine accessoryLine = new OrderPricingService.PricingLine();
+        accessoryLine.productId = null;
+        accessoryLine.quantity = 1;
+        accessoryLine.unitPrice = 2000;
+        accessoryLine.gstRatePercent = 18;
+        accessoryLine.lineSubtotal = 2000;
+        accessoryLine.category = 'Accessory';
+
+        OrderPricingService.PricingResult result = OrderPricingService.calculate(
+            new List<OrderPricingService.PricingLine>{ laptopLine, accessoryLine },
+            'Uttar Pradesh', null, 'TESTLAPTOP', null, null
+        );
+
+        System.assertEquals(true, result.couponValid, 'The coupon should validate — cart subtotal (Rs. 52,000) meets the Rs. 30,000 minimum, and a Laptop line is present.');
+        System.assertEquals(5000, result.discountAmount, '10% of the Rs. 50,000 laptop line is Rs. 5,000, within the Rs. 5,000 cap.');
+        System.assertEquals(47000, result.taxableAmount, 'Taxable value must be the full Rs. 52,000 cart minus only the Rs. 5,000 laptop discount.');
+
+        // GST must reflect the laptop's own taxable value dropping to
+        // Rs. 45,000 while the accessory's stays the full Rs. 2,000 —
+        // proving the discount was never spread onto the accessory line.
+        Decimal expectedGst = (45000 * 0.18) + (2000 * 0.18);
+        System.assertEquals(expectedGst.setScale(2), result.gstAmount, 'GST must be computed per line on each line\'s own (correctly discounted or undiscounted) taxable value.');
+    }
+
+
+    @isTest
+    /** A category-restricted coupon is rejected when the cart has no line in that category, even if the cart otherwise meets the minimum order value. */
+    static void categoryRestrictedCouponRejectsCartWithNoMatchingCategory() {
+        createTestCoupon('TESTPHONE', 'Percentage', 10, 1000, null, 'Mobile');
+
+        OrderPricingService.PricingLine laptopLine = new OrderPricingService.PricingLine();
+        laptopLine.productId = null;
+        laptopLine.quantity = 1;
+        laptopLine.unitPrice = 50000;
+        laptopLine.gstRatePercent = 18;
+        laptopLine.lineSubtotal = 50000;
+        laptopLine.category = 'Laptop';
+
+        OrderPricingService.PricingResult result = OrderPricingService.calculate(
+            new List<OrderPricingService.PricingLine>{ laptopLine },
+            'Uttar Pradesh', null, 'TESTPHONE', null, null
+        );
+
+        System.assertEquals(false, result.couponValid, 'A Mobile-only coupon must reject a cart with only a Laptop line.');
+        System.assertEquals(0, result.discountAmount, 'No discount should apply when the coupon is rejected.');
     }
 }

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>SKU_At_Vendor__c</fullName>
+    <externalId>false</externalId>
+    <label>Vendor SKU</label>
+    <length>60</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+    <description>This product's own product code at Primary_Vendor__c, if different from LaptopKart's ProductCode.</description>
+</CustomField>

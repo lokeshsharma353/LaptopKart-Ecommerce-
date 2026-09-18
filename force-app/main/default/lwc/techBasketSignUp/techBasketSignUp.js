@@ -1,7 +1,7 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { getLoginRef } from 'c/navigationService';
-import registerUser from '@salesforce/apex/RegistrationController.registerUser';
+import signUp from '@salesforce/apex/LoginCredentialsController.signUp';
 import {
     EMAIL_PATTERN, PHONE_PATTERN, NAME_PATTERN,
     EMAIL_ERROR, PHONE_ERROR, NAME_ERROR, sanitizePhoneInput
@@ -9,8 +9,8 @@ import {
 
 /**
  * TechBasketSignUp — the new account registration page.
- * Creates a real Salesforce Experience Cloud login via RegistrationController.registerUser.
- * The password is sent to Apex only once and never stored or logged on the frontend.
+ * Creates a LaptopKart customer account via LoginCredentialsController.signUp,
+ * saving credentials to Account.Password_Text__c so login via My Account works.
  */
 export default class TechBasketSignUp extends NavigationMixin(LightningElement) {
     /** Form field values for the registration form. */
@@ -51,7 +51,9 @@ export default class TechBasketSignUp extends NavigationMixin(LightningElement) 
      */
     validate() {
         const errors = {};
-        if (this.formData.firstName.trim() && !NAME_PATTERN.test(this.formData.firstName.trim())) {
+        if (!this.formData.firstName.trim()) {
+            errors.firstName = 'First name is required.';
+        } else if (!NAME_PATTERN.test(this.formData.firstName.trim())) {
             errors.firstName = NAME_ERROR;
         }
         if (!this.formData.lastName.trim()) {
@@ -78,21 +80,19 @@ export default class TechBasketSignUp extends NavigationMixin(LightningElement) 
     }
 
     /**
-     * Validates the form and calls RegistrationController.registerUser on success.
+     * Validates the form and calls LoginCredentialsController.signUp on success.
      * Shows inline errors on validation failure or an Apex error message on server failure.
      */
     handleSubmit() {
         this.submitError = '';
         if (!this.validate()) { return; }
         this.isSubmitting = true;
-        registerUser({
-            input: {
-                firstName: this.formData.firstName,
-                lastName: this.formData.lastName,
-                email: this.formData.email,
-                phone: this.formData.phone,
-                password: this.formData.password
-            }
+        const fullName = (this.formData.firstName.trim() + ' ' + this.formData.lastName.trim()).trim();
+        signUp({
+            name: fullName,
+            email: this.formData.email,
+            phone: this.formData.phone,
+            password: this.formData.password
         })
             .then(() => { this.isSubmitting = false; this.submitted = true; })
             .catch((error) => {

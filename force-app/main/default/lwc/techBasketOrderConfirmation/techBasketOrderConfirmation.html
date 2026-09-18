@@ -71,17 +71,52 @@
                                     </tr>
                                 </template>
                             </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="3">Total Amount</td>
-                                    <td>₹{order.totalAmount}</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="3">Total Paid</td>
-                                    <td>₹{order.totalPaid}</td>
-                                </tr>
-                            </tfoot>
+                            <template if:false={hasPricingBreakdown}>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3">Total Amount</td>
+                                        <td>₹{order.totalAmount}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">Total Paid</td>
+                                        <td>₹{order.totalPaid}</td>
+                                    </tr>
+                                </tfoot>
+                            </template>
                         </table>
+
+                        <template if:true={hasPricingBreakdown}>
+                            <div class="tb-order-total-breakdown">
+                                <div class="tb-summary-row"><span>Subtotal</span><span>₹{order.totalAmount}</span></div>
+                                <template if:true={hasDiscount}>
+                                    <div class="tb-summary-row tb-summary-row-discount">
+                                        <span>Coupon Discount <template if:true={order.couponCodeApplied}>({order.couponCodeApplied})</template></span>
+                                        <span>-₹{order.discountAmount}</span>
+                                    </div>
+                                </template>
+                                <div class="tb-summary-row"><span>Taxable Value</span><span>₹{order.taxableAmount}</span></div>
+                                <template if:true={isIntrastate}>
+                                    <div class="tb-summary-row"><span>CGST</span><span>₹{order.cgstAmount}</span></div>
+                                    <div class="tb-summary-row"><span>SGST</span><span>₹{order.sgstAmount}</span></div>
+                                </template>
+                                <template if:false={isIntrastate}>
+                                    <div class="tb-summary-row"><span>IGST</span><span>₹{order.igstAmount}</span></div>
+                                </template>
+                                <template if:true={hasShippingCost}>
+                                    <div class="tb-summary-row"><span>Shipping ({order.shippingMethodLabel})</span><span>₹{order.shippingCost}</span></div>
+                                </template>
+                                <template if:true={hasLoyaltyDiscount}>
+                                    <div class="tb-summary-row tb-summary-row-discount">
+                                        <span>Loyalty Points Redeemed ({order.pointsRedeemed})</span>
+                                        <span>-₹{loyaltyDiscountDisplay}</span>
+                                    </div>
+                                </template>
+                                <div class="tb-summary-row-total"><span>Amount Payable</span><span>₹{order.amountPayable}</span></div>
+                                <template if:true={hasPointsEarned}>
+                                    <p class="tb-points-earned-note">🎁 You earned {order.pointsEarned} loyalty points on this order.</p>
+                                </template>
+                            </div>
+                        </template>
                     </div>
                 </div>
 
@@ -109,6 +144,12 @@
 
                     <div class="tb-card">
                         <h2 class="tb-section-heading">Shipping &amp; Delivery</h2>
+                        <template if:true={hasRecipient}>
+                            <div class="tb-detail-row">
+                                <span>Recipient</span>
+                                <span class="tb-detail-value">{order.recipientName}</span>
+                            </div>
+                        </template>
                         <div class="tb-detail-row tb-detail-row-stacked">
                             <span>Address</span>
                             <span class="tb-detail-value">{order.shippingAddressLine}</span>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <brand>
+        <headerColor>#0070D2</headerColor>
+        <logo>images</logo>
+        <logoVersion>1</logoVersion>
+        <shouldOverrideOrgTheme>true</shouldOverrideOrgTheme>
+    </brand>
+    <formFactors>Small</formFactors>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
+    <label>SmartStock</label>
+    <navType>Standard</navType>
+    <tabs>Product__c</tabs>
+    <tabs>Supplier__c</tabs>
+    <tabs>Warehouse__c</tabs>
+    <tabs>Inventory__c</tabs>
+    <tabs>Customer__c</tabs>
+    <tabs>College_Applications__c</tabs>
+    <tabs>Mistake__c</tabs>
+    <tabs>Leave_Request__c</tabs>
+    <tabs>Asset_Request__c</tabs>
+    <tabs>Order_Tracking__c</tabs>
+    <tabs>Payment__c</tabs>
+    <tabs>Review__c</tabs>
+    <tabs>Contact_Us__c</tabs>
+    <tabs>Discount__c</tabs>
+    <tabs>Login_Credentials__c</tabs>
+    <tabs>Coupon_Code__c</tabs>
+    <tabs>Loyalty_Point_Transaction__c</tabs>
+    <uiType>Lightning</uiType>
+    <utilityBar>SmartStock_UtilityBar</utilityBar>
+</CustomApplication>

@@ -6,7 +6,7 @@
             <template if:false={submitted}>
                 <div class="tb-field-row">
                     <div class="tb-field">
-                        <label for="firstName">First Name</label>
+                        <label for="firstName">First Name <span class="tb-required">*</span></label>
                         <input id="firstName" type="text" value={formData.firstName} data-field="firstName" oninput={handleInput} />
                         <template if:true={errors.firstName}><p class="tb-error">{errors.firstName}</p></template>
                     </div>

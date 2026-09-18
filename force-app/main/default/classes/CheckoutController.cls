@@ -15,6 +15,32 @@ public without sharing class CheckoutController {
     // Guest/Site users on this org, even though the exact same JSON
     // deserializes correctly with JSON.deserialize() — confirmed by direct
     // testing. A single String parameter sidesteps that binding path entirely.
+    // Starts a Razorpay payment: creates a Payment Link on Razorpay's side
+    // for the cart's real, server-computed total (never a client-supplied
+    // amount) and hands back the hosted URL the Payment page redirects the
+    // shopper to. Called BEFORE submitOrder — nothing is created in
+    // Salesforce yet at this point, so a shopper who backs out or whose
+    // payment fails never leaves behind an empty Lead/Order.
+    @AuraEnabled
+    public static RazorpayService.PaymentLinkResult createRazorpayPaymentLink(
+        Decimal amount,
+        String customerName,
+        String customerEmail,
+        String customerPhone,
+        String callbackUrl
+    ) {
+        if (amount == null || amount <= 0) {
+            throw new AuraHandledException('Invalid order amount.');
+        }
+        try {
+            return RazorpayService.createPaymentLink(amount, customerName, customerEmail, customerPhone, callbackUrl);
+        } catch (Exception e) {
+            System.debug(LoggingLevel.ERROR, 'createRazorpayPaymentLink failed: ' + e.getMessage());
+            throw new AuraHandledException('Could not start the payment. Please try again.');
+        }
+    }
+
+
     @AuraEnabled
     public static OrderResult submitOrder(String inputJson) {
 
@@ -27,6 +53,36 @@ public without sharing class CheckoutController {
 
         if (input == null || input.items == null || input.items.isEmpty()) {
             throw new AuraHandledException('Your cart is empty.');
+        }
+
+        // If this order was paid through Razorpay, verify it for real RIGHT
+        // HERE, before any record is created — Apex cannot make an HTTP
+        // callout once DML has run in the same transaction ("uncommitted
+        // work pending"), and Steps 1-8 below do plenty of DML. The status
+        // check happens now; the amount check happens later at STEP 9 once
+        // newOrder.TotalAmount is known, reusing this same fetched result
+        // rather than calling out to Razorpay a second time. Never trust
+        // the redirect's own query parameters alone — those can be typed
+        // into the URL bar by anyone.
+        //
+        // Only honored when paymentMethod is actually 'Online' — a stale
+        // razorpayPaymentId can otherwise linger on the Payment page's own
+        // instance state (e.g. the browser's back button returning to a
+        // page that already auto-submitted once) and slip into a LATER
+        // submission where the shopper has since picked Cash on Delivery
+        // instead. Without this check that stale id would still get
+        // verified and marked Successful, while Payment_Method__c recorded
+        // 'Cash' — a real inconsistency found in this org's own data.
+        // Silently ignored rather than rejected outright: it's stale
+        // leftover state, not a malicious tamper attempt, so the order
+        // should still go through normally as whatever method was actually
+        // selected.
+        RazorpayService.PaymentDetails gatewayPaymentDetails = null;
+        if (input.paymentMethod == 'Online' && String.isNotBlank(input.razorpayPaymentId)) {
+            gatewayPaymentDetails = RazorpayService.fetchPayment(input.razorpayPaymentId);
+            if (gatewayPaymentDetails.status != 'captured') {
+                throw new AuraHandledException('We could not verify your payment. Please try again or contact support.');
+            }
         }
 
         Id standardPricebookId = [
@@ -51,7 +107,13 @@ public without sharing class CheckoutController {
         // STEP 1: Lead
         Lead newLead = new Lead();
         newLead.LastName = input.customerName;
-        newLead.Company = input.customerName + ' (LaptopKart Customer)';
+        // Lead.Company is a required standard field with no real "company"
+        // to put here — this is a B2C storefront, not a business buyer —
+        // so it just holds the customer's own name. Deliberately plain,
+        // with no "(LaptopKart Customer)" suffix: that used to leak into
+        // the Account Name too (see STEP 2.5 below) and show up as the
+        // customer's display name across the site and in Setup.
+        newLead.Company = input.customerName;
         newLead.Email = input.customerEmail;
         newLead.Phone = input.customerPhone;
         newLead.LeadSource = 'TechBasket Website';
@@ -106,13 +168,29 @@ public without sharing class CheckoutController {
         // to any Account/Contact matching the TechBasket criteria regardless
         // of current owner, so referencing an admin-owned existing one here
         // is safe.
-        List<Contact> existingContacts = [
-            SELECT Id, AccountId
-            FROM Contact
-            WHERE Email = :input.customerEmail
-            WITH SYSTEM_MODE
-            LIMIT 1
-        ];
+        // A logged-in shopper (input.accountId set — see LoginCredentialsController)
+        // is matched by that exact Account, not by whatever email happens to
+        // be in the shipping form — the shipping email is the delivery
+        // recipient's contact detail (§5.1) and could legitimately differ
+        // from the buyer's own account email (ordering a gift for someone
+        // else). A guest checkout (no accountId) keeps matching by email,
+        // same as always.
+        List<Contact> existingContacts = input.accountId != null
+            ? [
+                SELECT Id, AccountId
+                FROM Contact
+                WHERE AccountId = :input.accountId
+                WITH SYSTEM_MODE
+                LIMIT 1
+            ]
+            : [
+                SELECT Id, AccountId
+                FROM Contact
+                WHERE Email = :input.customerEmail
+                WITH SYSTEM_MODE
+                LIMIT 1
+            ];
+        Boolean isNewCustomerAccount = existingContacts.isEmpty();
 
         Database.LeadConvert lc = new Database.LeadConvert();
         lc.setLeadId(newLead.Id);
@@ -151,6 +229,33 @@ public without sharing class CheckoutController {
         Id opportunityId = lcr.getOpportunityId();
 
 
+        // STEP 2.5: Keep the Account's Name in sync with the customer placing
+        // THIS order. For a first-time customer, LeadConvert already sets the
+        // new Account's Name from Lead.Company (see STEP 1) — this is a no-op
+        // there. For a returning customer, STEP 2 above reuses their existing
+        // Account by Id, and LeadConvert never renames a reused Account, so it
+        // otherwise keeps showing whatever name it had from checkout, however
+        // long ago, on every later order — not who actually placed this one.
+        //
+        // Also normalizes the Account's record type to Customer Account
+        // Detail. A brand-new Account from LeadConvert gets whatever record
+        // type is the running Guest User's profile default (which, in this
+        // org, is an unrelated legacy record type, not built for this app) —
+        // and LoginCredentialsController.signUp separately sets this same
+        // record type when a shopper signs up first. Forcing it here too
+        // means every storefront customer Account ends up on the same record
+        // type either way, whether they signed up or only ever checked out
+        // as a guest.
+        Account accountUpdate = new Account(Id = accountId, Name = input.customerName);
+        Schema.RecordTypeInfo customerRT = Schema.SObjectType.Account
+            .getRecordTypeInfosByDeveloperName()
+            .get('Customer_Account_Details');
+        if (customerRT != null) {
+            accountUpdate.RecordTypeId = customerRT.getRecordTypeId();
+        }
+        Database.update(accountUpdate, AccessLevel.SYSTEM_MODE);
+
+
         // STEP 3: Assign the Standard Price Book so line items can be added
         Database.update(
             new Opportunity(Id = opportunityId, Pricebook2Id = standardPricebookId),
@@ -158,16 +263,55 @@ public without sharing class CheckoutController {
         );
 
 
-        // STEP 4: Opportunity line items, priced from the real PricebookEntry —
-        // never from whatever price the browser's cart happened to send.
+        // STEP 4: Opportunity line items, priced from Product2.Price__c
+        // directly — never from whatever price the browser's cart happened
+        // to send, and never from a Price Book someone has to remember to
+        // maintain. Product2 is the sole source of truth for pricing;
+        // PricebookEntry only still exists here because OpportunityLineItem
+        // (a hard Salesforce platform rule, not a choice made in this app)
+        // requires a PricebookEntryId — so one is created on the fly, silently,
+        // for any product that doesn't already have one, instead of requiring
+        // anyone to manage the Price Book by hand.
         Set<Id> productIds = new Set<Id>();
         for (CartLineInput line : input.items) {
             productIds.add(line.productId);
         }
 
+        // FOR UPDATE locks these Product2 rows for the rest of this
+        // transaction — the classic "two customers both buy the last unit"
+        // race (Feature Expansion Plan §12) is otherwise real: without a
+        // lock, two concurrent checkouts could both read Stock_Quantity__c
+        // = 1, both decide there's enough, and both succeed. With the lock,
+        // whichever checkout gets here second simply waits for the first to
+        // finish (commit or roll back) before reading the row, so it always
+        // sees the real, up-to-date quantity.
+        Map<Id, Product2> productById = new Map<Id, Product2>([
+            SELECT Id, Name, Price__c, GST_Rate__c, Stock_Quantity__c, Family
+            FROM Product2
+            WHERE Id IN :productIds
+            AND IsActive = true
+            WITH SYSTEM_MODE
+            FOR UPDATE
+        ]);
+
+        // Reject the whole order if any line exceeds real available stock —
+        // delegated to InventoryService, which is also what actually
+        // decrements and ledgers the sale below once the Order exists. See
+        // InventoryService.validateStock for why the FOR UPDATE lock above
+        // (not this call) is what closes the "two customers both buy the
+        // last unit" race.
+        List<InventoryService.StockLine> stockLines = new List<InventoryService.StockLine>();
+        for (CartLineInput line : input.items) {
+            InventoryService.StockLine stockLine = new InventoryService.StockLine();
+            stockLine.productId = line.productId;
+            stockLine.quantity = line.quantity;
+            stockLines.add(stockLine);
+        }
+        InventoryService.validateStock(productById, stockLines);
+
         Map<Id, PricebookEntry> entryByProduct = new Map<Id, PricebookEntry>();
         for (PricebookEntry entry : [
-            SELECT Id, Product2Id, Product2.Name, UnitPrice
+            SELECT Id, Product2Id, UnitPrice
             FROM PricebookEntry
             WHERE Pricebook2Id = :standardPricebookId
             AND Product2Id IN :productIds
@@ -177,31 +321,70 @@ public without sharing class CheckoutController {
             entryByProduct.put(entry.Product2Id, entry);
         }
 
+        // Silently create a Standard Price Book entry for any cart product
+        // that doesn't have one yet, priced from Product2.Price__c — this is
+        // the only reason PricebookEntry is touched at all in this method.
+        List<PricebookEntry> newEntries = new List<PricebookEntry>();
+        for (Id productId : productIds) {
+            Product2 product = productById.get(productId);
+            if (!entryByProduct.containsKey(productId) && product != null && product.Price__c != null) {
+                PricebookEntry newEntry = new PricebookEntry();
+                newEntry.Pricebook2Id = standardPricebookId;
+                newEntry.Product2Id = productId;
+                newEntry.UnitPrice = product.Price__c;
+                newEntry.IsActive = true;
+                newEntries.add(newEntry);
+            }
+        }
+        if (!newEntries.isEmpty()) {
+            Database.insert(newEntries, AccessLevel.SYSTEM_MODE);
+            for (PricebookEntry created : newEntries) {
+                entryByProduct.put(created.Product2Id, created);
+            }
+        }
+
         List<OpportunityLineItem> lineItems = new List<OpportunityLineItem>();
         // Kept alongside lineItems purely to build the confirmation email body
         // (product names aren't queryable back off an OpportunityLineItem
         // without another round trip) — see sendConfirmationEmail.
         List<String> emailLines = new List<String>();
+        // Feeds OrderPricingService — see STEP 4.5 below.
+        List<OrderPricingService.PricingLine> pricingLines = new List<OrderPricingService.PricingLine>();
 
         for (CartLineInput line : input.items) {
 
             PricebookEntry entry = entryByProduct.get(line.productId);
+            Product2 product = productById.get(line.productId);
 
-            if (entry == null) {
+            if (entry == null || product == null) {
                 continue;
             }
+
+            // Prefers Product2.Price__c; falls back to the Price Book
+            // entry's UnitPrice only in the unlikely case Price__c is blank
+            // but an old entry already existed with a real UnitPrice.
+            Decimal realPrice = product.Price__c != null ? product.Price__c : entry.UnitPrice;
 
             OpportunityLineItem item = new OpportunityLineItem();
             item.OpportunityId = opportunityId;
             item.PricebookEntryId = entry.Id;
             item.Quantity = line.quantity;
-            item.UnitPrice = entry.UnitPrice;
+            item.UnitPrice = realPrice;
 
             lineItems.add(item);
             emailLines.add(
-                line.quantity + ' x ' + entry.Product2.Name +
-                ' - Rs. ' + entry.UnitPrice.setScale(2)
+                line.quantity + ' x ' + product.Name +
+                ' - Rs. ' + realPrice.setScale(2)
             );
+
+            OrderPricingService.PricingLine pricingLine = new OrderPricingService.PricingLine();
+            pricingLine.productId = line.productId;
+            pricingLine.quantity = line.quantity;
+            pricingLine.unitPrice = realPrice;
+            pricingLine.gstRatePercent = product.GST_Rate__c;
+            pricingLine.lineSubtotal = realPrice * line.quantity;
+            pricingLine.category = product.Family;
+            pricingLines.add(pricingLine);
         }
 
         if (lineItems.isEmpty()) {
@@ -211,6 +394,23 @@ public without sharing class CheckoutController {
         }
 
         Database.insert(lineItems, AccessLevel.SYSTEM_MODE);
+
+
+        // STEP 4.5: Run the same pricing engine the Payment page's live
+        // preview already ran (OrderPricingService — subtotal -> coupon
+        // discount -> taxable value -> GST -> loyalty redemption -> amount
+        // payable) — recalculated from scratch here, never trusting the
+        // preview's own numbers, same reasoning DiscountService/LoyaltyService
+        // already apply to a client-supplied discount. This IS the amount
+        // that gets charged and stored — see STEP 9 below.
+        OrderPricingService.PricingResult pricing = OrderPricingService.calculate(
+            pricingLines,
+            input.shippingState,
+            input.accountId,
+            input.couponCode,
+            input.pointsToRedeem,
+            input.shippingMethodId
+        );
 
 
         // STEP 5: Close the Opportunity Won. This update (not the earlier insert)
@@ -240,6 +440,16 @@ public without sharing class CheckoutController {
         ];
 
 
+        // STEP 6.5: Decrement tracked stock and log the Sale movement, now
+        // that the real Order exists to attach Stock_Movement__c.Related_Order__c
+        // to. Safe even though later steps can still throw (a Razorpay
+        // amount mismatch at STEP 9, for example) — the whole method runs in
+        // one transaction, so an unhandled exception rolls this back too,
+        // exactly like every other DML above it. Reuses the same locked
+        // productById Map validateStock already checked against.
+        InventoryService.recordSale(productById, stockLines, newOrder.Id);
+
+
         // STEP 7: Set the real shipping address on the Order, and activate it in
         // the same update — activating fires OrderTrigger -> OrderTrackingService,
         // which creates the Order_Tracking__c record.
@@ -250,6 +460,41 @@ public without sharing class CheckoutController {
         orderUpdate.ShippingState = input.shippingState;
         orderUpdate.ShippingPostalCode = input.shippingPostalCode;
         orderUpdate.ShippingCountry = input.shippingCountry;
+        // Billing address — independently captured (§3.4/§3.5); falls back to
+        // the shipping address fields when the shopper didn't provide
+        // separate billing values (e.g. "same as shipping" was checked and
+        // the LWC never sent billing fields at all).
+        orderUpdate.BillingStreet = String.isNotBlank(input.billingStreet) ? input.billingStreet : input.shippingStreet;
+        orderUpdate.BillingCity = String.isNotBlank(input.billingCity) ? input.billingCity : input.shippingCity;
+        orderUpdate.BillingState = String.isNotBlank(input.billingState) ? input.billingState : input.shippingState;
+        orderUpdate.BillingPostalCode = String.isNotBlank(input.billingPostalCode) ? input.billingPostalCode : input.shippingPostalCode;
+        orderUpdate.BillingCountry = String.isNotBlank(input.billingCountry) ? input.billingCountry : input.shippingCountry;
+        // Snapshot of who placed THIS order, set once and never touched again —
+        // unlike Account Name, which STEP 2.5 above keeps renaming to whoever
+        // most recently checked out under that email. List views/reports
+        // should read this field, not Account Name, to see the real customer
+        // per order.
+        orderUpdate.Customer_Name__c = input.customerName;
+        // The logged-in buyer (§5.1) — null for a guest checkout.
+        orderUpdate.Placed_By__c = input.accountId;
+        // The delivery recipient — defaults to the buyer's own name/phone
+        // when the shipping form didn't separately capture a recipient.
+        orderUpdate.Recipient_Name__c = String.isNotBlank(input.recipientName) ? input.recipientName : input.customerName;
+        orderUpdate.Recipient_Phone__c = String.isNotBlank(input.recipientPhone) ? input.recipientPhone : input.customerPhone;
+        // Pricing breakdown from STEP 4.5 — the authoritative, server-
+        // recalculated numbers, never the browser's own preview math.
+        orderUpdate.Discount_Amount__c = pricing.discountAmount;
+        orderUpdate.Taxable_Amount__c = pricing.taxableAmount;
+        orderUpdate.CGST_Amount__c = pricing.cgstAmount;
+        orderUpdate.SGST_Amount__c = pricing.sgstAmount;
+        orderUpdate.IGST_Amount__c = pricing.igstAmount;
+        orderUpdate.Amount_Payable__c = pricing.amountPayable;
+        orderUpdate.Shipping_Cost__c = pricing.shippingCost;
+        orderUpdate.Shipping_Method__c = pricing.shippingMethodLabel;
+        orderUpdate.Points_Redeemed__c = pricing.pointsUsed;
+        if (pricing.couponValid) {
+            orderUpdate.Coupon_Code_Applied__c = pricing.couponCode;
+        }
         // Marks this Order as website-originated so a criteria-based Guest
         // User Sharing Rule (Website_Order__c = true) can grant the Guest
         // User read access to it — Guest User Sharing Rules in this org only
@@ -272,7 +517,26 @@ public without sharing class CheckoutController {
             orderUpdateRetry.ShippingStreet = input.shippingStreet;
             orderUpdateRetry.ShippingCity = input.shippingCity;
             orderUpdateRetry.ShippingPostalCode = input.shippingPostalCode;
+            orderUpdateRetry.BillingStreet = orderUpdate.BillingStreet;
+            orderUpdateRetry.BillingCity = orderUpdate.BillingCity;
+            orderUpdateRetry.BillingPostalCode = orderUpdate.BillingPostalCode;
             orderUpdateRetry.Website_Order__c = true;
+            orderUpdateRetry.Customer_Name__c = input.customerName;
+            orderUpdateRetry.Placed_By__c = input.accountId;
+            orderUpdateRetry.Recipient_Name__c = orderUpdate.Recipient_Name__c;
+            orderUpdateRetry.Recipient_Phone__c = orderUpdate.Recipient_Phone__c;
+            orderUpdateRetry.Discount_Amount__c = pricing.discountAmount;
+            orderUpdateRetry.Taxable_Amount__c = pricing.taxableAmount;
+            orderUpdateRetry.CGST_Amount__c = pricing.cgstAmount;
+            orderUpdateRetry.SGST_Amount__c = pricing.sgstAmount;
+            orderUpdateRetry.IGST_Amount__c = pricing.igstAmount;
+            orderUpdateRetry.Amount_Payable__c = pricing.amountPayable;
+            orderUpdateRetry.Shipping_Cost__c = pricing.shippingCost;
+            orderUpdateRetry.Shipping_Method__c = pricing.shippingMethodLabel;
+            orderUpdateRetry.Points_Redeemed__c = pricing.pointsUsed;
+            if (pricing.couponValid) {
+                orderUpdateRetry.Coupon_Code_Applied__c = pricing.couponCode;
+            }
             Database.update(orderUpdateRetry, AccessLevel.SYSTEM_MODE);
         }
 
@@ -291,36 +555,74 @@ public without sharing class CheckoutController {
         tracking.Tracking_NUmber__c =
             'TRK' + String.valueOf(Datetime.now().getTime());
         tracking.Delivery_Date__c = Date.today().addDays(5);
+        // Direct link to the Account so Order Trackings can show as a
+        // related list on the Account record itself, not just two hops
+        // away through Order.
+        tracking.Account__c = accountId;
 
         Database.update(tracking, AccessLevel.SYSTEM_MODE);
 
 
-        // STEP 9: Record the payment. Amount is the real Order.TotalAmount
-        // (product lines only — shipping/tax have no OrderItem representation
-        // in this schema, so they stay frontend-only display concepts). The
-        // existing PaymentTrigger validates and recalculates payment totals.
+        // STEP 9: Record the payment. Amount is pricing.amountPayable — the
+        // real, GST-inclusive, discount/loyalty-adjusted figure from STEP 4.5
+        // (never the raw Order.TotalAmount, which is only the undiscounted
+        // product-line sum — see Amount_Payable__c's field description and
+        // PaymentService, which now validates/caps against it the same way).
+        // The existing PaymentTrigger validates and recalculates payment totals.
+        //
+        // The amount check for a Razorpay payment happens here, now that
+        // pricing.amountPayable is known — reusing gatewayPaymentDetails
+        // fetched at the very top of this method (a callout can't happen
+        // this late, after all the DML above; see that comment for why).
+        // The status check already happened up there. Never trust the
+        // redirect's own query parameters alone — those can be typed into
+        // the URL bar by anyone. A mismatch throws here, which rolls back
+        // every record this method has created so far (Lead/Account/
+        // Opportunity/Order/Tracking), since an unhandled exception from an
+        // @AuraEnabled method aborts the whole transaction. This is exactly
+        // why techBasketPayment.js's Razorpay Payment Link is created for
+        // this SAME amount (via previewOrderTotals) — a mismatch here would
+        // otherwise reject genuinely-paid orders.
+        Boolean isVerifiedGatewayPayment = false;
+        if (gatewayPaymentDetails != null) {
+            Integer expectedPaise = Integer.valueOf((pricing.amountPayable * 100).setScale(0));
+            if (gatewayPaymentDetails.amountInPaise != expectedPaise) {
+                throw new AuraHandledException('We could not verify your payment. Please try again or contact support.');
+            }
+            isVerifiedGatewayPayment = true;
+        }
+
         Payment__c payment = new Payment__c();
         payment.Order__c = newOrder.Id;
-        payment.Amount__c = newOrder.TotalAmount;
+        // Direct link to the Account so Payments can show as a related list
+        // on the Account record itself, not just two hops away through Order.
+        payment.Account__c = accountId;
+        payment.Amount__c = pricing.amountPayable;
         payment.Payment_Date__c = Date.today();
-        // Starts Pending regardless of payment method — Online is a
-        // self-reported UTR with no gateway to verify it against, and Cash
-        // on Delivery hasn't actually been collected yet either. An admin
-        // manually reviews and changes this to 'Successful' once they've
-        // confirmed the payment (checked the UTR against their own UPI
-        // account, etc.) — see PaymentService.sendPaymentConfirmationEmails,
-        // which fires the customer's "your order is confirmed" email at
-        // that exact moment, not here.
-        payment.Payment_Status__c = 'Pending';
+        // A verified Razorpay payment (above) is genuinely Successful right
+        // now — no admin review needed. Everything else (Cash on Delivery,
+        // or the old self-reported-UTR fallback) still starts Pending, same
+        // as before: nothing has actually been collected yet, or there's
+        // nothing to verify it against. See
+        // PaymentService.sendPaymentConfirmationEmails, which fires the
+        // customer's "your order is confirmed" email the moment a Payment__c
+        // becomes Successful — including right here, on insert.
+        payment.Payment_Status__c = isVerifiedGatewayPayment ? 'Successful' : 'Pending';
         payment.Payment_Method__c = input.paymentMethod;
-        // The UTR the shopper typed in after paying via the QR code is the
-        // real transaction reference for an online payment — there's no
-        // gateway API here to verify it against, so it's trusted at face
-        // value (the admin reconciles it against their own UPI account); a
-        // generated placeholder covers Cash on Delivery, which has no UTR.
-        payment.Transaction_ID__c = String.isNotBlank(input.utrNumber)
-            ? input.utrNumber
-            : 'TXN' + String.valueOf(Datetime.now().getTime());
+        // A verified Razorpay payment id is the real transaction reference.
+        // Otherwise fall back to the self-reported UTR (trusted at face
+        // value, the admin reconciles it manually), or a generated
+        // placeholder for Cash on Delivery, which has neither. Gated on
+        // isVerifiedGatewayPayment (not just input.razorpayPaymentId being
+        // present) for the same reason as the verification check above —
+        // a stale id that wasn't actually re-verified for THIS submission
+        // must never end up recorded as this payment's transaction
+        // reference.
+        payment.Transaction_ID__c = isVerifiedGatewayPayment
+            ? input.razorpayPaymentId
+            : (String.isNotBlank(input.utrNumber)
+                ? input.utrNumber
+                : 'TXN' + String.valueOf(Datetime.now().getTime()));
         // See STEP 1 for why this is forced explicitly rather than left to
         // default under AccessLevel.SYSTEM_MODE.
         payment.OwnerId = UserInfo.getUserId();
@@ -328,11 +630,38 @@ public without sharing class CheckoutController {
         Database.insert(payment, AccessLevel.SYSTEM_MODE);
 
 
-        // STEP 9.5: Best-effort order-confirmation email to the address the
+        // STEP 9.4: Record the coupon redemption (§1.4/§1.7) and loyalty
+        // point spend (§2.5) now that the Order genuinely exists — never
+        // earlier, so a checkout that fails before this point never
+        // permanently consumes either (§1.5). Both are best-effort; a
+        // bookkeeping failure here must never undo an order that's already
+        // been created and paid for.
+        if (pricing.couponValid) {
+            DiscountService.recordRedemption(
+                pricing.couponCodeId,
+                pricing.campaignId,
+                contactId,
+                newOrder.Id,
+                pricing.discountAmount
+            );
+        }
+        if (pricing.pointsUsed > 0) {
+            LoyaltyService.recordRedemption(input.accountId, pricing.pointsUsed, newOrder.Id);
+        }
+
+
+        // STEP 9.5: A first-time guest checkout creates an Account through
+        // Lead conversion rather than LoginCredentialsController.signUp, so
+        // send that customer the same account-created welcome separately.
+        if (isNewCustomerAccount) {
+            sendGuestAccountCreatedEmail(input);
+        }
+
+        // STEP 9.6: Best-effort order-confirmation email to the address the
         // shopper typed into the shipping form. Wrapped so a deliverability
         // problem (org email limits, a Guest-context sending restriction)
         // never rolls back an otherwise-successful order.
-        sendConfirmationEmail(input, newOrder, tracking, emailLines);
+        sendConfirmationEmail(input, newOrder, tracking, emailLines, pricing);
 
 
         // STEP 10: Now that every cross-reference has been resolved (the
@@ -358,8 +687,102 @@ public without sharing class CheckoutController {
         result.trackingNumber = tracking.Tracking_NUmber__c;
         result.deliveryDate = tracking.Delivery_Date__c;
         result.totalAmount = newOrder.TotalAmount;
+        result.discountAmount = pricing.discountAmount;
+        result.taxableAmount = pricing.taxableAmount;
+        result.cgstAmount = pricing.cgstAmount;
+        result.sgstAmount = pricing.sgstAmount;
+        result.igstAmount = pricing.igstAmount;
+        result.loyaltyDiscount = pricing.loyaltyDiscount;
+        result.pointsUsed = pricing.pointsUsed;
+        result.amountPayable = pricing.amountPayable;
+        result.shippingCost = pricing.shippingCost;
+        result.shippingMethodLabel = pricing.shippingMethodLabel;
 
         return result;
+    }
+
+
+    /**
+     * Read-only pricing preview for the cart/Payment page UI — runs the
+     * exact same OrderPricingService engine submitOrder itself uses, so what
+     * the shopper sees (subtotal, coupon discount, GST breakdown, loyalty
+     * discount, amount payable) is always the real, backend-calculated
+     * figure, never a frontend approximation (§1.7/§3.7). Read-only: unlike
+     * submitOrder, this never records a coupon redemption or spends loyalty
+     * points — see DiscountService/LoyaltyService for why applying a coupon
+     * to a cart must not permanently consume it (§1.5).
+     *
+     * Takes the request as a raw JSON string, exactly like submitOrder does
+     * for the same documented reason: a List<InnerClass> @AuraEnabled
+     * parameter was found to unreliably arrive null/empty for Guest/Site
+     * users on this org even with a well-formed payload — see submitOrder's
+     * own header comment. A single String parameter sidesteps that
+     * binding path entirely.
+     */
+    @AuraEnabled
+    public static OrderPricingService.PricingResult previewOrderTotals(String requestJson) {
+
+        PreviewRequest request;
+        try {
+            request = (PreviewRequest) JSON.deserialize(requestJson, PreviewRequest.class);
+        } catch (Exception e) {
+            return new OrderPricingService.PricingResult();
+        }
+
+        if (request == null || request.items == null || request.items.isEmpty()) {
+            return new OrderPricingService.PricingResult();
+        }
+
+        Set<Id> productIds = new Set<Id>();
+        for (CartLineInput line : request.items) {
+            if (line.productId != null) {
+                productIds.add(line.productId);
+            }
+        }
+
+        Map<Id, Product2> productById = new Map<Id, Product2>([
+            SELECT Id, Price__c, GST_Rate__c, Family
+            FROM Product2
+            WHERE Id IN :productIds
+            AND IsActive = true
+            AND Price__c != null
+            WITH SYSTEM_MODE
+        ]);
+
+        List<OrderPricingService.PricingLine> pricingLines = new List<OrderPricingService.PricingLine>();
+        for (CartLineInput line : request.items) {
+            Product2 product = productById.get(line.productId);
+            if (product == null || line.quantity == null || line.quantity <= 0) {
+                continue;
+            }
+            OrderPricingService.PricingLine pricingLine = new OrderPricingService.PricingLine();
+            pricingLine.productId = line.productId;
+            pricingLine.quantity = line.quantity;
+            pricingLine.unitPrice = product.Price__c;
+            pricingLine.gstRatePercent = product.GST_Rate__c;
+            pricingLine.lineSubtotal = product.Price__c * line.quantity;
+            pricingLine.category = product.Family;
+            pricingLines.add(pricingLine);
+        }
+
+        return OrderPricingService.calculate(
+            pricingLines,
+            request.shippingState,
+            request.accountId,
+            request.couponCode,
+            request.pointsToRedeem,
+            request.shippingMethodId
+        );
+    }
+
+    // Deserialization target for previewOrderTotals's JSON payload.
+    public class PreviewRequest {
+        @AuraEnabled public List<CartLineInput> items;
+        @AuraEnabled public String shippingState;
+        @AuraEnabled public Id accountId;
+        @AuraEnabled public String couponCode;
+        @AuraEnabled public Integer pointsToRedeem;
+        @AuraEnabled public String shippingMethodId;
     }
 
 
@@ -370,7 +793,8 @@ public without sharing class CheckoutController {
         CheckoutInput input,
         Order newOrder,
         Order_Tracking__c tracking,
-        List<String> emailLines
+        List<String> emailLines,
+        OrderPricingService.PricingResult pricing
     ) {
         try {
             String body =
@@ -378,11 +802,19 @@ public without sharing class CheckoutController {
                 'Thank you for your order! We have received it and are now confirming your ' +
                 'payment. You will get another email the moment it is confirmed.\n\n' +
                 'Order Number: ' + newOrder.OrderNumber + '\n' +
-                'Order Total: Rs. ' + newOrder.TotalAmount.setScale(2) + '\n' +
                 'Payment Method: ' + input.paymentMethod + '\n' +
                 'Tracking Number: ' + tracking.Tracking_NUmber__c + '\n' +
                 'Estimated Delivery: ' + tracking.Delivery_Date__c.format() + '\n\n' +
                 'Items:\n' + String.join(emailLines, '\n') + '\n\n' +
+                'Subtotal: Rs. ' + pricing.subtotal.setScale(2) + '\n' +
+                (pricing.discountAmount > 0 ? 'Discount (' + pricing.couponCode + '): -Rs. ' + pricing.discountAmount.setScale(2) + '\n' : '') +
+                'Taxable Value: Rs. ' + pricing.taxableAmount.setScale(2) + '\n' +
+                (pricing.igstAmount > 0
+                    ? 'IGST: Rs. ' + pricing.igstAmount.setScale(2) + '\n'
+                    : 'CGST: Rs. ' + pricing.cgstAmount.setScale(2) + '\nSGST: Rs. ' + pricing.sgstAmount.setScale(2) + '\n') +
+                (pricing.shippingCost > 0 ? 'Shipping (' + pricing.shippingMethodLabel + '): Rs. ' + pricing.shippingCost.setScale(2) + '\n' : '') +
+                (pricing.loyaltyDiscount > 0 ? 'Loyalty Points Redeemed (' + pricing.pointsUsed + '): -Rs. ' + pricing.loyaltyDiscount.setScale(2) + '\n' : '') +
+                'Amount Payable: Rs. ' + pricing.amountPayable.setScale(2) + '\n\n' +
                 'Shipping Address:\n' +
                 input.shippingStreet + ', ' + input.shippingCity + ', ' +
                 input.shippingState + ' ' + input.shippingPostalCode + ', ' +
@@ -390,6 +822,7 @@ public without sharing class CheckoutController {
                 '- The LaptopKart Team';
 
             Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+            EmailSenderService.applySupportSender(mail);
             // Sent to whatever email the shopper actually typed into the
             // shipping form — never the admin's own address — with the
             // admin CC'd so they see every order notification as it happens,
@@ -409,34 +842,48 @@ public without sharing class CheckoutController {
             // OrderInvoiceControllerTest, which proves the same query the
             // PDF uses returns full, correct data when run as the Guest
             // User). The email itself must never depend on that PDF working.
-            mail.setHtmlBody(buildConfirmationHtmlBody(input, newOrder, tracking, emailLines));
+            mail.setHtmlBody(buildConfirmationHtmlBody(input, newOrder, tracking, emailLines, pricing));
             mail.setSaveAsActivity(false);
-
-            // Attach the same PDF invoice the "Download Invoice" button on
-            // Order Confirmation generates (OrderInvoice VF page rendered as
-            // PDF) as a best-effort bonus — isolated in its own try/catch,
-            // nested inside the outer one, since the HTML body above already
-            // guarantees the customer has the real invoice information
-            // regardless of whether this succeeds.
-            try {
-                PageReference invoicePage = Page.OrderInvoice;
-                invoicePage.getParameters().put('orderId', newOrder.Id);
-                Blob pdfBlob = Test.isRunningTest()
-                    ? Blob.valueOf('Test invoice PDF')
-                    : invoicePage.getContentAsPDF();
-
-                Messaging.EmailFileAttachment attachment = new Messaging.EmailFileAttachment();
-                attachment.setFileName('LaptopKart_Invoice_' + newOrder.OrderNumber + '.pdf');
-                attachment.setBody(pdfBlob);
-                attachment.setContentType('application/pdf');
-                mail.setFileAttachments(new Messaging.EmailFileAttachment[] { attachment });
-            } catch (Exception e) {
-                System.debug(LoggingLevel.WARN, 'Invoice PDF attachment failed: ' + e.getMessage());
-            }
 
             Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
         } catch (Exception e) {
             System.debug(LoggingLevel.WARN, 'Order confirmation email failed: ' + e.getMessage());
+            EmailSenderService.logEmailFailure('Order Confirmation #' + newOrder.OrderNumber, input.customerEmail, e.getMessage());
+        }
+    }
+
+    /** Welcomes a shopper whose Account was just created by their first guest checkout. */
+    private static void sendGuestAccountCreatedEmail(CheckoutInput input) {
+        try {
+            Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+            EmailSenderService.applySupportSender(mail);
+            mail.setToAddresses(new String[] { input.customerEmail });
+            mail.setSubject('Welcome to LaptopKart, ' + input.customerName + '!');
+            mail.setPlainTextBody(
+                'Hi ' + input.customerName + ',\n\n' +
+                'We created your LaptopKart customer account while processing your first order. ' +
+                'You will receive a separate email with your order details.\n\n' +
+                'Account email: ' + input.customerEmail + '\n' +
+                'Phone: ' + (String.isBlank(input.customerPhone) ? 'Not provided' : input.customerPhone) + '\n\n' +
+                '- The LaptopKart Team'
+            );
+            mail.setHtmlBody(
+                '<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#111111;">' +
+                    '<h2 style="margin:0 0 8px;font-size:20px;color:#1a7a3a;">Welcome to LaptopKart!</h2>' +
+                    '<p style="color:#555555;font-size:14px;line-height:1.5;">Hi ' + input.customerName.escapeHtml4() +
+                    ', we created your customer account while processing your first order. ' +
+                    'A separate email contains your order details.</p>' +
+                    '<table style="width:100%;border-collapse:collapse;margin:16px 0;">' +
+                        '<tr><td style="color:#666;padding:4px 0;">Account email</td><td style="text-align:right;">' + input.customerEmail.escapeHtml4() + '</td></tr>' +
+                        '<tr><td style="color:#666;padding:4px 0;">Phone</td><td style="text-align:right;">' +
+                            (String.isBlank(input.customerPhone) ? 'Not provided' : input.customerPhone.escapeHtml4()) + '</td></tr>' +
+                    '</table><p>- The LaptopKart Team</p></div>'
+            );
+            mail.setSaveAsActivity(false);
+            Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
+        } catch (Exception e) {
+            System.debug(LoggingLevel.WARN, 'Guest account-created email failed: ' + e.getMessage());
+            EmailSenderService.logEmailFailure('Guest Account Creation Welcome', input.customerEmail, e.getMessage());
         }
     }
 
@@ -452,7 +899,8 @@ public without sharing class CheckoutController {
         CheckoutInput input,
         Order newOrder,
         Order_Tracking__c tracking,
-        List<String> emailLines
+        List<String> emailLines,
+        OrderPricingService.PricingResult pricing
     ) {
         String itemRows = '';
         for (String line : emailLines) {
@@ -466,6 +914,31 @@ public without sharing class CheckoutController {
             input.shippingStreet.escapeHtml4() + ', ' + input.shippingCity.escapeHtml4() + ', ' +
             input.shippingState.escapeHtml4() + ' ' + input.shippingPostalCode.escapeHtml4() + ', ' +
             input.shippingCountry.escapeHtml4();
+
+        // Pricing breakdown rows — mirrors the plain-text body in
+        // sendConfirmationEmail so both never disagree. Coupon/GST/loyalty
+        // rows only render when they actually apply to this order.
+        String pricingRows =
+            '<tr><td style="font-size:13px;color:#666666;padding:4px 0;">Subtotal</td>' +
+                '<td style="text-align:right;font-size:13px;">&#8377; ' + pricing.subtotal.setScale(2) + '</td></tr>' +
+            (pricing.discountAmount > 0 ?
+                '<tr><td style="font-size:13px;color:#1a7a3a;padding:4px 0;">Discount (' + pricing.couponCode.escapeHtml4() + ')</td>' +
+                    '<td style="text-align:right;font-size:13px;color:#1a7a3a;">-&#8377; ' + pricing.discountAmount.setScale(2) + '</td></tr>' : '') +
+            '<tr><td style="font-size:13px;color:#666666;padding:4px 0;">Taxable Value</td>' +
+                '<td style="text-align:right;font-size:13px;">&#8377; ' + pricing.taxableAmount.setScale(2) + '</td></tr>' +
+            (pricing.igstAmount > 0 ?
+                '<tr><td style="font-size:13px;color:#666666;padding:4px 0;">IGST</td>' +
+                    '<td style="text-align:right;font-size:13px;">&#8377; ' + pricing.igstAmount.setScale(2) + '</td></tr>' :
+                '<tr><td style="font-size:13px;color:#666666;padding:4px 0;">CGST</td>' +
+                    '<td style="text-align:right;font-size:13px;">&#8377; ' + pricing.cgstAmount.setScale(2) + '</td></tr>' +
+                '<tr><td style="font-size:13px;color:#666666;padding:4px 0;">SGST</td>' +
+                    '<td style="text-align:right;font-size:13px;">&#8377; ' + pricing.sgstAmount.setScale(2) + '</td></tr>') +
+            (pricing.shippingCost > 0 ?
+                '<tr><td style="font-size:13px;color:#666666;padding:4px 0;">Shipping (' + pricing.shippingMethodLabel.escapeHtml4() + ')</td>' +
+                    '<td style="text-align:right;font-size:13px;">&#8377; ' + pricing.shippingCost.setScale(2) + '</td></tr>' : '') +
+            (pricing.loyaltyDiscount > 0 ?
+                '<tr><td style="font-size:13px;color:#1a7a3a;padding:4px 0;">Loyalty Points Redeemed (' + pricing.pointsUsed + ')</td>' +
+                    '<td style="text-align:right;font-size:13px;color:#1a7a3a;">-&#8377; ' + pricing.loyaltyDiscount.setScale(2) + '</td></tr>' : '');
 
         return
             '<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#111111;">' +
@@ -487,9 +960,10 @@ public without sharing class CheckoutController {
                 '<h3 style="font-size:14px;margin:16px 0 8px;border-top:1px solid #eeeeee;padding-top:12px;">Items</h3>' +
                 '<table style="width:100%;border-collapse:collapse;">' + itemRows + '</table>' +
                 '<table style="width:100%;border-collapse:collapse;margin-top:8px;">' +
-                    '<tr><td style="font-size:14px;font-weight:bold;padding-top:8px;">Order Total</td>' +
-                        '<td style="text-align:right;font-size:14px;font-weight:bold;padding-top:8px;">' +
-                        '&#8377; ' + newOrder.TotalAmount.setScale(2) + '</td></tr>' +
+                    pricingRows +
+                    '<tr><td style="font-size:14px;font-weight:bold;padding-top:8px;border-top:1px solid #eeeeee;">Amount Payable</td>' +
+                        '<td style="text-align:right;font-size:14px;font-weight:bold;padding-top:8px;border-top:1px solid #eeeeee;">' +
+                        '&#8377; ' + pricing.amountPayable.setScale(2) + '</td></tr>' +
                 '</table>' +
                 '<h3 style="font-size:14px;margin:20px 0 6px;border-top:1px solid #eeeeee;padding-top:12px;">Shipping Address</h3>' +
                 '<p style="font-size:13px;color:#333333;margin:0;">' + shippingAddress + '</p>' +
@@ -532,6 +1006,58 @@ public without sharing class CheckoutController {
 
         Database.update(
             new Order(Id = orderId, Status = 'Cancelled'),
+            AccessLevel.SYSTEM_MODE
+        );
+    }
+
+
+    // How many days after delivery a return can still be requested. See
+    // Feature Expansion Plan §14: "Your policy should be visible before
+    // purchase" — this is LaptopKart's single, storefront-wide return
+    // window; a more advanced version could vary this per product category.
+    private static final Integer RETURN_WINDOW_DAYS = 7;
+
+    /**
+     * Lets a customer request a return on a Delivered order, within the
+     * return window. Moves Delivery_Status__c to 'Return Requested' (an
+     * admin later moves it to 'Returned' once the product is received back,
+     * which is what actually triggers the refund/stock/loyalty reversal —
+     * see OrderTrackingService.processReturnedOrders). See §14.
+     */
+    @AuraEnabled
+    public static void requestReturn(Id orderId, String reason) {
+        if (orderId == null) {
+            throw new AuraHandledException('No order specified.');
+        }
+        if (String.isBlank(reason)) {
+            throw new AuraHandledException('Please tell us why you\'d like to return this order.');
+        }
+
+        List<Order_Tracking__c> trackings = [
+            SELECT Id, Delivery_Status__c, Delivery_Date__c
+            FROM Order_Tracking__c
+            WHERE Order__c = :orderId
+            WITH SYSTEM_MODE
+            LIMIT 1
+        ];
+        if (trackings.isEmpty()) {
+            throw new AuraHandledException('Order not found.');
+        }
+        Order_Tracking__c tracking = trackings[0];
+
+        if (tracking.Delivery_Status__c != 'Delivered') {
+            throw new AuraHandledException('Only a delivered order can be returned.');
+        }
+        if (tracking.Delivery_Date__c != null && tracking.Delivery_Date__c.addDays(RETURN_WINDOW_DAYS) < Date.today()) {
+            throw new AuraHandledException('The ' + RETURN_WINDOW_DAYS + '-day return window for this order has closed. Please contact support.');
+        }
+
+        Database.update(
+            new Order_Tracking__c(
+                Id = tracking.Id,
+                Delivery_Status__c = 'Return Requested',
+                Return_Reason__c = reason.trim()
+            ),
             AccessLevel.SYSTEM_MODE
         );
     }
@@ -626,6 +1152,10 @@ public without sharing class CheckoutController {
                    Total_Paid__c, Payment_Status__c,
                    ShippingStreet, ShippingCity, ShippingState,
                    ShippingPostalCode, ShippingCountry,
+                   BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry,
+                   Discount_Amount__c, Taxable_Amount__c, CGST_Amount__c, SGST_Amount__c, IGST_Amount__c,
+                   Amount_Payable__c, Shipping_Cost__c, Shipping_Method__c, Coupon_Code_Applied__c, Points_Redeemed__c, Points_Earned__c,
+                   Recipient_Name__c, Recipient_Phone__c,
                    (SELECT Product2Id, Product2.Name, Quantity, UnitPrice, TotalPrice
                     FROM OrderItems)
             FROM Order
@@ -643,6 +1173,19 @@ public without sharing class CheckoutController {
             summary.totalPaid = ord.Total_Paid__c;
             summary.paymentStatus = ord.Payment_Status__c;
             summary.shippingAddressLine = formatAddress(ord);
+            summary.discountAmount = ord.Discount_Amount__c;
+            summary.taxableAmount = ord.Taxable_Amount__c;
+            summary.cgstAmount = ord.CGST_Amount__c;
+            summary.sgstAmount = ord.SGST_Amount__c;
+            summary.igstAmount = ord.IGST_Amount__c;
+            summary.amountPayable = ord.Amount_Payable__c;
+            summary.shippingCost = ord.Shipping_Cost__c;
+            summary.shippingMethodLabel = ord.Shipping_Method__c;
+            summary.couponCodeApplied = ord.Coupon_Code_Applied__c;
+            summary.pointsRedeemed = ord.Points_Redeemed__c == null ? null : ord.Points_Redeemed__c.intValue();
+            summary.pointsEarned = ord.Points_Earned__c == null ? null : ord.Points_Earned__c.intValue();
+            summary.recipientName = ord.Recipient_Name__c;
+            summary.recipientPhone = ord.Recipient_Phone__c;
 
             Order_Tracking__c tracking = trackingByOrder.get(ord.Id);
             if (tracking != null) {
@@ -677,7 +1220,7 @@ public without sharing class CheckoutController {
 
     // Inbox that gets CC'd on every order confirmation email so the admin
     // is notified the moment a real order comes in.
-    private static final String ADMIN_NOTIFICATION_EMAIL = 'lokesh@codleo.org';
+    private static final String ADMIN_NOTIFICATION_EMAIL = EmailSenderService.SUPPORT_EMAIL;
 
     // The main admin user — every record the website's checkout pipeline
     // creates (Lead/Account/Contact/Opportunity/Order/Order_Tracking__c/
@@ -773,14 +1316,83 @@ public without sharing class CheckoutController {
         @AuraEnabled
         public String shippingCountry;
 
+        // Billing address fields — sent separately from shipping (already
+        // collected by techBasketBillingForm, which pre-fills from shipping
+        // when the shopper checks "same as shipping"). Flat fields for the
+        // exact same reason as the shipping ones above.
+        @AuraEnabled
+        public String billingStreet;
+
+        @AuraEnabled
+        public String billingCity;
+
+        @AuraEnabled
+        public String billingState;
+
+        @AuraEnabled
+        public String billingPostalCode;
+
+        @AuraEnabled
+        public String billingCountry;
+
+        // The delivery recipient — who this specific order is actually
+        // shipped to, which may be someone other than the logged-in buyer
+        // (a gift, a family member). See Feature Expansion Plan §5.1.
+        @AuraEnabled
+        public String recipientName;
+
+        @AuraEnabled
+        public String recipientPhone;
+
+        // The logged-in shopper's own Account Id (authService session — see
+        // LoginCredentialsController), i.e. who actually submitted this
+        // order. Stored on Order.Placed_By__c. Null for a guest checkout,
+        // in which case submitOrder falls back to matching by email exactly
+        // as it always has.
+        @AuraEnabled
+        public Id accountId;
+
+        // Coupon code the shopper typed in and applied, if any — revalidated
+        // here from scratch via DiscountService, never trusted at face value
+        // even though the same code was already validated once during the
+        // Payment page's live preview. See Feature Expansion Plan §1.3/§1.7.
+        @AuraEnabled
+        public String couponCode;
+
+        // The delivery method id the shopper picked (Checkout's Shipping
+        // Method step — 'standard' | 'express' | 'overnight'). Only the id
+        // is ever sent; OrderPricingService.calculate looks up the real
+        // price/label server-side, same trust model as couponCode above —
+        // a tampered or blank id safely falls back to Standard/free rather
+        // than letting the client dictate what shipping actually costs.
+        @AuraEnabled
+        public String shippingMethodId;
+
+        // How many loyalty points the shopper asked to redeem — revalidated
+        // and capped from scratch via LoyaltyService, same reasoning as
+        // couponCode above. See §2.5.
+        @AuraEnabled
+        public Integer pointsToRedeem;
+
         @AuraEnabled
         public List<CartLineInput> items;
 
         // The UPI transaction reference (UTR) the shopper typed in after
         // paying via the QR code on the Payment page — set only when
-        // paymentMethod is 'Online'.
+        // paymentMethod is 'Online' and no gateway payment was made (kept
+        // as a fallback path; see razorpayPaymentId below for the real
+        // gateway flow).
         @AuraEnabled
         public String utrNumber;
+
+        // Set only when the shopper paid through Razorpay's hosted payment
+        // page — read from the query params Razorpay's redirect appends
+        // when it sends them back to the Payment page. Not trusted at face
+        // value — submitOrder re-fetches the payment from Razorpay by id
+        // server-side and confirms it actually captured, for the right
+        // amount, before ever marking it Successful.
+        @AuraEnabled
+        public String razorpayPaymentId;
     }
 
 
@@ -812,6 +1424,36 @@ public without sharing class CheckoutController {
 
         @AuraEnabled
         public Decimal totalAmount;
+
+        @AuraEnabled
+        public Decimal discountAmount;
+
+        @AuraEnabled
+        public Decimal taxableAmount;
+
+        @AuraEnabled
+        public Decimal cgstAmount;
+
+        @AuraEnabled
+        public Decimal sgstAmount;
+
+        @AuraEnabled
+        public Decimal igstAmount;
+
+        @AuraEnabled
+        public Decimal loyaltyDiscount;
+
+        @AuraEnabled
+        public Integer pointsUsed;
+
+        @AuraEnabled
+        public Decimal amountPayable;
+
+        @AuraEnabled
+        public Decimal shippingCost;
+
+        @AuraEnabled
+        public String shippingMethodLabel;
     }
 
 
@@ -856,6 +1498,45 @@ public without sharing class CheckoutController {
 
         @AuraEnabled
         public String transactionId;
+
+        @AuraEnabled
+        public Decimal discountAmount;
+
+        @AuraEnabled
+        public Decimal taxableAmount;
+
+        @AuraEnabled
+        public Decimal cgstAmount;
+
+        @AuraEnabled
+        public Decimal sgstAmount;
+
+        @AuraEnabled
+        public Decimal igstAmount;
+
+        @AuraEnabled
+        public Decimal amountPayable;
+
+        @AuraEnabled
+        public Decimal shippingCost;
+
+        @AuraEnabled
+        public String shippingMethodLabel;
+
+        @AuraEnabled
+        public String couponCodeApplied;
+
+        @AuraEnabled
+        public Integer pointsRedeemed;
+
+        @AuraEnabled
+        public Integer pointsEarned;
+
+        @AuraEnabled
+        public String recipientName;
+
+        @AuraEnabled
+        public String recipientPhone;
 
         @AuraEnabled
         public List<OrderLineSummary> items;

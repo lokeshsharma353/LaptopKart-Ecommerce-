@@ -1,0 +1,72 @@
+:host {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    display: block;
+}
+
+.tb-promo-card {
+    background: var(--lk-surface, #FFFFFF);
+    border: 1px solid var(--lk-border, #E2E8F0);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.tb-promo-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+
+.tb-promo-label {
+    font-size: 11px; font-weight: 600; color: var(--lk-text-strong, #334155);
+    text-transform: uppercase; letter-spacing: 0.06em; margin: 0;
+}
+
+.tb-view-coupons-btn {
+    background: var(--lk-surface, #FFFFFF); border: 1px solid var(--lk-primary, #2563EB);
+    color: var(--lk-primary, #2563EB); font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 980px; cursor: pointer; font-family: inherit;
+    transition: background 0.15s;
+}
+.tb-view-coupons-btn:hover { background: var(--lk-primary-tint, #EFF6FF); }
+
+.tb-promo-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+.tb-promo-row input {
+    flex: 1; height: 42px; padding: 0 0.9rem; border-radius: 8px;
+    border: 1px solid var(--lk-border-strong, #CBD5E1); font-size: 14px; font-family: inherit;
+    color: var(--lk-text-heading, #0F172A); background: var(--lk-surface, #FFFFFF);
+}
+.tb-promo-row input:focus { outline: none; border-color: var(--lk-primary, #2563EB); }
+
+.tb-btn-apply {
+    background: var(--lk-surface, #FFFFFF); color: var(--lk-primary, #2563EB);
+    border: 1px solid var(--lk-primary, #2563EB); border-radius: 8px; padding: 0 1.1rem;
+    font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
+    white-space: nowrap; transition: background 0.2s;
+}
+.tb-btn-apply:hover { background: var(--lk-primary-tint, #EFF6FF); }
+.tb-btn-apply:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.tb-applied-chip {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--lk-success-bg, #F0FDF4); border: 1px solid var(--lk-success-border, #BBF7D0); border-radius: 10px;
+    padding: 0.65rem 0.9rem; font-size: 13px; font-weight: 600; color: var(--lk-success-text, #15803D); margin-bottom: 0.5rem;
+    gap: 0.75rem;
+}
+.tb-applied-chip button {
+    background: none; border: none; color: var(--lk-success-text, #15803D);
+    font-size: 12px; font-weight: 700; text-decoration: underline; cursor: pointer; font-family: inherit;
+    flex-shrink: 0;
+}
+
+.tb-available-coupons { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.5rem; }
+.tb-coupon-chip {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
+    background: var(--lk-primary-tint, #EFF6FF); border: 1px dashed var(--lk-primary-tint-border, #BFDBFE);
+    border-radius: 8px; padding: 0.5rem 0.75rem; font-family: inherit; cursor: pointer;
+    text-align: left; width: 100%; transition: background 0.15s, border-color 0.15s;
+}
+.tb-coupon-chip:hover { background: var(--lk-primary-tint-hover, #DBEAFE); border-color: var(--lk-primary, #2563EB); }
+.tb-coupon-chip:disabled { opacity: 0.5; cursor: not-allowed; }
+.tb-coupon-chip-code { font-size: 13px; font-weight: 700; color: var(--lk-primary, #2563EB); letter-spacing: 0.03em; }
+.tb-coupon-chip-desc { font-size: 11px; color: var(--lk-text-muted, #64748B); }
+
+.tb-promo-message { font-size: 12px; margin: 0; }
+.tb-promo-message-error { color: var(--lk-error-text, #B91C1C); }
+.tb-promo-message-success { color: var(--lk-success-text, #15803D); }

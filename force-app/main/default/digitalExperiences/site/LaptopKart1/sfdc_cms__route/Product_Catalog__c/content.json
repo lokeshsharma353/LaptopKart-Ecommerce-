@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Product Catalog",
+  "contentBody" : {
+    "activeViewId" : "Product_Catalog",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-product-catalog",
+    "urlPrefix" : "product-catalog"
+  },
+  "urlName" : "product-catalog"
+}

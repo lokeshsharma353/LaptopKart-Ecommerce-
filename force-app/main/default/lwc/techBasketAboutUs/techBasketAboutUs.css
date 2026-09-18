@@ -1,13 +1,13 @@
 :host {
-    --cyan: #2563EB;
+    --cyan: var(--lk-primary, #2563EB);
     --accent: #0891B2;
-    --gold: #F59E0B;
-    --page: #F8FAFC;
-    --card: #FFFFFF;
-    --border: #E2E8F0;
-    --text-primary: #0F172A;
-    --text-secondary: #475569;
-    --text-muted: #64748B;
+    --gold: var(--lk-warning, #F59E0B);
+    --page: var(--lk-page-bg, #F8FAFC);
+    --card: var(--lk-surface, #FFFFFF);
+    --border: var(--lk-border, #E2E8F0);
+    --text-primary: var(--lk-text-heading, #0F172A);
+    --text-secondary: var(--lk-text-body, #475569);
+    --text-muted: var(--lk-text-muted, #64748B);
     display: block;
     font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
     background: var(--page);
@@ -344,7 +344,7 @@
     gap: 0.5rem;
     padding: 0.6rem 1.25rem;
     border-radius: 980px;
-    border: 1px solid #CBD5E1;
+    border: 1px solid var(--lk-border-strong, #CBD5E1);
     background: transparent;
     color: var(--text-primary);
     font-size: 13px;
@@ -398,7 +398,7 @@
     align-items: center;
     gap: 0.5rem;
     background: var(--cyan);
-    color: #fff;
+    color: var(--lk-white-fixed, #fff);
     border: none;
     border-radius: 980px;
     padding: 0.9rem 2.4rem;
@@ -409,7 +409,7 @@
     transition: background 0.2s, transform 0.2s;
     letter-spacing: -0.01em;
 }
-.tb-btn-cta:hover { background: #1D4ED8; transform: scale(1.03); }
+.tb-btn-cta:hover { background: var(--lk-primary-hover, #1D4ED8); transform: scale(1.03); }
 
 /* ── RESPONSIVE ───────────────────────────────── */
 @media (max-width: 900px) {

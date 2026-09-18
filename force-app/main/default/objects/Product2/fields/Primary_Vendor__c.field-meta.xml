@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Primary_Vendor__c</fullName>
+    <externalId>false</externalId>
+    <label>Primary Vendor</label>
+    <referenceTo>Vendor__c</referenceTo>
+    <relationshipLabel>Products</relationshipLabel>
+    <relationshipName>Products</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>Who to reorder this product from — a single-vendor model, matching LaptopKart's catalog where each product has one main supplier. If a product genuinely needs more than one vendor at different costs, replace this with a Vendor_Product__c junction object instead (see the Inventory & Vendor System design).</description>
+</CustomField>

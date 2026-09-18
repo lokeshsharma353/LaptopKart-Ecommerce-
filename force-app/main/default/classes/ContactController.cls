@@ -6,7 +6,7 @@ public without sharing class ContactController {
     // The site's admin inbox — same address CheckoutController resolves via
     // DEFAULT_OWNER_USERNAME, hardcoded directly here since this doesn't need
     // to look up an actual User record (Salesforce login), just an inbox.
-    private static final String ADMIN_EMAIL = 'lokesh@codleo.org';
+    private static final String ADMIN_EMAIL = EmailSenderService.SUPPORT_EMAIL;
 
     @AuraEnabled
     public static void submitMessage(String name, String email, String phone, String subject, String message) {
@@ -46,6 +46,7 @@ public without sharing class ContactController {
         // message was actually saved above.
         try {
             Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+            EmailSenderService.applySupportSender(mail);
             mail.setToAddresses(new String[] { ADMIN_EMAIL });
             // Lets the admin just hit Reply in their email client to answer
             // the customer directly, without needing to copy the address.

@@ -11,25 +11,25 @@
 
 .tb-method-btn {
     width: 100%;
-    background: #FFFFFF;
-    border: 1px solid #E2E8F0;
+    background: var(--lk-surface, #FFFFFF);
+    border: 1px solid var(--lk-border, #E2E8F0);
     border-radius: 10px;
     padding: 1rem 1.25rem;
     font-size: 14px;
     font-weight: 600;
-    color: #0F172A;
+    color: var(--lk-text-heading, #0F172A);
     cursor: pointer;
     font-family: inherit;
     text-align: left;
     transition: border-color 0.2s, background 0.2s;
 }
 
-.tb-method-btn:hover { border-color: #93C5FD; }
+.tb-method-btn:hover { border-color: var(--lk-primary-tint-border, #93C5FD); }
 
 .tb-method-btn-active {
-    border-color: #2563EB;
-    background: #EFF6FF;
-    color: #1D4ED8;
+    border-color: var(--lk-primary, #2563EB);
+    background: var(--lk-primary-tint, #EFF6FF);
+    color: var(--lk-primary-hover, #1D4ED8);
 }
 
 @media (max-width: 480px) {
