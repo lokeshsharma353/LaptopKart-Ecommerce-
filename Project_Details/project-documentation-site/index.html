@@ -5,7 +5,318 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LaptopKart — Project Architecture Reference</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="style.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #F6F8FC;
+  --surface: #FFFFFF;
+  --surface-2: #EEF2F9;
+  --surface-3: #E4EAF5;
+  --border: #DDE4F0;
+  --ink: #0F172A;
+  --ink-muted: #475569;
+  --ink-subtle: #8593A9;
+  --accent: #2563EB;
+  --accent-ink: #1D4ED8;
+  --accent-soft: #E9F0FF;
+  --amber: #B45309;
+  --amber-soft: #FEF3E0;
+  --danger: #DC2626;
+  --danger-soft: #FDEDEE;
+  --success: #15803D;
+  --success-soft: #E9F7EF;
+  --purple: #7C3AED;
+  --purple-soft: #F1E9FE;
+  --teal: #0F766E;
+  --teal-soft: #E4F5F3;
+  --dead: #94A3B8;
+  --dead-soft: #F1F4F9;
+  --shadow: 0 1px 2px rgba(15,23,42,0.04), 0 10px 24px -12px rgba(15,23,42,0.18);
+  --shadow-lg: 0 4px 8px rgba(15,23,42,0.05), 0 24px 48px -18px rgba(15,23,42,0.24);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0A101E; --surface: #121A2C; --surface-2: #172137; --surface-3: #1D2A44; --border: #263252;
+    --ink: #EEF2FA; --ink-muted: #AAB6CC; --ink-subtle: #6E7C97;
+    --accent: #5B8DF6; --accent-ink: #8AB0FF; --accent-soft: #182543;
+    --amber: #E0A550; --amber-soft: #2A2413;
+    --danger: #F0787D; --danger-soft: #2A1618;
+    --success: #5FC98A; --success-soft: #142A1D;
+    --purple: #B392F5; --purple-soft: #241C3A;
+    --teal: #5FC9BE; --teal-soft: #10262A;
+    --dead: #64748B; --dead-soft: #17202F;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 10px 24px -12px rgba(0,0,0,0.5);
+    --shadow-lg: 0 4px 8px rgba(0,0,0,0.35), 0 24px 48px -18px rgba(0,0,0,0.6);
+  }
+}
+
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  margin: 0; padding: 0;
+  font-size: 15px;
+}
+a { color: var(--accent-ink); }
+code, .mono { font-family: 'JetBrains Mono', monospace; }
+
+/* ---------- App shell ---------- */
+.app {
+  display: grid;
+  grid-template-columns: 272px 1fr;
+  min-height: 100vh;
+}
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; }
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+  padding: 22px 16px 24px;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+@media (max-width: 860px) {
+  .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 16px; }
+}
+.brand { display: flex; align-items: center; gap: 10px; padding: 2px 8px 18px; }
+.brand-mark {
+  width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--purple));
+  display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Sora', sans-serif;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 14.5px; color: var(--ink); }
+.brand-sub { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--ink-subtle); letter-spacing: 0.03em; }
+
+.search-box { margin: 0 6px 16px; position: relative; }
+.search-box input {
+  width: 100%; padding: 9px 12px 9px 32px; border-radius: 9px; border: 1px solid var(--border);
+  background: var(--surface-2); color: var(--ink); font-family: 'Source Sans 3', sans-serif; font-size: 13px;
+}
+.search-box input::placeholder { color: var(--ink-subtle); }
+.search-box input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.search-box svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--ink-subtle); }
+
+nav.nav-groups { display: flex; flex-direction: column; gap: 18px; }
+.nav-group-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.09em;
+  text-transform: uppercase; color: var(--ink-subtle); padding: 0 10px; margin-bottom: 6px;
+}
+.nav-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
+.nav-btn {
+  display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; border: none; background: transparent;
+  color: var(--ink-muted); font-family: 'Source Sans 3', sans-serif; font-size: 13.5px; font-weight: 500;
+  padding: 8px 10px; border-radius: 8px; cursor: pointer;
+}
+.nav-btn:hover { background: var(--surface-2); color: var(--ink); }
+.nav-btn.active { background: var(--accent-soft); color: var(--accent-ink); font-weight: 600; }
+.nav-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.55; flex-shrink: 0; }
+
+@media (max-width: 860px) {
+  nav.nav-groups { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; gap: 6px; padding-bottom: 4px; }
+  .nav-group-label { display: none; }
+  .nav-list { flex-direction: row; gap: 6px; }
+  .nav-btn { white-space: nowrap; border: 1px solid var(--border); }
+  .search-box { display: none; }
+}
+
+/* ---------- Main content ---------- */
+main { min-width: 0; padding: 40px clamp(16px, 4vw, 56px) 100px; max-width: 1180px; }
+section.page { display: none; }
+section.page.active { display: block; animation: fade .25s ease; }
+@keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+.page-eyebrow {
+  font-family: 'JetBrains Mono', monospace; font-size: 11.5px; font-weight: 600;
+  letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent-ink); margin: 0 0 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.page-eyebrow .count-badge {
+  background: var(--surface-3); color: var(--ink-muted); font-size: 10.5px; padding: 1px 8px; border-radius: 999px;
+}
+h1.page-title {
+  font-family: 'Sora', sans-serif; font-weight: 700; font-size: clamp(24px, 3.4vw, 32px);
+  letter-spacing: -0.02em; line-height: 1.15; margin: 0 0 12px; text-wrap: balance; color: var(--ink);
+}
+.page-lede { font-size: 15px; line-height: 1.65; color: var(--ink-muted); max-width: 74ch; margin: 0 0 30px; }
+.page-lede code { font-family: 'JetBrains Mono', monospace; font-size: 0.9em; background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: 4px; padding: 0.05em 0.4em; color: var(--accent-ink); }
+
+h2.section-h { font-family: 'Sora', sans-serif; font-size: 19px; font-weight: 700; letter-spacing: -0.01em;
+  margin: 40px 0 6px; color: var(--ink); }
+h2.section-h:first-of-type { margin-top: 0; }
+.section-sub { font-size: 13.5px; color: var(--ink-muted); margin: 0 0 18px; max-width: 72ch; line-height: 1.55; }
+
+/* ---------- Diagram frame ---------- */
+figure.diagram { margin: 18px 0 8px; }
+.diagram-frame {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 24px clamp(8px, 3vw, 26px); box-shadow: var(--shadow); overflow-x: auto;
+}
+.diagram-frame svg { display: block; width: 100%; height: auto; min-width: 640px; }
+figcaption.diagram-caption { font-size: 12.5px; color: var(--ink-subtle); margin-top: 12px; line-height: 1.55; max-width: 80ch; }
+
+.node-label { font-family: 'Sora', sans-serif; font-weight: 600; }
+.node-sub { font-family: 'Source Sans 3', sans-serif; font-weight: 400; }
+.node-mono { font-family: 'JetBrains Mono', monospace; }
+.edge-label { font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+.lane-label { font-family: 'JetBrains Mono', monospace; font-weight: 600; letter-spacing: 0.07em; }
+
+/* ---------- Legend ---------- */
+.legend { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 14px 2px 0; }
+.legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--ink-muted); }
+.legend-swatch { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+
+/* ---------- Callouts ---------- */
+.callout { border-radius: 12px; padding: 16px 18px; font-size: 13.5px; line-height: 1.6; margin: 16px 0; border: 1px solid var(--border); }
+.callout strong { color: var(--ink); }
+.callout.info { background: var(--accent-soft); color: var(--ink-muted); }
+.callout.warn { background: var(--amber-soft); color: var(--ink-muted); }
+.callout.dead { background: var(--dead-soft); color: var(--ink-muted); border-style: dashed; }
+
+/* ---------- Cards / grid ---------- */
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin: 16px 0; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px;
+}
+.stat-num { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 26px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.stat-label { font-size: 12px; color: var(--ink-subtle); margin-top: 2px; }
+
+/* ---------- Reference cards (objects / apex / lwc) ---------- */
+.ref-toolbar { display: flex; gap: 10px; align-items: center; margin: 4px 0 20px; flex-wrap: wrap; }
+.filter-input {
+  flex: 1; min-width: 200px; padding: 9px 14px; border-radius: 9px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--ink); font-size: 13.5px;
+}
+.filter-input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.filter-count { font-size: 12px; color: var(--ink-subtle); white-space: nowrap; }
+
+.ref-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  margin-bottom: 14px; overflow: hidden;
+}
+.ref-card-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 18px;
+  cursor: pointer; user-select: none;
+}
+.ref-card-head:hover { background: var(--surface-2); }
+.ref-card-title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0; }
+.ref-name { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 15px; color: var(--ink); }
+.ref-label { font-size: 12.5px; color: var(--ink-subtle); }
+.ref-tags { display: flex; gap: 6px; flex-shrink: 0; }
+.tag {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+  text-transform: uppercase; padding: 2px 8px; border-radius: 999px; white-space: nowrap;
+}
+.tag-object { background: var(--success-soft); color: var(--success); }
+.tag-apex { background: var(--accent-soft); color: var(--accent-ink); }
+.tag-trigger { background: var(--amber-soft); color: var(--amber); }
+.tag-lwc { background: var(--purple-soft); color: var(--purple); }
+.tag-service { background: var(--teal-soft); color: var(--teal); }
+.tag-dead { background: var(--dead-soft); color: var(--dead); }
+.tag-live { background: var(--success-soft); color: var(--success); }
+
+.chevron { color: var(--ink-subtle); flex-shrink: 0; transition: transform .15s ease; }
+.ref-card.open .chevron { transform: rotate(90deg); }
+.ref-card-body { display: none; padding: 0 18px 18px; }
+.ref-card.open .ref-card-body { display: block; }
+.ref-desc { font-size: 13.5px; line-height: 1.6; color: var(--ink-muted); margin: 0 0 14px; max-width: 76ch; }
+.ref-desc code { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; color: var(--accent-ink); }
+
+.kv-list { display: grid; grid-template-columns: max-content 1fr; gap: 5px 14px; font-size: 12.5px; margin-bottom: 14px; }
+.kv-list dt { color: var(--ink-subtle); font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; align-self: start; padding-top: 1px;}
+.kv-list dd { margin: 0; color: var(--ink-muted); }
+.kv-list dd code { font-family: 'JetBrains Mono', monospace; color: var(--accent-ink); font-size: 0.95em; }
+
+.table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+table.schema { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 520px; }
+table.schema th {
+  text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--ink-subtle); font-weight: 600; padding: 9px 10px; border-bottom: 1px solid var(--border);
+  background: var(--surface-2); position: sticky; top: 0;
+}
+table.schema td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--ink-muted); }
+table.schema tr:last-child td { border-bottom: none; }
+table.schema td.fname { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent-ink); white-space: nowrap; }
+table.schema td.ftype { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink); white-space: nowrap; }
+table.schema td.fnotes { min-width: 220px; }
+
+ul.method-list, ul.plain-list { margin: 0 0 14px; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+ul.method-list li, ul.plain-list li {
+  font-size: 12.5px; color: var(--ink-muted); padding: 8px 11px; background: var(--surface-2); border-radius: 7px;
+  font-family: 'JetBrains Mono', monospace; line-height: 1.5;
+}
+ul.method-list li .m-desc, ul.plain-list li .m-desc { font-family: 'Source Sans 3', sans-serif; color: var(--ink-subtle); display: block; margin-top: 2px; font-size: 12px;}
+.calls-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.chip {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 3px 9px; border-radius: 999px;
+  background: var(--surface-3); color: var(--ink-muted); border: 1px solid var(--border);
+}
+
+/* ---------- Build/step list ---------- */
+ol.build-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; counter-reset: step; }
+ol.build-steps li {
+  counter-increment: step; display: grid; grid-template-columns: 40px 1fr; gap: 16px;
+  padding: 16px 18px; background: var(--surface); border: 1px solid var(--border); align-items: start;
+}
+ol.build-steps li:first-child { border-radius: 12px 12px 0 0; }
+ol.build-steps li:last-child { border-radius: 0 0 12px 12px; }
+ol.build-steps li + li { border-top: none; }
+ol.build-steps li::before {
+  content: counter(step); font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 13px;
+  color: var(--accent-ink); background: var(--accent-soft); border-radius: 7px; width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+}
+.step-title { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 14.5px; color: var(--ink); margin: 0 0 3px; }
+.step-body { font-size: 13px; line-height: 1.55; color: var(--ink-muted); margin: 0; }
+.step-body code { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; color: var(--accent-ink); }
+
+/* ---------- Issues list ---------- */
+.issue-card { border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; background: var(--surface); }
+.issue-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+.issue-title { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 14.5px; color: var(--ink); }
+.issue-body { font-size: 13px; line-height: 1.6; color: var(--ink-muted); }
+.tag-severity-bug { background: var(--danger-soft); color: var(--danger); }
+.tag-severity-design { background: var(--accent-soft); color: var(--accent-ink); }
+.tag-severity-limitation { background: var(--amber-soft); color: var(--amber); }
+.tag-severity-resolved { background: var(--success-soft); color: var(--success); }
+
+footer.page-footer {
+  margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--ink-subtle);
+}
+
+@media (max-width: 640px) {
+  main { padding: 24px 16px 80px; }
+  ol.build-steps li { grid-template-columns: 32px 1fr; padding: 14px; }
+  .kv-list { grid-template-columns: 1fr; }
+}
+
+/* ---------- SVG diagram node categories ---------- */
+.diagram-frame svg text { fill: currentColor; }
+.n-box { stroke-width: 1.4; }
+.n-shopper { fill: var(--surface-3); stroke: var(--ink-subtle); color: var(--ink); }
+.n-lwc { fill: var(--purple-soft); stroke: var(--purple); color: var(--purple); }
+.n-apex { fill: var(--accent-soft); stroke: var(--accent); color: var(--accent-ink); }
+.n-object { fill: var(--success-soft); stroke: var(--success); color: var(--success); }
+.n-trigger { fill: var(--amber-soft); stroke: var(--amber); color: var(--amber); }
+.n-external { fill: var(--danger-soft); stroke: var(--danger); color: var(--danger); }
+.n-teal { fill: var(--teal-soft); stroke: var(--teal); color: var(--teal); }
+.n-dead { fill: var(--dead-soft); stroke: var(--dead); color: var(--dead); stroke-dasharray: 4 3; }
+.n-ink { color: var(--ink); }
+.n-muted { color: var(--ink-muted); }
+.n-subtle { color: var(--ink-subtle); }
+.e-line { stroke: var(--ink-subtle); stroke-width: 1.6; fill: none; }
+.e-dashed { stroke: var(--ink-subtle); stroke-width: 1.4; fill: none; stroke-dasharray: 5 4; }
+.e-accent { stroke: var(--accent); stroke-width: 1.8; fill: none; }
+.lane-rule { stroke: var(--border); stroke-width: 1; }
+.lane-fill { fill: var(--surface-2); }
+</style>
 </head>
 <body>
 <div class="app">
@@ -42,6 +353,8 @@
           <li><button class="nav-btn" data-target="admin-flow"><span class="nav-dot"></span>Admin &amp; Backend Flow</button></li>
           <li><button class="nav-btn" data-target="payment-gateway"><span class="nav-dot"></span>Razorpay Payment Gateway</button></li>
           <li><button class="nav-btn" data-target="auth-systems"><span class="nav-dot"></span>Two Authentication Systems</button></li>
+          <li><button class="nav-btn" data-target="pricing-engine"><span class="nav-dot"></span>Pricing, Discount &amp; Loyalty Engine</button></li>
+          <li><button class="nav-btn" data-target="admin-dashboard"><span class="nav-dot"></span>Admin Dashboard</button></li>
         </ul>
       </div>
       <div>
@@ -50,7 +363,9 @@
           <li><button class="nav-btn" data-target="objects"><span class="nav-dot"></span>Object &amp; Field Reference</button></li>
           <li><button class="nav-btn" data-target="apex"><span class="nav-dot"></span>Apex Class Reference</button></li>
           <li><button class="nav-btn" data-target="lwc-ref"><span class="nav-dot"></span>LWC &amp; Service Reference</button></li>
+          <li><button class="nav-btn" data-target="permissions"><span class="nav-dot"></span>Permissions &amp; Sharing Model</button></li>
           <li><button class="nav-btn" data-target="issues"><span class="nav-dot"></span>Known Issues &amp; Design Notes</button></li>
+          <li><button class="nav-btn" data-target="changelog"><span class="nav-dot"></span>Changelog &amp; Deployment</button></li>
         </ul>
       </div>
     </nav>
@@ -81,7 +396,7 @@
 
           <rect x="300" y="60" width="200" height="70" rx="10" class="n-box n-lwc"/>
           <text x="400" y="88" text-anchor="middle" class="node-label" font-size="13">LWC Layer</text>
-          <text x="400" y="106" text-anchor="middle" class="node-sub n-muted" font-size="11">33 components + 14 services</text>
+          <text x="400" y="106" text-anchor="middle" class="node-sub n-muted" font-size="11">33 components + 15 services</text>
 
           <rect x="560" y="60" width="200" height="70" rx="10" class="n-box n-apex"/>
           <text x="660" y="88" text-anchor="middle" class="node-label" font-size="13">Apex Layer</text>
@@ -89,7 +404,7 @@
 
           <rect x="860" y="20" width="220" height="60" rx="10" class="n-box n-object"/>
           <text x="970" y="45" text-anchor="middle" class="node-label" font-size="12.5">Salesforce Objects</text>
-          <text x="970" y="62" text-anchor="middle" class="node-sub n-muted" font-size="10.5">7 custom + standard</text>
+          <text x="970" y="62" text-anchor="middle" class="node-sub n-muted" font-size="10.5">12 custom + standard</text>
 
           <rect x="860" y="110" width="220" height="60" rx="10" class="n-box n-external"/>
           <text x="970" y="135" text-anchor="middle" class="node-label" font-size="12.5">External Services</text>
@@ -128,7 +443,7 @@
 
   <!-- ============================================================ SITE MAP ============================================================ -->
   <section class="page" id="site-map">
-    <p class="page-eyebrow">Diagram 1 of 7</p>
+    <p class="page-eyebrow">Diagram 1 of 9</p>
     <h1 class="page-title">Site Navigation Map</h1>
     <p class="page-lede">Every page in the LWR site is reached through a single source of truth &#8212; <code>navigationService.js</code> &#8212; which wraps Experience Builder's page references. This is the full graph of where a shopper can go from where.</p>
 
@@ -213,7 +528,7 @@
 
   <!-- ============================================================ COMPONENT ARCHITECTURE ============================================================ -->
   <section class="page" id="component-arch">
-    <p class="page-eyebrow">Diagram 2 of 7</p>
+    <p class="page-eyebrow">Diagram 2 of 9</p>
     <h1 class="page-title">LWC Component Architecture</h1>
     <p class="page-lede">Eight top-level page components, each composed from smaller child components. The full per-component breakdown (including every service-module dependency) is in the <a href="#" data-jump="lwc-ref">LWC &amp; Service Reference</a> table below.</p>
 
@@ -293,7 +608,7 @@
 
   <!-- ============================================================ CHECKOUT FLOW ============================================================ -->
   <section class="page" id="checkout-flow">
-    <p class="page-eyebrow">Diagram 3 of 7</p>
+    <p class="page-eyebrow">Diagram 3 of 9</p>
     <h1 class="page-title">Checkout &amp; Order Pipeline</h1>
     <p class="page-lede">Every one of the 14 sequential steps inside <code>CheckoutController.submitOrder</code> &#8212; the single Apex method that turns a cart into a Lead, an Account/Contact/Opportunity, an Order, a tracking record and a payment, in one transaction.</p>
 
@@ -392,7 +707,7 @@
 
   <!-- ============================================================ TRIGGER AUTOMATION ============================================================ -->
   <section class="page" id="trigger-flow">
-    <p class="page-eyebrow">Diagram 4 of 7</p>
+    <p class="page-eyebrow">Diagram 4 of 9</p>
     <h1 class="page-title">Trigger Automation</h1>
     <p class="page-lede">Three independent automation chains, each kicked off by a different object's <code>after update</code>, plus two dead triggers whose bodies are fully commented out.</p>
 
@@ -467,7 +782,7 @@
 
   <!-- ============================================================ ADMIN & BACKEND FLOW ============================================================ -->
   <section class="page" id="admin-flow">
-    <p class="page-eyebrow">Diagram 5 of 7</p>
+    <p class="page-eyebrow">Diagram 5 of 9</p>
     <h1 class="page-title">Admin &amp; Backend Flow</h1>
     <p class="page-lede">Guest Users can't own records long-term, so every record created during checkout is reassigned to a real admin user at the end of the pipeline (Step 10). This is what the admin actually sees and can act on afterward.</p>
 
@@ -541,7 +856,7 @@
 
   <!-- ============================================================ PAYMENT GATEWAY ============================================================ -->
   <section class="page" id="payment-gateway">
-    <p class="page-eyebrow">Diagram 6 of 7</p>
+    <p class="page-eyebrow">Diagram 6 of 9</p>
     <h1 class="page-title">Razorpay Payment Gateway</h1>
     <p class="page-lede">A full-page redirect flow, not an embedded widget &#8212; this org's Lightning Web Security blocks the dynamic <code>&lt;script&gt;</code> injection Razorpay's Checkout.js needs, so the gateway's own JS never loads inside the Salesforce page at all.</p>
 
@@ -590,13 +905,13 @@
           <text x="655" y="1010" text-anchor="middle" class="node-sub n-muted" font-size="10.5">If not verified: the exception rolls back the entire transaction and the shopper sees "We could not verify your payment."</text>
         </svg>
       </div>
-      <figcaption class="diagram-caption">Solid arrows = calls, dashed arrows = returns/redirects. The amount check compares against <code>Order.TotalAmount</code>, which is the <strong>product subtotal only</strong> &mdash; see Known Issues for why shipping is charged nowhere in this flow.</figcaption>
+      <figcaption class="diagram-caption">Solid arrows = calls, dashed arrows = returns/redirects. The amount check compares against <code>OrderPricingService.PricingResult.amountPayable</code> &mdash; the full GST-inclusive, discount/loyalty-adjusted, <strong>shipping-inclusive</strong> figure from the <a href="#" data-jump="pricing-engine">Pricing Engine</a>, not the raw product subtotal. See Known Issues for the fix history.</figcaption>
     </figure>
   </section>
 
   <!-- ============================================================ AUTH SYSTEMS ============================================================ -->
   <section class="page" id="auth-systems">
-    <p class="page-eyebrow">Diagram 7 of 7</p>
+    <p class="page-eyebrow">Diagram 7 of 9</p>
     <h1 class="page-title">Two Authentication Systems</h1>
     <p class="page-lede">A common point of confusion in this codebase: two completely independent login systems coexist, and a shopper can have an account in one without ever touching the other.</p>
 
@@ -641,11 +956,170 @@
     </figure>
   </section>
 
+  <!-- ============================================================ PRICING ENGINE ============================================================ -->
+  <section class="page" id="pricing-engine">
+    <p class="page-eyebrow">Diagram 8 of 9</p>
+    <h1 class="page-title">Pricing, Discount &amp; Loyalty Engine</h1>
+    <p class="page-lede">The single, authoritative pricing calculation — <code>OrderPricingService.calculate()</code> — used identically by the live cart/checkout preview (<code>CheckoutController.previewOrderTotals</code>) and the real charge (<code>CheckoutController.submitOrder</code>). Nothing about a coupon, a loyalty redemption, or a shipping cost is ever trusted from the browser: every one of those is re-derived from Salesforce data on every single call, using only an id/code the client supplies.</p>
+
+    <figure class="diagram">
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1200 620" role="img" aria-label="Seven-step pricing calculation: subtotal, coupon discount via DiscountService, taxable value, GST split by CGST plus SGST or IGST depending on shipping state, loyalty point redemption via LoyaltyService capped at 20 percent of taxable value, shipping cost looked up server-side from the chosen method id, and the final amount payable.">
+          <defs><marker id="pe-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker></defs>
+
+          <rect x="40" y="20" width="1120" height="56" rx="9" class="n-box n-shopper"/>
+          <text x="60" y="53" class="node-label" font-size="12.5">INPUT — cart lines (productId, qty), shippingState, accountId, couponCode, pointsRequested, shippingMethodId</text>
+
+          <rect x="40" y="100" width="1120" height="56" rx="9" class="n-box n-apex"/>
+          <text x="60" y="125" class="node-label" font-size="12.5">STEP 1 — Subtotal = &#931; (unit price &times; qty), priced fresh from Product2.Price__c, never the browser</text>
+          <text x="60" y="142" class="node-sub n-muted" font-size="10.5">also builds subtotalByCategory (Product2.Family) for category-restricted coupons</text>
+
+          <rect x="40" y="180" width="700" height="56" rx="9" class="n-box n-apex"/>
+          <text x="60" y="205" class="node-label" font-size="12.5">STEP 2 — Discount = DiscountService.validate(code, accountId, subtotal, byCategory)</text>
+          <text x="60" y="222" class="node-sub n-muted" font-size="10.5">checks: exists, active, in date window, min order value, per-customer + total use caps, category match</text>
+          <rect x="760" y="180" width="400" height="56" rx="9" class="n-box n-object"/>
+          <text x="960" y="203" text-anchor="middle" class="node-label" font-size="11.5">Coupon_Code__c &#8594; Campaign</text>
+          <text x="960" y="219" text-anchor="middle" class="node-sub n-muted" font-size="10">Percentage or Flat Amount, capped by Maximum_Discount_Amount__c</text>
+          <line x1="740" y1="208" x2="756" y2="208" class="e-line" marker-end="url(#pe-a)"/>
+
+          <rect x="40" y="260" width="1120" height="56" rx="9" class="n-box n-apex"/>
+          <text x="60" y="293" class="node-label" font-size="12.5">STEP 3 — Taxable Value = Subtotal &minus; Discount (never below 0)</text>
+
+          <rect x="40" y="340" width="700" height="66" rx="9" class="n-box n-apex"/>
+          <text x="60" y="363" class="node-label" font-size="12.5">STEP 4 — GST per line at Product2.GST_Rate__c (default 18%)</text>
+          <text x="60" y="380" class="node-sub n-muted" font-size="10.5">shippingState.equalsIgnoreCase('Delhi') &#8594; CGST + SGST split;</text>
+          <text x="60" y="396" class="node-sub n-muted" font-size="10.5">any other state &#8594; IGST, same total either way</text>
+          <rect x="760" y="340" width="400" height="66" rx="9" class="n-box n-external"/>
+          <text x="960" y="365" text-anchor="middle" class="node-label" font-size="11.5">Shipping cost &mdash; looked up</text>
+          <text x="960" y="381" text-anchor="middle" class="node-label" font-size="11.5">server-side from shippingMethodId</text>
+          <text x="960" y="397" text-anchor="middle" class="node-sub n-muted" font-size="10">Standard &#8377;0 / Express &#8377;500 / Overnight &#8377;1500 &mdash; client sends only the id</text>
+
+          <rect x="40" y="426" width="700" height="56" rx="9" class="n-box n-apex"/>
+          <text x="60" y="451" class="node-label" font-size="12.5">STEP 5 — Loyalty = LoyaltyService.previewRedemption(accountId, pointsRequested, taxableValue)</text>
+          <text x="60" y="468" class="node-sub n-muted" font-size="10.5">capped at min(requested, balance, 20% of taxable value) &mdash; 1 point = &#8377;1</text>
+
+          <rect x="40" y="506" width="1120" height="56" rx="9" class="n-box n-trigger"/>
+          <text x="60" y="539" class="node-label" font-size="13">STEP 6 — Amount Payable = Taxable Value + GST &minus; Loyalty Discount + Shipping Cost</text>
+
+          <rect x="40" y="586" width="1120" height="56" rx="9" class="n-box n-shopper"/>
+          <text x="60" y="611" class="node-label" font-size="12.5">Returned to the LWC for display (Payment page, Cart coupon widget, Checkout sidebar) — the exact figure charged via Razorpay / stored on Order</text>
+          <text x="60" y="628" class="node-sub n-muted" font-size="10.5">submitOrder recalculates this same pipeline from scratch and throws if a verified gateway payment doesn't match it in paise</text>
+
+          <line x1="600" y1="76" x2="600" y2="96" class="e-accent" marker-end="url(#pe-a)"/>
+          <line x1="600" y1="156" x2="600" y2="176" class="e-accent" marker-end="url(#pe-a)"/>
+          <line x1="600" y1="236" x2="600" y2="256" class="e-accent" marker-end="url(#pe-a)"/>
+          <line x1="600" y1="316" x2="600" y2="336" class="e-accent" marker-end="url(#pe-a)"/>
+          <line x1="600" y1="402" x2="600" y2="422" class="e-accent" marker-end="url(#pe-a)"/>
+          <line x1="600" y1="482" x2="600" y2="502" class="e-accent" marker-end="url(#pe-a)"/>
+          <line x1="600" y1="562" x2="600" y2="582" class="e-accent" marker-end="url(#pe-a)"/>
+        </svg>
+      </div>
+      <figcaption class="diagram-caption">Shipping cost was added to this pipeline in a later pass (see <a href="#" data-jump="changelog">Changelog</a>) &mdash; before that fix, Step 6 omitted the shipping term entirely, so every order was charged &#8377;0 shipping regardless of the delivery method chosen.</figcaption>
+    </figure>
+
+    <h2 class="section-h">Worked example</h2>
+    <p class="section-sub">A &#8377;25,000 laptop (default 18% GST, no category-restricted coupon), Delhi delivery address (intrastate), Overnight shipping selected.</p>
+    <div class="table-wrap">
+      <table class="schema">
+        <thead><tr><th>Step</th><th>Value</th><th>Running total</th></tr></thead>
+        <tbody>
+          <tr><td class="fname">Subtotal</td><td>&#8377;25,000.00</td><td class="ftype">&#8377;25,000.00</td></tr>
+          <tr><td class="fname">Discount</td><td>&#8377;0.00 (no coupon applied)</td><td class="ftype">&#8377;25,000.00</td></tr>
+          <tr><td class="fname">Taxable Value</td><td>Subtotal &minus; Discount</td><td class="ftype">&#8377;25,000.00</td></tr>
+          <tr><td class="fname">CGST (9%) + SGST (9%)</td><td>intrastate &mdash; Delhi buyer, Delhi seller</td><td class="ftype">&#8377;4,500.00 GST</td></tr>
+          <tr><td class="fname">Loyalty Discount</td><td>&#8377;0.00 (none redeemed)</td><td class="ftype">&minus;&#8377;0.00</td></tr>
+          <tr><td class="fname">Shipping (Overnight)</td><td>server-looked-up from the method id</td><td class="ftype">+&#8377;1,500.00</td></tr>
+          <tr><td class="fname"><strong>Amount Payable</strong></td><td>&mdash;</td><td class="ftype"><strong>&#8377;31,000.00</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info"><strong>Coupon minimum-order-value and category restrictions are evaluated against the product subtotal only</strong> &mdash; shipping is never part of that base, matching standard e-commerce practice (a coupon that requires &#8377;30,000 to unlock shouldn't count the delivery fee toward that threshold).</div>
+  </section>
+
+  <!-- ============================================================ ADMIN DASHBOARD ============================================================ -->
+  <section class="page" id="admin-dashboard">
+    <p class="page-eyebrow">Diagram 9 of 9</p>
+    <h1 class="page-title">Admin Dashboard</h1>
+    <p class="page-lede">A single internal Lightning app (<code>LOKESH_SHARMA353</code>) fronted by <code>AdminDashboardController</code>, giving the admin one screen for KPIs, coupon/campaign management, low-stock visibility, and a bulk "send an offer" email blast — all built on the same Order/Payment/Coupon_Code__c data the storefront writes.</p>
+
+    <figure class="diagram">
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1200 420" role="img" aria-label="Admin Dashboard LWC calling AdminDashboardController for KPI stats, coupon and campaign management, recent orders, low-stock products, and a bulk offer-email send that skips previously bounced addresses and reports per-recipient success or failure.">
+          <defs><marker id="ad2-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--ink-subtle)"/></marker></defs>
+
+          <rect x="40" y="20" width="260" height="56" rx="10" class="n-box n-lwc"/>
+          <text x="170" y="45" text-anchor="middle" class="node-label" font-size="12.5">adminDashboard LWC</text>
+          <text x="170" y="62" text-anchor="middle" class="node-sub n-muted" font-size="10.5">hosted on App_Home_Page</text>
+
+          <line x1="300" y1="48" x2="336" y2="48" class="e-line" marker-end="url(#ad2-a)"/>
+          <rect x="340" y="20" width="280" height="56" rx="10" class="n-box n-apex"/>
+          <text x="480" y="45" text-anchor="middle" class="node-label" font-size="12.5">AdminDashboardController</text>
+          <text x="480" y="62" text-anchor="middle" class="node-sub n-muted" font-size="10.5">without sharing, WITH SYSTEM_MODE</text>
+
+          <line x1="480" y1="76" x2="480" y2="100" class="e-line"/>
+          <line x1="120" y1="100" x2="840" y2="100" class="e-line"/>
+          <line x1="120" y1="100" x2="120" y2="118" class="e-line" marker-end="url(#ad2-a)"/>
+          <line x1="310" y1="100" x2="310" y2="118" class="e-line" marker-end="url(#ad2-a)"/>
+          <line x1="500" y1="100" x2="500" y2="118" class="e-line" marker-end="url(#ad2-a)"/>
+          <line x1="690" y1="100" x2="690" y2="118" class="e-line" marker-end="url(#ad2-a)"/>
+          <line x1="840" y1="100" x2="840" y2="118" class="e-line" marker-end="url(#ad2-a)"/>
+
+          <rect x="40" y="122" width="160" height="60" rx="8" class="n-box n-object"/>
+          <text x="120" y="145" text-anchor="middle" class="node-label" font-size="11">getDashboardStats()</text>
+          <text x="120" y="161" text-anchor="middle" class="node-sub n-muted" font-size="9.5">orders, revenue, customers, low stock</text>
+
+          <rect x="230" y="122" width="160" height="60" rx="8" class="n-box n-object"/>
+          <text x="310" y="145" text-anchor="middle" class="node-label" font-size="11">getCoupons() /</text>
+          <text x="310" y="161" text-anchor="middle" class="node-label" font-size="11">createCampaignCoupon()</text>
+
+          <rect x="420" y="122" width="160" height="60" rx="8" class="n-box n-object"/>
+          <text x="500" y="145" text-anchor="middle" class="node-label" font-size="11">getRecentOrders() /</text>
+          <text x="500" y="161" text-anchor="middle" class="node-label" font-size="11">getLowStockProducts()</text>
+
+          <rect x="610" y="122" width="160" height="60" rx="8" class="n-box n-object"/>
+          <text x="690" y="145" text-anchor="middle" class="node-label" font-size="11">setCouponActive()</text>
+          <text x="690" y="161" text-anchor="middle" class="node-sub n-muted" font-size="9.5">quick toggle, no full edit form</text>
+
+          <rect x="760" y="122" width="160" height="60" rx="8" class="n-box n-external"/>
+          <text x="840" y="145" text-anchor="middle" class="node-label" font-size="11">sendOfferEmail()</text>
+          <text x="840" y="161" text-anchor="middle" class="node-sub n-muted" font-size="9.5">Messaging.sendEmail, allOrNone=false</text>
+
+          <line x1="840" y1="182" x2="840" y2="206" class="e-line" marker-end="url(#ad2-a)"/>
+          <rect x="620" y="210" width="440" height="80" rx="10" class="n-box n-trigger"/>
+          <text x="840" y="232" text-anchor="middle" class="node-label" font-size="11.5">Skips every Contact with EmailBouncedDate set,</text>
+          <text x="840" y="248" text-anchor="middle" class="node-label" font-size="11.5">sends the rest with allOrNone=false so one bad</text>
+          <text x="840" y="264" text-anchor="middle" class="node-label" font-size="11.5">address never blocks the others, and returns</text>
+          <text x="840" y="280" text-anchor="middle" class="node-label" font-size="11.5">recipientCount/successCount/failureCount/skippedBouncedCount</text>
+
+          <rect x="40" y="330" width="1120" height="70" rx="10" class="n-box n-dead"/>
+          <text x="600" y="356" text-anchor="middle" class="node-label n-dead" font-size="12">Every send uses Salesforce's own default sender (no Org-Wide Email Address set).</text>
+          <text x="600" y="374" text-anchor="middle" class="node-sub n-dead" font-size="11">A prior attempt forced a verified Gmail OWA and, separately, a third-party ESP (Brevo) &mdash; both were abandoned after confirming modern freemail-sender DMARC/anti-spam rules silently drop that mail. Leaving the sender unset falls back to Salesforce's own authenticated *.sfcustomeremail.com address, which is the one pattern proven to actually deliver. See Changelog.</text>
+        </svg>
+      </div>
+      <figcaption class="diagram-caption"><code>EmailSenderService.applySupportSender()</code> is called by every outgoing storefront email (order confirmation, contact us, payment issues, etc.) but is now a deliberate no-op &mdash; kept as a single hook so a real verified sender can be reinstated in one place later, without touching every call site again.</figcaption>
+    </figure>
+
+    <h2 class="section-h">Coupon &amp; Campaign model</h2>
+    <p class="section-sub">Built on standard <code>Campaign</code> (the offer's rules) and <code>CampaignMember</code> (the per-redemption ledger) rather than new custom objects, plus one small custom object for the code itself.</p>
+    <div class="table-wrap">
+      <table class="schema">
+        <thead><tr><th>Piece</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td class="fname">Campaign</td><td>Discount_Type__c (Percentage/Flat Amount), Discount_Value__c, Minimum_Order_Value__c, Maximum_Discount_Amount__c, Eligible_Category__c, StartDate/EndDate, Status/IsActive</td></tr>
+          <tr><td class="fname">Coupon_Code__c</td><td>The actual code a shopper types, linked to one Campaign; Is_Active__c quick-toggle, Max_Uses_Per_Customer__c, Max_Total_Uses__c, Total_Redemptions__c</td></tr>
+          <tr><td class="fname">CampaignMember</td><td>Extended with Coupon_Code__c / Order__c / Discount_Applied__c &mdash; one row per real redemption, the permanent audit trail DiscountService checks per-customer limits against</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout info"><strong>Cancelling an order releases its coupon.</strong> <code>DiscountService.releaseRedemptionForCancelledOrder</code> decrements <code>Total_Redemptions__c</code> (keeping the CampaignMember row itself as history) so a cancelled order's code becomes usable again — wired into the same OrderTrackingService automation that also restores stock and loyalty points on cancellation.</div>
+  </section>
+
   <!-- ============================================================ OBJECTS ============================================================ -->
   <section class="page" id="objects">
     <p class="page-eyebrow">Reference</p>
     <h1 class="page-title">Object &amp; Field Reference</h1>
-    <p class="page-lede">All 7 objects the app writes to, field by field, read directly from the deployed metadata. Click any object to expand its full field table.</p>
+    <p class="page-lede">All 12 objects the app writes to, field by field, read directly from the deployed metadata. Click any object to expand its full field table.</p>
     <div class="ref-toolbar">
       <input type="text" class="filter-input" id="objectsFilter" placeholder="Filter by object or field name...">
       <span class="filter-count" id="objectsCount"></span>
@@ -657,7 +1131,7 @@
   <section class="page" id="apex">
     <p class="page-eyebrow">Reference</p>
     <h1 class="page-title">Apex Class Reference</h1>
-    <p class="page-lede">All 30 classes, grouped by role. Each card lists its methods and, where relevant, which classes it calls or is called by, so you can trace a call graph without opening the source.</p>
+    <p class="page-lede">All 38 classes, grouped by role. Each card lists its methods and, where relevant, which classes it calls or is called by, so you can trace a call graph without opening the source.</p>
     <div class="ref-toolbar">
       <input type="text" class="filter-input" id="apexFilter" placeholder="Filter by class or method name...">
       <span class="filter-count" id="apexCount"></span>
@@ -687,20 +1161,1075 @@
     <div id="lwcServicesList"></div>
   </section>
 
+  <!-- ============================================================ PERMISSIONS & SHARING ============================================================ -->
+  <section class="page" id="permissions">
+    <p class="page-eyebrow">Reference</p>
+    <h1 class="page-title">Permissions &amp; Sharing Model</h1>
+    <p class="page-lede">Every access-control mechanism this project actually uses, read directly from the deployed metadata: org-wide sharing defaults, the Guest-checkout sharing rules, the public group they share to, the two admin permission sets with their exact field grants, and the Apex-level sharing pattern every controller follows.</p>
+
+    <h2 class="section-h">Why this is more layered than a typical org</h2>
+    <p class="section-sub" style="margin-bottom:14px;">Most of the checkout pipeline runs as the <strong>Guest User</strong> — an unauthenticated visitor has no meaningful permissions of their own, so almost every Apex class is declared <code>without sharing</code> and queries <code>WITH SYSTEM_MODE</code> (full object/field access, sharing rules ignored) to get real work done. The sharing rules and permission sets below exist for the <em>second</em> half of the story: once a Guest-created record is reassigned to the admin user at the end of checkout, something still has to let that Guest read it back later (their own order confirmation, tracking, invoice) without SYSTEM_MODE — that's what the sharing rules are for.</p>
+
+    <h2 class="section-h">Org-Wide Defaults</h2>
+    <p class="section-sub">Set to Private on every object the checkout pipeline touches — required before an owner-based sharing rule can grant anything on top.</p>
+    <div class="table-wrap">
+      <table class="schema">
+        <thead><tr><th>Object</th><th>Sharing Model</th><th>Why Private</th></tr></thead>
+        <tbody>
+          <tr><td class="fname">Account</td><td class="ftype">Private</td><td>One shopper's Account must not be readable by another</td></tr>
+          <tr><td class="fname">Contact</td><td class="ftype">Private</td><td>Same reasoning — plus what the Guest_Checkout_Contact_Read rule below grants back</td></tr>
+          <tr><td class="fname">Case</td><td class="ftype">Private</td><td>Standard object present in the org; not used by the storefront itself</td></tr>
+          <tr><td class="fname">Opportunity</td><td class="ftype">Private</td><td>The intermediate record every Order is created from</td></tr>
+          <tr><td class="fname">Order</td><td class="ftype">Private</td><td>The record a shopper most needs to read back after checkout</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="section-h">Guest Checkout sharing rules</h2>
+    <p class="section-sub">Five identical owner-based rules, one per object — <strong>Read</strong>-only, shared <em>from</em> records owned by the <strong>CEO role</strong> (the admin user every checkout-created record is reassigned to in Step 10) <em>to</em> the <strong>Laptop_Kart</strong> public group.</p>
+    <div class="table-wrap">
+      <table class="schema">
+        <thead><tr><th>Rule</th><th>Object</th><th>Access</th><th>Shared From</th><th>Shared To</th></tr></thead>
+        <tbody>
+          <tr><td class="fname">Guest_Checkout_Contact_Read</td><td class="ftype">Contact</td><td>Read</td><td>Role: CEO</td><td>Group: Laptop_Kart</td></tr>
+          <tr><td class="fname">Guest_Checkout_Opportunity_Read</td><td class="ftype">Opportunity</td><td>Read</td><td>Role: CEO</td><td>Group: Laptop_Kart</td></tr>
+          <tr><td class="fname">Guest_Checkout_Order_Read</td><td class="ftype">Order</td><td>Read</td><td>Role: CEO</td><td>Group: Laptop_Kart</td></tr>
+          <tr><td class="fname">Guest_Checkout_Tracking_Read</td><td class="ftype">Order_Tracking__c</td><td>Read</td><td>Role: CEO</td><td>Group: Laptop_Kart</td></tr>
+          <tr><td class="fname">Guest_Checkout_Payment_Read</td><td class="ftype">Payment__c</td><td>Read</td><td>Role: CEO</td><td>Group: Laptop_Kart</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn"><strong>Group membership for the Site Guest User isn't metadata-deployable.</strong> The <code>Laptop_Kart</code> public group itself deploys cleanly (it's just a name), but adding the site's actual Guest User as a <em>member</em> of it has to be done by hand in Setup &#8594; Public Groups &#8594; search "Site Guest User" &#8594; Add &mdash; there's no supported metadata type for Guest User group membership. Skipping this step leaves the sharing rules deployed but functionally inert: correct on paper, granting nothing in practice.</div>
+
+    <h2 class="section-h">Guest User Profile</h2>
+    <p class="section-sub">Auto-generated the moment the Digital Experiences site is created (one per site, named after it) — <code>Laptop Kart Profile</code> in the original build org, <code>LaptopKart Profile</code> in the migrated personal org, both carrying <code>userLicense: Guest User License</code>.</p>
+    <div class="callout info"><strong>Its real object/field permissions aren't retrievable through the Metadata API at all.</strong> Every attempt to pull this profile back down returns just <code>&lt;custom&gt;true&lt;/custom&gt;&lt;userLicense&gt;Guest User License&lt;/userLicense&gt;</code> — five lines, no <code>objectPermissions</code>, no <code>fieldPermissions</code>. The Guest User's actual access for an LWR site is configured through Experience Builder &#8594; Administration &#8594; Preferences (Public Access Settings), a separate UI surface from classic Profile editing, and it doesn't round-trip through source control the way every other permission on this page does.</div>
+
+    <h2 class="section-h">Permission Sets</h2>
+    <p class="section-sub">Both assigned to the internal admin user only — the storefront itself never runs as a user holding either of these, since checkout uses SYSTEM_MODE and doesn't need them.</p>
+
+    <div class="ref-card open" style="margin-bottom:18px;">
+      <div class="ref-card-head" style="cursor:default;">
+        <div class="ref-card-title">
+          <span class="ref-name">Login_Credentials_Admin_Access</span>
+          <span class="ref-label">FLS for the custom login system</span>
+        </div>
+        <div class="ref-tags"><span class="tag tag-service">Permission Set</span></div>
+      </div>
+      <div class="ref-card-body" style="display:block;">
+        <p class="ref-desc">Full CRUD + View/Modify All on <code>Login_Credentials__c</code> and <code>Cart_Activity__c</code>, so an admin can look up or fix a shopper's custom-login account from Setup. <code>Cart_Items__c</code> is deliberately <strong>read-only</strong> even here — it's a live mirror written by Apex/SYSTEM_MODE on every cart change, and a manual edit through this permission set would desync it from the shopper's real cart.</p>
+        <div class="table-wrap">
+          <table class="schema">
+            <thead><tr><th>Object</th><th>CRUD</th><th>View/Modify All</th></tr></thead>
+            <tbody>
+              <tr><td class="fname">Login_Credentials__c</td><td>Read, Create, Edit, Delete</td><td class="ftype">Yes / Yes</td></tr>
+              <tr><td class="fname">Cart_Activity__c</td><td>Read, Create, Edit, Delete</td><td class="ftype">Yes / Yes</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-wrap" style="margin-top:10px;">
+          <table class="schema">
+            <thead><tr><th>Field</th><th>Read</th><th>Edit</th></tr></thead>
+            <tbody>
+              <tr><td class="fname">Login_Credentials__c.Password_Text__c</td><td>Yes</td><td class="ftype">Yes</td></tr>
+              <tr><td class="fname">Login_Credentials__c.Cart_Items__c</td><td>Yes</td><td class="ftype">No &mdash; deliberate, see above</td></tr>
+              <tr><td class="fname">Cart_Activity__c.Product_Name__c / Quantity__c / Price__c</td><td>Yes</td><td class="ftype">Yes</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="ref-card open">
+      <div class="ref-card-head" style="cursor:default;">
+        <div class="ref-card-title">
+          <span class="ref-name">Website_Order_Field_Access</span>
+          <span class="ref-label">FLS for every object/field the pricing, loyalty, coupon &amp; inventory work touches</span>
+        </div>
+        <div class="ref-tags"><span class="tag tag-service">Permission Set</span></div>
+      </div>
+      <div class="ref-card-body" style="display:block;">
+        <p class="ref-desc">Full CRUD + View/Modify All on <code>Campaign</code>, <code>Coupon_Code__c</code>, <code>Loyalty_Point_Transaction__c</code>, <code>Vendor__c</code>, and <code>Stock_Movement__c</code> for admin-side visibility in Setup, layouts, list views and reports — none of this is needed by checkout itself, which runs SYSTEM_MODE.</p>
+        <div class="table-wrap">
+          <table class="schema">
+            <thead><tr><th>Object.Field grants (Read + Edit, unless noted)</th></tr></thead>
+            <tbody>
+              <tr><td class="fnotes"><strong>Order</strong> — Website_Order__c, Customer_Name__c, Discount_Amount__c, Taxable_Amount__c, CGST/SGST/IGST_Amount__c, Placed_By__c, Recipient_Name__c, Recipient_Phone__c, Amount_Payable__c, Coupon_Code_Applied__c, Points_Redeemed__c, Points_Earned__c <span class="chip">Shipping_Cost__c / Shipping_Method__c added 2026-09-18, see Changelog</span></td></tr>
+              <tr><td class="fnotes"><strong>Account</strong> — Email__c, Password_Text__c, Cart_Items__c, Loyalty_Points_Balance__c, Profile_Photo__c</td></tr>
+              <tr><td class="fnotes"><strong>Campaign</strong> — StartDate, EndDate, IsActive, Discount_Value__c, Minimum_Order_Value__c, Maximum_Discount_Amount__c, Eligible_Category__c</td></tr>
+              <tr><td class="fnotes"><strong>CampaignMember</strong> — Coupon_Code__c, Order__c, Discount_Applied__c</td></tr>
+              <tr><td class="fnotes"><strong>Coupon_Code__c</strong> — Is_Active__c, Max_Total_Uses__c, Total_Redemptions__c</td></tr>
+              <tr><td class="fnotes"><strong>Loyalty_Point_Transaction__c</strong> — Related_Order__c, Transaction_Date__c, Notes__c</td></tr>
+              <tr><td class="fnotes"><strong>Product2</strong> — GST_Rate__c, HSN_Code__c, Price__c, Stock_Quantity__c, Reorder_Level__c, Reorder_Quantity__c, Primary_Vendor__c, SKU_At_Vendor__c</td></tr>
+              <tr><td class="fnotes"><strong>Vendor__c</strong> — Contact_Name__c, Email__c, Phone__c, Address__c, Status__c, Payment_Terms__c, Notes__c</td></tr>
+              <tr><td class="fnotes"><strong>Stock_Movement__c</strong> — Product__c, Running_Balance__c, Related_Order__c, Movement_Date__c, Notes__c <span class="chip">Movement_Type__c / Quantity__c are schema-required, so Salesforce auto-grants and rejects an explicit entry for them</span></td></tr>
+              <tr><td class="fnotes"><strong>Saved_Address__c</strong> — Line1__c, City__c, Phone__c <span class="chip">Account__c is schema-required, same auto-grant reasoning</span></td></tr>
+              <tr><td class="fnotes"><strong>Cart_Activity__c.Account__c</strong> · <strong>Payment__c.Account__c</strong> · <strong>Order_Tracking__c.Account__c / Return_Reason__c</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="section-h">Apex sharing pattern</h2>
+    <p class="section-sub">A consistent, deliberate split across the whole codebase, not ad hoc per class.</p>
+    <div class="table-wrap">
+      <table class="schema">
+        <thead><tr><th>Pattern</th><th>Used by</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td class="fname">without sharing + WITH SYSTEM_MODE</td><td class="fnotes">CheckoutController, DiscountService, LoyaltyService, InventoryService, OrderPricingService, LoginCredentialsController, ContactController, WelcomeLeadController, OrderTrackingService, PaymentService — every Guest-facing controller</td><td>The Guest User has no meaningful record access of its own; SYSTEM_MODE bypasses both object/field security and sharing so the checkout pipeline can actually create Leads/Accounts/Orders/Payments end to end</td></tr>
+          <tr><td class="fname">with sharing + WITH USER_MODE</td><td class="fnotes">OrderPaymentController (the internal Order-record-page dashboard)</td><td>Runs as a real logged-in internal user viewing a record they already have access to — no reason to bypass their own permissions here</td></tr>
+          <tr><td class="fname">without sharing (WITH SYSTEM_MODE queries)</td><td class="fnotes">OrderInvoiceController, AdminDashboardController</td><td>Invoice PDF rendering and the admin dashboard both need to see every record regardless of who's viewing, without requiring a full sharing-rule setup for every query they run</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="section-h">External system access</h2>
+    <div class="callout info"><strong>Razorpay (payment gateway):</strong> a Named Credential/External Credential Principal named <code>Razorpay</code>, referenced in Apex only as <code>callout:Razorpay</code> — the API secret is stored by Salesforce and never appears in Apex, the browser, or version control. Like the Guest Profile above, the secret value itself is not retrievable or deployable through metadata; moving this integration to a new org means re-entering it by hand in Setup &#8594; Named Credentials every time. See Changelog for the exact scenario this hit.</div>
+  </section>
+
   <!-- ============================================================ ISSUES ============================================================ -->
   <section class="page" id="issues">
     <p class="page-eyebrow">Reference</p>
     <h1 class="page-title">Known Issues &amp; Design Notes</h1>
     <p class="page-lede">Anomalies, deliberate design decisions, external limitations, and resolved bugs found while building this reference &#8212; kept in one place so they don't need rediscovering.</p>
     <div id="issuesList"></div>
-    <footer class="page-footer">Last generated 2026-09-15 from the deployed org metadata and Apex/LWC source.</footer>
+    <footer class="page-footer">Last generated 2026-09-15, updated 2026-09-19 with the Pricing/Discount/Loyalty engine, Admin Dashboard, and the shipping-cost/invoice/stock-limit fixes below &#8212; from the deployed org metadata and Apex/LWC source.</footer>
+  </section>
+
+  <!-- ============================================================ CHANGELOG & DEPLOYMENT ============================================================ -->
+  <section class="page" id="changelog">
+    <p class="page-eyebrow">Reference</p>
+    <h1 class="page-title">Changelog &amp; Deployment</h1>
+    <p class="page-lede">What changed in the most recent deep audit pass, and where this project now actually runs.</p>
+
+    <h2 class="section-h">Fixes shipped 2026-09-18/19</h2>
+    <p class="section-sub">Found via a from-scratch functional audit, each verified with real Apex assertions or a full regression run before being marked done.</p>
+    <ol class="build-steps">
+      <li><div><p class="step-title">Shipping cost was never charged, on any order, ever</p><p class="step-body"><code>OrderPricingService.calculate</code> took no shipping parameter at all — the real, server-computed <code>amountPayable</code> (the figure actually charged via Razorpay, verified, and stored) never included it, regardless of Standard/Express/Overnight being selected. Added <code>Shipping_Cost__c</code> / <code>Shipping_Method__c</code> on Order, a server-side method-id&#8594;price lookup mirroring the client's own list (never trusts a client-supplied amount), and wired it through the preview, the real charge, the Razorpay payment-link amount, the confirmation email/page, and the invoice.</p></div></li>
+      <li><div><p class="step-title">The downloadable invoice PDF showed the wrong total &mdash; on every order</p><p class="step-body"><code>OrderInvoiceController.getBalanceDue</code> used raw <code>Order.TotalAmount</code> (the pre-tax, pre-discount product sum) instead of the real <code>Amount_Payable__c</code>. The Cash-on-Delivery "keep &#8377;X ready" notice used this same understated figure, meaning every COD customer was told to have less cash ready than they actually owed &mdash; short by the full 18% GST, and now shipping too. Fixed to show a full Subtotal &#8594; Discount &#8594; Taxable Value &#8594; GST &#8594; Shipping &#8594; Amount Payable &#8594; Paid &#8594; Balance Due breakdown.</p></div></li>
+      <li><div><p class="step-title">Checkout's own sidebar never reflected the shipping method you'd clicked</p><p class="step-body">The Shipping Method step only told its parent what was selected when "Next" was pressed, not live as you compared options. Now <code>techBasketShippingMethod</code> emits on every click (and once on load for the default), so the sidebar total updates immediately &mdash; before you've committed to a choice.</p></div></li>
+      <li><div><p class="step-title">Cart/Checkout showed a placeholder 5% tax instead of the real 18% GST</p><p class="step-body">Every one of the 54 real products in the catalog falls back to the 18% default GST rate (none override <code>Product2.GST_Rate__c</code>), but the pre-checkout estimate in <code>cartCalculations.js</code> used a hardcoded 5% — a roughly 5&times; understatement of tax on every cart view before Payment loaded the real figure. Corrected the constant to match.</p></div></li>
+      <li><div><p class="step-title">Quantity selectors had no real stock ceiling</p><p class="step-body">On Product Detail, the Cart page, and the mini-cart drawer, the +/&minus; control defaulted to a flat cap of 99 regardless of actual <code>Stock_Quantity__c</code> — a shopper could select 10 of an item with 2 left and only find out at the very last step of checkout (server-side <code>InventoryService.validateStock</code> would reject it). All three now enforce the product's real tracked stock live.</p></div></li>
+    </ol>
+
+    <h2 class="section-h">Org-to-org portability &amp; GitHub</h2>
+    <p class="section-sub">The full project source now also lives in a separate personal Developer Edition org and a public GitHub repository, independent of the original build org (alias <code>vs</code>).</p>
+    <div class="card-grid">
+      <div class="stat-card"><div class="stat-num" style="font-size:16px;">Personal org</div><div class="stat-label">Digital Experiences site <strong>LaptopKart</strong> deployed and <strong>Live</strong>, full checkout pipeline (GST, coupon, shipping, Cash on Delivery, real UTR reference) verified end-to-end via the real test suite in that org</div></div>
+      <div class="stat-card"><div class="stat-num" style="font-size:16px;">GitHub</div><div class="stat-label">Full source pushed to <code>github.com/lokeshsharma353/LaptopKart-Ecommerce-</code> &mdash; 711 files, every object/field, Apex class, LWC component, and the full retrieved Experience Cloud site bundle</div></div>
+    </div>
+
+    <h2 class="section-h">What can't move via metadata, and why</h2>
+    <p class="section-sub">Two genuine Salesforce platform restrictions hit during the org-to-org migration, confirmed directly by the platform's own errors rather than assumed &mdash; documented here so they don't need rediscovering.</p>
+    <div class="callout warn"><strong>An LWR Experience Cloud site can't be originated from metadata at all.</strong> Retrieving the underlying Picasso/<code>SiteDotCom</code> component for a "Build Your Own (LWR)" site returns, verbatim: <em>"A SiteDotCom site using template [Build Your Own (LWR)] does not support MD API Retrieval."</em> Digital Experiences must be enabled and the site shell created through the Setup UI wizard first &mdash; only its content (<code>DigitalExperienceBundle</code>: every page, the theme, styles, branding) can be retrieved and deployed afterward, which is what actually moved between orgs here.</div>
+    <div class="callout warn"><strong>Named Credential secret values never travel through metadata, by design.</strong> The Razorpay integration's API secret (stored in a Named Credential / External Credential Principal) has to be re-entered by hand in Setup on every org it's deployed to &mdash; there is no metadata type that carries the secret value itself, in this org or any other.</div>
+    <div class="callout dead"><strong>Also genuinely unfixable via metadata:</strong> the "Cancelled" value for <code>Order.Status</code> (a standard, restricted picklist) isn't independently retrievable or deployable through any metadata type &mdash; there's no <code>StandardValueSet:OrderStatus</code>, and the field's own <code>CustomField</code> metadata carries no value-set definition at all. Adding it to a new org means Setup &#8594; Object Manager &#8594; Order &#8594; Fields &amp; Relationships &#8594; Status &#8594; New, by hand, every time.</div>
   </section>
 
   </main>
 </div>
 
-<script src="data.js"></script>
-<script src="script.js"></script>
+<script>
+/* LaptopKart Project Documentation — reference data.
+   Extracted directly from the deployed metadata / source in force-app/main/default.
+   Used by script.js to render the Object, Apex, and LWC reference sections. */
+
+const OBJECTS = [
+  {
+    name: 'Cart_Activity__c', label: 'Cart Activity', plural: 'Cart Activities', sharing: 'Private',
+    namePattern: 'Auto Number — CA-{0000}',
+    desc: 'One row per add / remove / clear event on a shopper’s cart, written by <code>cartService.js</code> via <code>LoginCredentialsController.logCartActivity</code>. Purely an activity log — not read back by the storefront, only useful for admin-side visibility into cart behaviour.',
+    tag: 'live',
+    fields: [
+      { api: 'Login_Credentials__c', label: 'Customer Account', type: 'Lookup(Login_Credentials__c)', notes: 'Relationship "Cart_Activities". deleteConstraint = Cascade.', required: true },
+      { api: 'Action__c', label: 'Action', type: 'Picklist (restricted)', notes: 'Added / Removed / Cart Cleared', required: true },
+      { api: 'Product_Name__c', label: 'Product Name', type: 'Text(255)', notes: '', required: false },
+      { api: 'Quantity__c', label: 'Quantity', type: 'Number(18,0)', notes: '', required: false },
+      { api: 'Price__c', label: 'Price (per unit)', type: 'Currency(18,2)', notes: '', required: false },
+    ],
+  },
+  {
+    name: 'Contact_Us__c', label: 'Contact Us', plural: 'Contact Us Requests', sharing: 'ReadWrite',
+    namePattern: 'Auto Number — Query-{00000}',
+    desc: 'A support/enquiry ticket submitted from the storefront’s Contact Us page, created by <code>ContactController.submitMessage</code>. Triggers an admin notification email; no automation reacts to status changes.',
+    tag: 'live',
+    fields: [
+      { api: 'Customer__c', label: 'Customer', type: 'Lookup(Contact)', notes: 'Relationship "Contact_Us_Requests". deleteConstraint = SetNull.', required: false },
+      { api: 'Email__c', label: 'Email', type: 'Email', notes: '', required: true },
+      { api: 'Category__c', label: 'Category', type: 'Picklist (restricted)', notes: 'General Enquiry, Order, Payment, Product, Delivery, Return, Refund, Technical Issue, Other', required: false },
+      { api: 'Created_Date__c', label: 'Created Date', type: 'Date', notes: '', required: false },
+      { api: 'Low_Medium_High_Urgent__c', label: 'Priority', type: 'Picklist (restricted)', notes: 'Low, Medium, High, Urgent', required: false },
+      { api: 'Message__c', label: 'Message', type: 'Rich Text(32768)', notes: '25 visible lines', required: false },
+      { api: 'Name__c', label: 'Name', type: 'Text(50)', notes: '', required: true },
+      { api: 'Phone__c', label: 'Phone', type: 'Phone', notes: '', required: false },
+      { api: 'Status__c', label: 'Status', type: 'Picklist (restricted)', notes: 'New, In Progress, Resolved, Closed', required: false },
+      { api: 'Subject__c', label: 'Subject', type: 'Text(100)', notes: '', required: false },
+    ],
+  },
+  {
+    name: 'Lead', label: 'Lead (standard — custom fields only)', plural: '', sharing: '(standard)',
+    namePattern: '(standard object)',
+    desc: 'Standard Salesforce object. LaptopKart uses it as the entry point of checkout — <code>CheckoutController.submitOrder</code> inserts one Lead per order and immediately converts it via <code>Database.convertLead</code>. Only one custom field is added on top of the standard Lead fields.',
+    tag: 'live',
+    fields: [
+      { api: 'Department__c', label: 'Department', type: 'Picklist (restricted)', notes: 'IT, HR, Finance, Sales, Marketing, Operations — used by the generic Welcome-popup lead capture, not the checkout Lead', required: true },
+    ],
+  },
+  {
+    name: 'Login_Credentials__c', label: 'Customer Account Detail', plural: 'Customer Account Details', sharing: 'ReadWrite',
+    namePattern: 'Auto Number — LC-{0000}',
+    desc: 'The record behind LaptopKart’s <strong>custom</strong> storefront login (separate from real Salesforce Experience Cloud users — see the Auth Systems diagram). Password is stored in <strong>plain text by explicit design</strong>, not hashed. Read/written by <code>LoginCredentialsController</code>.',
+    tag: 'live',
+    fields: [
+      { api: 'Password_Text__c', label: 'Password (Plain Text)', type: 'Text(255)', notes: 'Stored unencrypted by design', required: false },
+      { api: 'Email__c', label: 'Email', type: 'Email', notes: 'Login username', required: false },
+      { api: 'Name__c', label: 'Name', type: 'Text(50)', notes: '', required: false },
+      { api: 'Phone__c', label: 'Phone', type: 'Phone', notes: '', required: false },
+      { api: 'Cart_Items__c', label: 'Current Cart Items', type: 'Long Text Area(32768)', notes: 'Live mirror of the shopper’s cart, overwritten by cartService.js on every cart change — not meant to be hand-edited', required: false },
+    ],
+  },
+  {
+    name: 'Order', label: 'Order (standard — custom fields only)', plural: '', sharing: 'Private',
+    namePattern: '(standard object)',
+    desc: 'Standard Salesforce object, created automatically by <code>OrderService.createOrders</code> when an Opportunity is Closed Won. Extended with the storefront’s full payment/pricing/shipping breakdown, guest-sharing model, and coupon/loyalty audit trail — every one of these except Payment_Status__c/Total_Paid__c/Website_Order__c is written by <code>OrderPricingService.calculate</code> inside <code>CheckoutController.submitOrder</code>.',
+    tag: 'live',
+    fields: [
+      { api: 'Payment_Status__c', label: 'Payment Status', type: 'Picklist (restricted)', notes: 'Unpaid, Partially Paid, Fully Paid — recalculated by PaymentService.calculateOrderPayments', required: false },
+      { api: 'Total_Paid__c', label: 'Total Paid', type: 'Currency(18,0)', notes: 'Sum of Successful Payment__c rows for this Order', required: false },
+      { api: 'Website_Order__c', label: 'Website Order', type: 'Checkbox', notes: 'True when created via the storefront checkout — the criteria field for the Guest User sharing rule that lets Guest read back its own Order', required: false },
+      { api: 'Amount_Payable__c', label: 'Amount Payable', type: 'Currency(16,2)', notes: 'The real, final charged amount — taxable value + GST − loyalty discount + shipping cost. Never the raw TotalAmount (pre-tax product sum only)', required: false },
+      { api: 'Discount_Amount__c', label: 'Discount Amount', type: 'Currency(16,2)', notes: 'Coupon and/or loyalty discount subtracted from the product subtotal', required: false },
+      { api: 'Taxable_Amount__c', label: 'Taxable Amount', type: 'Currency(16,2)', notes: 'Subtotal minus discount, before GST', required: false },
+      { api: 'CGST_Amount__c', label: 'CGST Amount', type: 'Currency(16,2)', notes: 'Set when the shipping state matches the seller state (intrastate)', required: false },
+      { api: 'SGST_Amount__c', label: 'SGST Amount', type: 'Currency(16,2)', notes: 'Set when the shipping state matches the seller state (intrastate)', required: false },
+      { api: 'IGST_Amount__c', label: 'IGST Amount', type: 'Currency(16,2)', notes: 'Set for interstate orders — same total GST either way, only the split differs', required: false },
+      { api: 'Shipping_Cost__c', label: 'Shipping Cost', type: 'Currency(16,2)', notes: 'Cost of the chosen delivery method (Standard/Express/Overnight), looked up server-side from its id — added 2026-09-18', required: false },
+      { api: 'Shipping_Method__c', label: 'Shipping Method', type: 'Text(60)', notes: 'Display name of the chosen delivery method, stored alongside Shipping_Cost__c', required: false },
+      { api: 'Coupon_Code_Applied__c', label: 'Coupon Code Applied', type: 'Text', notes: 'Set only when DiscountService.validate accepted the code', required: false },
+      { api: 'Points_Redeemed__c', label: 'Points Redeemed', type: 'Number', notes: 'Loyalty points spent on this order, capped at 20% of taxable value by LoyaltyService', required: false },
+      { api: 'Points_Earned__c', label: 'Points Earned', type: 'Number', notes: '1 point per ₹1,000 of eligible spend, awarded on delivery by OrderTrackingTriggerHandler', required: false },
+      { api: 'Placed_By__c', label: 'Placed By', type: 'Lookup(Account)', notes: 'The logged-in shopper’s own Account, distinct from Account Name which is the Lead-conversion Company value — null for a guest checkout', required: false },
+      { api: 'Customer_Name__c', label: 'Customer Name', type: 'Text', notes: 'Snapshot of who placed this specific order, set once and never renamed afterward (unlike Account Name)', required: false },
+      { api: 'Recipient_Name__c', label: 'Recipient Name', type: 'Text(120)', notes: 'Who the order is being delivered to — may differ from the buyer (a gift, a family member)', required: false },
+      { api: 'Recipient_Phone__c', label: 'Recipient Phone', type: 'Phone', notes: '', required: false },
+    ],
+  },
+  {
+    name: 'Coupon_Code__c', label: 'Coupon Code', plural: 'Coupon Codes', sharing: '(default)',
+    namePattern: 'Auto Number',
+    desc: 'The actual code a shopper types at checkout, linked to one standard <code>Campaign</code> which carries the real discount rules (type, value, minimum order, category restriction, date window). Validated fresh from scratch on every preview and every real charge by <code>DiscountService.validate</code> — never trusted from the client.',
+    tag: 'live',
+    fields: [
+      { api: 'Code__c', label: 'Code', type: 'Text', notes: 'Normalized to uppercase on both save and lookup', required: true },
+      { api: 'Campaign__c', label: 'Campaign', type: 'Lookup(Campaign)', notes: 'Carries Discount_Type__c, Discount_Value__c, Minimum_Order_Value__c, Maximum_Discount_Amount__c, Eligible_Category__c', required: false },
+      { api: 'Is_Active__c', label: 'Active', type: 'Checkbox', notes: 'Quick on/off toggle from the Admin Dashboard, separate from the Campaign’s own Active/Status', required: false },
+      { api: 'Max_Uses_Per_Customer__c', label: 'Max Uses Per Customer', type: 'Number', notes: 'Defaults to 1 — checked against real CampaignMember redemption rows, excluding Cancelled orders', required: false },
+      { api: 'Max_Total_Uses__c', label: 'Max Total Uses', type: 'Number', notes: 'Blank = unlimited', required: false },
+      { api: 'Total_Redemptions__c', label: 'Total Redemptions', type: 'Number', notes: 'Incremented by DiscountService.recordRedemption, decremented if the order is later cancelled', required: false },
+    ],
+  },
+  {
+    name: 'Loyalty_Point_Transaction__c', label: 'Loyalty Point Transaction', plural: 'Loyalty Point Transactions', sharing: '(default)',
+    namePattern: 'Auto Number',
+    desc: 'One immutable ledger row per balance change on <code>Account.Loyalty_Points_Balance__c</code> — earned on delivery, redeemed at checkout, or restored on cancellation/return. Every write to the balance goes through <code>LoyaltyService.adjustBalance</code>, which always writes the matching ledger row in the same call, so the balance can never drift from the history that explains it.',
+    tag: 'live',
+    fields: [
+      { api: 'Account__c', label: 'Account', type: 'Lookup(Account)', notes: '', required: true },
+      { api: 'Points__c', label: 'Points', type: 'Number', notes: 'Signed — positive for earn/restore, negative for redeem', required: false },
+      { api: 'Type__c', label: 'Type', type: 'Picklist', notes: 'Earned, Redeemed, Restored (or similar) — describes why the balance changed', required: false },
+      { api: 'Related_Order__c', label: 'Related Order', type: 'Lookup(Order)', notes: 'The order this transaction is tied to, where applicable', required: false },
+      { api: 'Transaction_Date__c', label: 'Transaction Date', type: 'Date', notes: '', required: false },
+      { api: 'Notes__c', label: 'Notes', type: 'Text', notes: 'Human-readable reason, e.g. "Redeemed at checkout."', required: false },
+    ],
+  },
+  {
+    name: 'Saved_Address__c', label: 'Saved Address', plural: 'Saved Addresses', sharing: '(default)',
+    namePattern: 'Auto Number',
+    desc: 'A shopper’s reusable shipping address, saved from Checkout ("Save this address") or added directly from My Account, so it doesn’t have to be retyped every order.',
+    tag: 'live',
+    fields: [
+      { api: 'Account__c', label: 'Account', type: 'Lookup(Account)', notes: 'Schema-required — Salesforce auto-grants FLS on this and rejects an explicit permission-set entry for it', required: true },
+      { api: 'Line1__c', label: 'Address Line 1', type: 'Text', notes: '', required: false },
+      { api: 'City__c', label: 'City', type: 'Text', notes: '', required: false },
+      { api: 'Phone__c', label: 'Phone', type: 'Phone', notes: '', required: false },
+    ],
+  },
+  {
+    name: 'Stock_Movement__c', label: 'Stock Movement', plural: 'Stock Movements', sharing: '(default)',
+    namePattern: 'Auto Number',
+    desc: 'Immutable ledger row for every change to a Product2’s tracked <code>Stock_Quantity__c</code> — a Sale (order placed), a Cancellation (order cancelled, stock restored), or a manual Adjustment (an admin edited the quantity directly, logged by <code>Product2TriggerHandler</code>). Written by <code>InventoryService</code>, never edited directly.',
+    tag: 'live',
+    fields: [
+      { api: 'Product__c', label: 'Product', type: 'Lookup(Product2)', notes: 'Not schema-required, unlike Movement_Type__c/Quantity__c below', required: false },
+      { api: 'Quantity__c', label: 'Quantity', type: 'Number', notes: 'Schema-required — signed, negative for a Sale, positive for a Cancellation/restock', required: true },
+      { api: 'Movement_Type__c', label: 'Movement Type', type: 'Picklist', notes: 'Schema-required — Sale, Cancellation, Adjustment', required: true },
+      { api: 'Running_Balance__c', label: 'Running Balance', type: 'Number', notes: 'Stock_Quantity__c after this movement was applied', required: false },
+      { api: 'Related_Order__c', label: 'Related Order', type: 'Lookup(Order)', notes: 'Set for Sale/Cancellation rows, blank for a manual Adjustment', required: false },
+      { api: 'Movement_Date__c', label: 'Movement Date', type: 'Date', notes: '', required: false },
+      { api: 'Notes__c', label: 'Notes', type: 'Text', notes: '', required: false },
+    ],
+  },
+  {
+    name: 'Vendor__c', label: 'Vendor', plural: 'Vendors', sharing: '(default)',
+    namePattern: 'Auto Number',
+    desc: 'Supplier record for products, used by the internal inventory-side of the app (Admin Dashboard low-stock visibility). Not read by the public storefront.',
+    tag: 'live',
+    fields: [
+      { api: 'Contact_Name__c', label: 'Contact Name', type: 'Text', notes: 'The person at the vendor, distinct from the Vendor record’s own Name', required: false },
+      { api: 'Email__c', label: 'Email', type: 'Email', notes: '', required: false },
+      { api: 'Phone__c', label: 'Phone', type: 'Phone', notes: '', required: false },
+      { api: 'Address__c', label: 'Address', type: 'Text', notes: '', required: false },
+      { api: 'Status__c', label: 'Status', type: 'Picklist', notes: '', required: false },
+      { api: 'Payment_Terms__c', label: 'Payment Terms', type: 'Text', notes: '', required: false },
+      { api: 'Notes__c', label: 'Notes', type: 'Text', notes: '', required: false },
+    ],
+  },
+  {
+    name: 'Order_Tracking__c', label: 'Order Tracking', plural: 'OrderTrackings', sharing: 'ReadWrite',
+    namePattern: 'Text (not Auto Number)',
+    desc: 'One row per Order, created by <code>OrderTrackingService</code> the moment an Order moves Draft → Activated, and updated to Cancelled if the order is later cancelled. Drives the 5-step progress tracker shown on Order Confirmation / Order Tracking pages.',
+    tag: 'live',
+    fields: [
+      { api: 'Delivery_Date__c', label: 'Delivery Date', type: 'Date', notes: 'Set to today + 5 days at creation', required: false },
+      { api: 'Order__c', label: 'Order', type: 'Lookup(Order)', notes: 'Relationship "OrderTrackings". deleteConstraint = SetNull.', required: false },
+      { api: 'Tracking_NUmber__c', label: 'Tracking NUmber', type: 'Text(18)', notes: '⚠ casing typo present in the real API name/label — documented as-is, not a rendering error', required: false },
+      { api: 'Delivery_Status__c', label: 'Delivery Status', type: 'Picklist (restricted)', notes: 'Pending, Shipped, Out for Delivery, Delivered, Cancelled', required: false },
+    ],
+  },
+  {
+    name: 'Payment__c', label: 'Payment', plural: 'Payments', sharing: 'Private',
+    namePattern: 'Text (not Auto Number)',
+    desc: 'One row per payment attempt against an Order (Cash on Delivery, or a verified Razorpay transaction). Insert/update fires <code>PaymentTrigger</code>, which validates the amount, recalculates the parent Order’s totals, and — on first transition to Successful — emails the customer.',
+    tag: 'live',
+    fields: [
+      { api: 'Amount__c', label: 'Amount', type: 'Currency(18,0)', notes: 'Must be > 0 — enforced by a validation rule', required: false },
+      { api: 'Order__c', label: 'Order', type: 'Lookup(Order)', notes: 'Relationship "Payments1". deleteConstraint = SetNull.', required: false },
+      { api: 'Payment_Date__c', label: 'Payment Date', type: 'Date', notes: '', required: false },
+      { api: 'Payment_Status__c', label: 'Payment Status', type: 'Picklist (restricted)', notes: 'Pending, Successful, Failed, Refunded', required: false },
+      { api: 'Transaction_ID__c', label: 'Transaction ID', type: 'Text(100)', notes: 'Razorpay payment id, UTR number, or a generated placeholder for COD', required: false },
+      { api: 'Payment_Method__c', label: 'Payment Method', type: 'Picklist (restricted)', notes: 'Cash, Card, Net Banking, Online', required: false },
+    ],
+    validationRules: [
+      { name: 'Payment_Amount_Must_Be_Greater_Than_Zero', formula: 'OR(ISBLANK(Amount__c), Amount__c <= 0)', message: 'Payment Amount must be greater than 0.' },
+    ],
+  },
+];
+
+const APEX = [
+  // --- Core checkout / payment pipeline ---
+  { name: 'CheckoutController', group: 'Core Pipeline', sharing: 'without sharing', tag: 'live',
+    desc: 'The heart of the storefront: runs the guest-user checkout pipeline end-to-end (Lead → Account/Contact/Opportunity → Order → Order_Tracking__c → Payment__c), verifies Razorpay payments server-side, sends the confirmation email, and reassigns ownership to the admin user.',
+    methods: [
+      { sig: 'createRazorpayPaymentLink(amount, customerName, customerEmail, customerPhone, callbackUrl) : RazorpayService.PaymentLinkResult', desc: '@AuraEnabled. Thin wrapper that calls RazorpayService.createPaymentLink and turns any failure into a generic AuraHandledException.' },
+      { sig: 'submitOrder(inputJson) : OrderResult', desc: '@AuraEnabled. The full 10-step order-creation pipeline — see the dedicated flowchart.' },
+      { sig: 'cancelOrder(orderId) : void', desc: '@AuraEnabled. Sets Order.Status = Cancelled, which fires OrderTrigger → OrderTrackingService to mark tracking Cancelled.' },
+      { sig: 'getOrdersByEmail(email) : List<OrderSummary>', desc: '@AuraEnabled(cacheable). Looks up every Website_Order__c for a shopper by email.' },
+      { sig: 'getOrders(orderIds) : List<OrderSummary>', desc: '@AuraEnabled(cacheable). Looks up specific orders by Id, for locally-remembered order ids.' },
+    ],
+    calls: ['RazorpayService.fetchPayment', 'RazorpayService.createPaymentLink', 'Database.convertLead (platform)', 'OrderInvoiceController (indirectly, PDF invoice)'],
+    calledBy: ['techBasketPayment LWC', 'techBasketMyAccount LWC', 'techBasketOrderHistory (via orderService)'],
+  },
+  { name: 'RazorpayService', group: 'Core Pipeline', sharing: 'without sharing', tag: 'live',
+    desc: 'Thin REST wrapper around Razorpay’s Payment Links API, authenticated via the <code>callout:Razorpay</code> Named Credential (no secret ever touches Apex or the browser).',
+    methods: [
+      { sig: 'createPaymentLink(amountRupees, customerName, customerEmail, customerPhone, callbackUrl) : PaymentLinkResult', desc: 'POST /payment_links — returns paymentLinkId + shortUrl to redirect the shopper to.' },
+      { sig: 'fetchPayment(razorpayPaymentId) : PaymentDetails', desc: 'GET /payments/{id} — the server-side re-verification call; returns status + amountInPaise.' },
+    ],
+    calls: ['Razorpay REST API (external, via Named Credential)'],
+    calledBy: ['CheckoutController.createRazorpayPaymentLink', 'CheckoutController.submitOrder'],
+  },
+  { name: 'OrderService', group: 'Core Pipeline', sharing: 'without sharing', tag: 'live',
+    desc: 'Creates the Order + OrderItem records from a batch of just-Closed-Won Opportunities. Pure automation — no @AuraEnabled surface.',
+    methods: [
+      { sig: 'createOrders(closedWonOpps) : void', desc: 'Bulk-builds one Draft Order per Opportunity (SYSTEM_MODE), then bulk-inserts OrderItems copied from each Opportunity’s OpportunityLineItems.' },
+    ],
+    calls: ['SOQL/DML only'],
+    calledBy: ['OpportunityTriggerHandler.handleAfterUpdate'],
+  },
+  { name: 'OrderTrackingService', group: 'Core Pipeline', sharing: 'without sharing', tag: 'live',
+    desc: 'Creates or updates Order_Tracking__c in response to Order status transitions.',
+    methods: [
+      { sig: 'handleStatusChanges(newOrders, oldOrderMap) : void', desc: 'Draft→Activated: inserts a tracking row (Pending, delivery date未定 until submitOrder Step 8 fills it in). Activated→Cancelled: updates the existing row to Cancelled.' },
+    ],
+    calls: ['SOQL/DML only'],
+    calledBy: ['OrderTriggerHandler.handleAfterUpdate'],
+  },
+  { name: 'PaymentService', group: 'Core Pipeline', sharing: 'without sharing', tag: 'live',
+    desc: 'All business logic behind Payment__c: amount validation, Order total recalculation, and the payment-confirmation email (with PDF invoice attached).',
+    methods: [
+      { sig: 'validateSuccessfulPayments(newPayments, oldPaymentMap) : void', desc: 'Sums existing + incoming Successful payments per Order; addError()s the record if the projected total would exceed Order.TotalAmount.' },
+      { sig: 'calculateOrderPayments(newPayments, oldPaymentMap) : void', desc: 'Recomputes Order.Total_Paid__c and Order.Payment_Status__c (Unpaid / Partially Paid / Fully Paid), handling a Payment moved between Orders too.' },
+      { sig: 'sendPaymentConfirmationEmails(newPayments, oldPaymentMap) : void', desc: 'For payments that just became Successful: builds an HTML email and attaches a PDF invoice rendered from OrderInvoiceController’s Visualforce page.' },
+    ],
+    calls: ['OrderInvoiceController (via Page.OrderInvoice.getContentAsPDF)', 'Messaging.sendEmail (platform)'],
+    calledBy: ['PaymentTriggerHandler.validatePayments', 'PaymentTriggerHandler.handleAfterInsertOrUpdate'],
+  },
+  { name: 'OrderInvoiceController', group: 'Core Pipeline', sharing: 'without sharing (WITH SYSTEM_MODE queries)', tag: 'live',
+    desc: 'Backs the Visualforce PDF invoice page — used both by the customer-facing "Download Invoice" button and the automatic PDF attached to payment-confirmation emails.',
+    methods: [
+      { sig: 'getHasOrder / getCustomerName / getShippingAddress / getInvoiceDate / getBalanceDue / getIsCashOnDelivery / getIsOnlinePayment / getPaymentStatusLabel', desc: 'Visualforce getters; constructor reads ?orderId= and loads Order, Contact, OrderItem lines, latest Payment__c, Order_Tracking__c.' },
+    ],
+    calls: ['SOQL only'],
+    calledBy: ['PaymentService.sendPaymentConfirmationEmails (PDF render)', 'Order Confirmation page (window.open to the VF URL)', 'orderPaymentDashboard (admin, direct link)'],
+  },
+  // --- Pricing, Discount & Loyalty ---
+  { name: 'OrderPricingService', group: 'Pricing, Discount & Loyalty', sharing: 'without sharing', tag: 'live',
+    desc: 'The single, authoritative order-total calculator — Subtotal → Coupon Discount → Taxable Value → GST (CGST+SGST or IGST) → Loyalty Redemption → + Shipping Cost → Amount Payable. Used identically by the live preview and the real charge, so they can never disagree unless the cart/coupon/points genuinely changed in between. See the dedicated Pricing Engine diagram.',
+    methods: [
+      { sig: 'calculate(lines, shippingState, accountId, couponCode, pointsRequested, shippingMethodId) : PricingResult', desc: 'The full 7-step calculation. shippingMethodId is looked up against a server-side price map (standard/express/overnight) — never trusts a client-supplied amount.' },
+    ],
+    calls: ['DiscountService.validate', 'LoyaltyService.previewRedemption'],
+    calledBy: ['CheckoutController.previewOrderTotals', 'CheckoutController.submitOrder'],
+  },
+  { name: 'DiscountService', group: 'Pricing, Discount & Loyalty', sharing: 'without sharing', tag: 'live',
+    desc: 'The coupon/campaign discount engine, built on standard Campaign (the offer’s rules) and CampaignMember (the permanent per-customer redemption ledger) rather than new custom objects, plus Coupon_Code__c for the code itself.',
+    methods: [
+      { sig: 'getAvailableCoupons() : List<AvailableCoupon>', desc: '@AuraEnabled(cacheable). Every currently usable code — active, in date, under its use cap — for display at checkout.' },
+      { sig: 'validate(rawCode, accountId, cartSubtotal, subtotalByCategory) : CouponPreview', desc: 'Checks existence, active, date window, minimum order value, per-customer + total use caps, category eligibility. Never trusts a client-calculated discount.' },
+      { sig: 'recordRedemption(couponCodeId, campaignId, contactId, orderId, discountApplied) : void', desc: 'Writes one CampaignMember row and increments Total_Redemptions__c. Called only from submitOrder, after the real Order exists — never from the preview path.' },
+      { sig: 'releaseRedemptionForCancelledOrder(orderId) : void', desc: 'Decrements Total_Redemptions__c when an order using this coupon is cancelled before fulfillment. The CampaignMember row itself is kept as history.' },
+    ],
+    calls: ['SOQL/DML only'], calledBy: ['OrderPricingService.calculate', 'CheckoutController.submitOrder (recordRedemption)', 'OrderTrackingTriggerHandler (release on cancel)'],
+  },
+  { name: 'LoyaltyService', group: 'Pricing, Discount & Loyalty', sharing: 'without sharing', tag: 'live',
+    desc: '1 point earned per ₹1,000 of eligible (post-discount, pre-GST) spend; 1 point = ₹1 when redeemed. Account.Loyalty_Points_Balance__c is a maintained cache — every change goes through adjustBalance, which always also writes the matching Loyalty_Point_Transaction__c row in the same call.',
+    methods: [
+      { sig: 'getBalance(accountId) : Integer', desc: 'Current whole-point balance, 0 if none/not found.' },
+      { sig: 'previewRedemption(accountId, requestedPoints, eligibleOrderValue) : RedemptionPreview', desc: 'Caps the request at min(requested, balance, 20% of eligible order value). Re-run at both preview time and inside submitOrder.' },
+      { sig: 'recordRedemption(accountId, pointsUsed, orderId) : void', desc: 'Deducts points and writes the ledger row — called from submitOrder only.' },
+      { sig: 'restoreRedeemedPoints(accountId, pointsToRestore, orderId) : void', desc: 'Restores points when an order that redeemed them is cancelled before delivery.' },
+      { sig: 'awardPointsOnDelivery(accountId, orderId, eligibleSpend) : void', desc: 'Called when Delivery_Status__c reaches Delivered — 1 point per ₹1,000, whole-thousand rule.' },
+    ],
+    calls: ['SOQL/DML only'], calledBy: ['OrderPricingService.calculate', 'CheckoutController.submitOrder', 'OrderTrackingTriggerHandler'],
+  },
+  { name: 'InventoryService', group: 'Pricing, Discount & Loyalty', sharing: 'without sharing', tag: 'live',
+    desc: 'Enforces and logs every change to Product2.Stock_Quantity__c — rejects a checkout that would oversell, decrements stock on a real sale, restores it on cancellation, and logs a Stock_Movement__c row for each. A companion trigger (Product2Trigger → Product2TriggerHandler) also logs any *direct* manual quantity edit an admin makes, so the ledger stays complete either way.',
+    methods: [
+      { sig: 'validateStock(productById, stockLines) : void', desc: 'Rejects the whole order if any line exceeds real available stock — checked immediately before the Order/OrderItems are inserted.' },
+      { sig: 'recordSale(productById, stockLines, orderId) : void', desc: 'Decrements Stock_Quantity__c and writes a Sale Stock_Movement__c row per line.' },
+      { sig: 'restoreStockForOrders(orderIds) : void', desc: 'Increments Stock_Quantity__c back and writes Cancellation rows — called when an order is cancelled or returned.' },
+      { sig: 'logManualAdjustments(newProducts, oldProductMap) : void', desc: 'Writes an Adjustment row for a direct Stock_Quantity__c edit that didn’t already come through recordSale/restoreStockForOrders (which suppress this to avoid double-logging).' },
+    ],
+    calls: ['SOQL/DML only'], calledBy: ['CheckoutController.submitOrder', 'OrderTrackingTriggerHandler', 'Product2TriggerHandler'],
+  },
+  // --- Trigger handlers ---
+  { name: 'OpportunityTriggerHandler', group: 'Trigger Handlers', sharing: 'without sharing', tag: 'live',
+    desc: 'Detects Opportunities that just transitioned into Closed Won and hands them to OrderService.',
+    methods: [{ sig: 'handleAfterUpdate(newOpps, oldOppMap) : void', desc: 'Filters to StageName now Closed Won / previously not; calls OrderService.createOrders on the filtered set.' }],
+    calls: ['OrderService.createOrders'], calledBy: ['OpportunityTrigger (after update)'],
+  },
+  { name: 'OrderTriggerHandler', group: 'Trigger Handlers', sharing: 'without sharing', tag: 'live',
+    desc: 'Thin pass-through handler for OrderTrigger.',
+    methods: [{ sig: 'handleAfterUpdate(newOrders, oldOrderMap) : void', desc: 'Passes straight through to OrderTrackingService.handleStatusChanges — no filtering of its own.' }],
+    calls: ['OrderTrackingService.handleStatusChanges'], calledBy: ['OrderTrigger (after update)'],
+  },
+  { name: 'PaymentTriggerHandler', group: 'Trigger Handlers', sharing: 'without sharing', tag: 'live',
+    desc: 'Thin dispatcher for PaymentTrigger — the only trigger with both before and after logic.',
+    methods: [
+      { sig: 'validatePayments(newPayments, oldPaymentMap) : void', desc: 'before insert/update — calls PaymentService.validateSuccessfulPayments (can reject the save).' },
+      { sig: 'handleAfterInsertOrUpdate(newPayments, oldPaymentMap) : void', desc: 'after insert/update — calls PaymentService.calculateOrderPayments then sendPaymentConfirmationEmails.' },
+    ],
+    calls: ['PaymentService.*'], calledBy: ['PaymentTrigger (before + after insert/update)'],
+  },
+  { name: 'OrderTrackingTriggerHandler', group: 'Trigger Handlers', sharing: 'without sharing', tag: 'live',
+    desc: 'Fires when an admin moves Order_Tracking__c.Delivery_Status__c forward by hand (Shipped / Out for Delivery / Delivered / Cancelled/Returned) — a separate moment from the Order-creation chain.',
+    methods: [{ sig: 'handleAfterUpdate(newTrackings, oldTrackingMap) : void', desc: 'Sends the delivery-status email, awards loyalty points once status reaches Delivered, and processes stock/coupon/loyalty reversal for a return.' }],
+    calls: ['OrderTrackingService.sendDeliveryStatusEmails', 'OrderTrackingService.awardLoyaltyPointsOnDelivery', 'OrderTrackingService.processReturnedOrders'],
+    calledBy: ['OrderTrackingTrigger (after update)'],
+  },
+  { name: 'Product2TriggerHandler', group: 'Trigger Handlers', sharing: 'without sharing', tag: 'live',
+    desc: 'Keeps the Stock_Movement__c ledger complete for edits that bypass InventoryService’s own logging — i.e. an admin editing Stock_Quantity__c directly on the Product2 record, not through a checkout or cancellation.',
+    methods: [{ sig: 'handleAfterUpdate(newProducts, oldProductMap) : void', desc: 'Logs an Adjustment row for any direct Stock_Quantity__c change InventoryService didn’t already log.' }],
+    calls: ['InventoryService.logManualAdjustments'], calledBy: ['Product2Trigger (after update)'],
+  },
+  { name: 'AccountTriggerHandler', group: 'Trigger Handlers', sharing: '(none declared)', tag: 'dead',
+    desc: 'Only updatePhone() is live code (writes an audit note when Phone changes) — but accountTrigger’s call to it is commented out, so it never actually runs.',
+    methods: [{ sig: 'updatePhone(accList, accOldMap) : void', desc: 'Not called by any active trigger.' }],
+    calls: [], calledBy: ['nobody (accountTrigger body is commented out)'],
+  },
+  { name: 'OpprtunityClosedWonHandler', group: 'Trigger Handlers', sharing: '(none declared)', tag: 'dead',
+    desc: 'Broken/dead code: references Account.Customer_Status__c and Account.Total_Won_Amount__c, fields that do not exist anywhere in this org. Its only call site (in OpportunityTrigger) is commented out.',
+    methods: [{ sig: 'updateAccountDetails(oppList, oldMap) : void', desc: 'Would fail to compile if actually wired up — left disconnected.' }],
+    calls: [], calledBy: ['nobody'],
+  },
+  // --- Internal / admin ---
+  { name: 'OrderPaymentController', group: 'Internal / Admin', sharing: 'with sharing (WITH USER_MODE)', tag: 'live',
+    desc: 'Backs the internal orderPaymentDashboard Lightning component embedded on the Order record page — read-only Order/Payment lookups for internal (non-guest) users.',
+    methods: [
+      { sig: 'getOrderDetails(orderId) : OrderDetails', desc: '@AuraEnabled(cacheable=true).' },
+      { sig: 'getPayments(orderId) : List<PaymentDetails>', desc: '@AuraEnabled(cacheable=true).' },
+    ],
+    calls: ['SOQL only'], calledBy: ['orderPaymentDashboard LWC'],
+  },
+  { name: 'OrderPaymentReconciliationBatch', group: 'Internal / Admin', sharing: '(none declared)', tag: 'live',
+    desc: 'Database.Batchable safety net: re-derives Total_Paid__c / Payment_Status__c on every Activated, not-fully-paid Order from its actual Successful Payment__c rows — in case a real-time trigger update was ever missed. Default batch size (200), no explicit scope set.',
+    methods: [
+      { sig: 'start(bc) : Database.QueryLocator', desc: 'Order WHERE Status=\'Activated\' AND Payment_Status__c != \'Fully Paid\'' },
+      { sig: 'execute(bc, orders) : void', desc: 'Aggregates SUM(Amount__c) from Successful Payment__c grouped by Order; recomputes and bulk-updates Payment_Status__c.' },
+      { sig: 'finish(bc) : void', desc: 'No-op.' },
+    ],
+    calls: ['SOQL/DML only'], calledBy: ['OrderPaymentReconciliationScheduler.execute'],
+  },
+  { name: 'OrderPaymentReconciliationScheduler', group: 'Internal / Admin', sharing: '(none declared)', tag: 'limitation',
+    desc: 'Schedulable trigger for the reconciliation batch. ⚠ No System.schedule(...) call or CronTrigger metadata exists anywhere in this project — it is not currently auto-scheduled. Must be activated manually via Setup ▸ Apex Classes ▸ Schedule Apex, or an anonymous-Apex System.schedule() call.',
+    methods: [{ sig: 'execute(sc) : void', desc: 'Database.executeBatch(new OrderPaymentReconciliationBatch())' }],
+    calls: ['OrderPaymentReconciliationBatch'], calledBy: ['(not currently scheduled by any deployed metadata)'],
+  },
+  { name: 'ProductCatalogController', group: 'Internal / Admin', sharing: 'without sharing', tag: 'live',
+    desc: 'Public storefront product catalog reader — returns active PricebookEntry/Product2 rows from the Standard Price Book, filtering out Salesforce’s own sample data by a name-prefix deny-list (GenWatt, Installation:, SLA:).',
+    methods: [{ sig: 'getProducts() : List<ProductView>', desc: '@AuraEnabled(cacheable=true).' }],
+    calls: ['SOQL only'], calledBy: ['productDataService.js (loadProducts)'],
+  },
+  { name: 'AdminDashboardController', group: 'Internal / Admin', sharing: 'without sharing', tag: 'live',
+    desc: 'Backs the single internal Lightning app (LOKESH_SHARMA353) — KPI stats, coupon/campaign management, recent orders, low-stock products, and a bulk offer-email blast. See the dedicated Admin Dashboard diagram.',
+    methods: [
+      { sig: 'getDashboardStats() : DashboardStats', desc: '@AuraEnabled(cacheable). Total orders, revenue, customers, active coupons, pending returns, low-stock count.' },
+      { sig: 'getRecentOrders() / getLowStockProducts()', desc: '@AuraEnabled(cacheable) each.' },
+      { sig: 'getCoupons() : List<CouponSummary>', desc: '@AuraEnabled(cacheable). Every Coupon_Code__c with its Campaign’s rules and real Total_Redemptions__c.' },
+      { sig: 'createCampaignCoupon(input : CampaignCouponInput) : Id', desc: '@AuraEnabled. Inserts a new Campaign + Coupon_Code__c pair in one call.' },
+      { sig: 'setCouponActive(couponCodeId, isActive) : void', desc: '@AuraEnabled. Quick toggle, no full edit form.' },
+      { sig: 'sendOfferEmail(subject, body) : OfferEmailResult', desc: '@AuraEnabled. Bulk-emails every customer Contact, skipping anyone with EmailBouncedDate set, allOrNone=false so one bad address never blocks the rest — returns per-recipient success/failure counts.' },
+    ],
+    calls: ['Messaging.sendEmail (platform)'], calledBy: ['adminDashboard LWC'],
+  },
+  { name: 'EmailSenderService', group: 'Internal / Admin', sharing: 'without sharing', tag: 'live',
+    desc: 'Single shared hook every outgoing storefront email calls before Messaging.sendEmail. applySupportSender is a deliberate no-op today — after a verified Gmail Org-Wide Email Address and, separately, a third-party ESP (Brevo) were both tried and abandoned (modern freemail-sender DMARC/anti-spam rules silently drop that mail regardless of platform), leaving it unset falls back to Salesforce’s own authenticated *.sfcustomeremail.com sender, which is the one pattern confirmed to actually deliver. Kept as a method, not deleted, so a real verified sender can be reinstated in one place later.',
+    methods: [
+      { sig: 'applySupportSender(message) : void', desc: 'Intentionally a no-op — see class description.' },
+      { sig: 'logEmailFailure(emailType, recipientEmail, errorMessage) : void', desc: 'Creates a Task so a failed send is visible/followable-up-on instead of silently vanishing into a debug log.' },
+    ],
+    calls: ['SOQL/DML only'], calledBy: ['CheckoutController', 'ContactController', 'LoginCredentialsController', 'OrderTrackingService', 'PaymentService', 'WelcomeLeadController — every one of the app’s outgoing emails'],
+  },
+  // --- Login / lead capture ---
+  { name: 'LoginCredentialsController', group: 'Login & Lead Capture', sharing: 'without sharing', tag: 'live',
+    desc: 'The real, custom LaptopKart login system, built entirely on Login_Credentials__c (plaintext password by design — not real Salesforce authentication). Also mirrors the live cart and logs cart activity.',
+    methods: [
+      { sig: 'signUp(name, email, phone, password) : AccountSession', desc: '@AuraEnabled.' },
+      { sig: 'logIn(email, password) : AccountSession', desc: '@AuraEnabled.' },
+      { sig: 'requestPasswordReset(email, phone, message) : void', desc: '@AuraEnabled. Creates a Task for the admin — no real email reset flow.' },
+      { sig: 'updateCartSnapshot(loginCredentialsId, cartSummary) : void', desc: '@AuraEnabled.' },
+      { sig: 'logCartActivity(loginCredentialsId, action, productName, quantity, price) : void', desc: '@AuraEnabled. Writes a Cart_Activity__c row.' },
+    ],
+    calls: ['SOQL/DML only'], calledBy: ['authService.js', 'cartService.js', 'techBasketMyAccount LWC'],
+  },
+  { name: 'ContactController', group: 'Login & Lead Capture', sharing: 'without sharing', tag: 'live',
+    desc: 'Backs the storefront Contact Us form — saves a Contact_Us__c ticket and emails the admin.',
+    methods: [{ sig: 'submitMessage(name, email, phone, subject, message) : void', desc: '@AuraEnabled.' }],
+    calls: ['Database.insert, Messaging.sendEmail (platform)'], calledBy: ['techBasketContactUs LWC'],
+  },
+  { name: 'WelcomeLeadController', group: 'Login & Lead Capture', sharing: 'without sharing', tag: 'live',
+    desc: 'Homepage "welcome popup" lightweight lead capture (top-of-funnel, not a checkout) — creates a plain Lead and emails the admin.',
+    methods: [{ sig: 'submitWelcomeLead(name, email, laptopType) : void', desc: '@AuraEnabled.' }],
+    calls: ['Database.insert, Messaging.sendEmail (platform)'], calledBy: ['techBasketWelcomePopup LWC'],
+  },
+  { name: 'RegistrationController', group: 'Login & Lead Capture', sharing: 'without sharing', tag: 'live',
+    desc: 'Creates a real Salesforce Experience Cloud login (Customer Community Login User) — the second, independent authentication system. Reuses an existing Contact/Account if the email already has one without a User.',
+    methods: [{ sig: 'registerUser(input : RegistrationInput) : void', desc: '@AuraEnabled. Calls Site.createExternalUser(...).' }],
+    calls: ['Site.createExternalUser (platform)'], calledBy: ['techBasketSignUp LWC'],
+  },
+  // --- Boilerplate / unused ---
+  { name: 'ChangePasswordController', group: 'Boilerplate / Unused', sharing: 'with sharing', tag: 'dead',
+    desc: 'Standard Salesforce Sites/Communities password-change boilerplate. Not part of the custom login system.',
+    methods: [{ sig: 'changePassword() : PageReference', desc: 'Site.changePassword(...)' }], calls: ['Site API'], calledBy: ['MyProfilePageController (navigates to its VF page, no direct call)'],
+  },
+  { name: 'CommunitiesLandingController', group: 'Boilerplate / Unused', sharing: 'with sharing', tag: 'dead',
+    desc: 'Standard Experience Cloud landing-page forwarder boilerplate.',
+    methods: [{ sig: 'forwardToStartPage() : PageReference', desc: 'Network.communitiesLanding()' }], calls: ['Network API'], calledBy: [],
+  },
+  { name: 'CommunitiesLoginController', group: 'Boilerplate / Unused', sharing: 'global with sharing', tag: 'dead',
+    desc: 'Standard Experience Cloud login-forwarder boilerplate.',
+    methods: [{ sig: 'forwardToAuthPage() : PageReference', desc: 'Network.forwardToAuthPage(...)' }], calls: ['Network API'], calledBy: [],
+  },
+  { name: 'CommunitiesSelfRegConfirmController', group: 'Boilerplate / Unused', sharing: 'with sharing', tag: 'dead',
+    desc: 'Backs the "check your email" confirmation VF page shown after self-registration. No logic.',
+    methods: [], calls: [], calledBy: [],
+  },
+  { name: 'CommunitiesSelfRegController', group: 'Boilerplate / Unused', sharing: '(none declared)', tag: 'dead',
+    desc: 'Standard Experience Cloud self-registration boilerplate; profileId/accountId placeholders left unfilled — not functional as-is.',
+    methods: [{ sig: 'registerUser() : PageReference', desc: 'Site.createExternalUser(...), Site.login(...)' }], calls: ['Site API'], calledBy: [],
+  },
+  { name: 'MicrobatchSelfRegController', group: 'Boilerplate / Unused', sharing: '(none declared)', tag: 'dead',
+    desc: 'Standard async self-registration boilerplate (micro-batch user creation). Placeholders unfilled — not functional.',
+    methods: [{ sig: 'registerUser() : PageReference', desc: 'Network.createExternalUserAsync(...)' }], calls: ['Network API'], calledBy: [],
+  },
+  { name: 'ForgotPasswordController', group: 'Boilerplate / Unused', sharing: 'with sharing', tag: 'dead',
+    desc: 'Standard Sites/Communities forgot-password boilerplate — separate from LoginCredentialsController.requestPasswordReset.',
+    methods: [{ sig: 'forgotPassword() : PageReference', desc: 'Site.forgotPassword(username)' }], calls: ['Site API'], calledBy: [],
+  },
+  { name: 'MyProfilePageController', group: 'Boilerplate / Unused', sharing: 'with sharing', tag: 'dead',
+    desc: 'Portal user profile edit VF page controller (blocks Guest users). Not part of the LWR storefront.',
+    methods: [{ sig: 'getUser / getIsEdit / edit / save / changePassword / cancel', desc: 'Standard VF profile page controller methods.' }], calls: ['Page.ChangePassword (reference only)'], calledBy: [],
+  },
+  { name: 'SiteLoginController', group: 'Boilerplate / Unused', sharing: 'global with sharing', tag: 'dead',
+    desc: 'Standard Sites boilerplate native-login controller. Not the LaptopKart custom login system.',
+    methods: [{ sig: 'login() : PageReference', desc: 'Site.login(...)' }], calls: ['Site API'], calledBy: [],
+  },
+  { name: 'SiteRegisterController', group: 'Boilerplate / Unused', sharing: 'with sharing', tag: 'dead',
+    desc: 'Standard Sites boilerplate portal-user registration. PORTAL_ACCOUNT_ID is an unfilled placeholder — not functional.',
+    methods: [{ sig: 'registerUser() : PageReference', desc: 'Site.createPortalUser(...), Site.login(...)' }], calls: ['Site API'], calledBy: [],
+  },
+  { name: 'ContactSharing', group: 'Boilerplate / Unused', sharing: '(none declared)', tag: 'dead',
+    desc: 'Manual ContactShare grant utility. Currently unusable — the org’s Contact OWD isn’t Private, so insert throws "Field is not writeable." Not referenced anywhere.',
+    methods: [{ sig: 'shareContactWithUser(contactId, userId) : void', desc: '' }], calls: [], calledBy: [],
+  },
+  { name: 'contactSharingClass', group: 'Boilerplate / Unused', sharing: '(none declared)', tag: 'dead',
+    desc: 'Exact duplicate/earlier practice version of ContactSharing. Same unusable state. Not referenced anywhere.',
+    methods: [{ sig: 'shareContactWithUser(ContactId, UserId) : void', desc: '' }], calls: [], calledBy: [],
+  },
+  { name: 'Objs', group: 'Boilerplate / Unused', sharing: '(none declared)', tag: 'dead',
+    desc: 'Scratch/practice class not referenced anywhere in the app — a Map demo plus commented-out SOQL/DML snippets.',
+    methods: [{ sig: 'operations() : void', desc: '' }], calls: [], calledBy: [],
+  },
+];
+
+const TRIGGERS = [
+  { name: 'accountTrigger', object: 'Account', events: 'after update (declared)', handler: 'AccountTriggerHandler.updatePhone', tag: 'dead', note: 'Entire trigger body is commented out — fires on nothing.' },
+  { name: 'contactTrigger', object: 'Contact', events: 'after update (declared)', handler: '(none)', tag: 'dead', note: 'Entire trigger body is commented out — fires on nothing.' },
+  { name: 'OpportunityTrigger', object: 'Opportunity', events: 'after update', handler: 'OpportunityTriggerHandler.handleAfterUpdate', tag: 'live', note: 'Live — the start of the order-creation chain.' },
+  { name: 'OrderTrigger', object: 'Order', events: 'after update', handler: 'OrderTriggerHandler.handleAfterUpdate', tag: 'live', note: 'Live — creates/updates Order_Tracking__c.' },
+  { name: 'PaymentTrigger', object: 'Payment__c', events: 'before insert, before update, after insert, after update', handler: 'PaymentTriggerHandler (validatePayments / handleAfterInsertOrUpdate)', tag: 'live', note: 'Live — the only trigger with both before and after logic.' },
+  { name: 'OrderTrackingTrigger', object: 'Order_Tracking__c', events: 'after update', handler: 'OrderTrackingTriggerHandler.handleAfterUpdate', tag: 'live', note: 'Live — fires when an admin manually advances Delivery_Status__c (delivery emails, loyalty award on delivery, return processing).' },
+  { name: 'Product2Trigger', object: 'Product2', events: 'after update', handler: 'Product2TriggerHandler.handleAfterUpdate', tag: 'live', note: 'Live — logs a Stock_Movement__c Adjustment row for any direct manual stock-quantity edit.' },
+];
+
+const ROUTES = [
+  { fn: 'getHomeRef()', page: 'Home', state: '—', notes: 'System home page' },
+  { fn: 'getAboutRef()', page: 'About__c', state: '—', notes: 'About Us' },
+  { fn: 'getShopRef(searchOrCategory?)', page: 'Product_Catalog__c', state: 'category', notes: 'Product Catalog; historically brand/search text' },
+  { fn: 'getShopRefByCategory(categoryName)', page: 'Product_Catalog__c', state: 'cat', notes: 'Separate state key from getShopRef to avoid collisions' },
+  { fn: 'getProductRef(productId)', page: 'Product_Detail__c', state: 'productId', notes: 'Product Detail' },
+  { fn: 'getCartRef()', page: 'Shopping_Cart__c', state: '—', notes: 'Cart' },
+  { fn: 'getCheckoutRef()', page: 'Checkout__c', state: '—', notes: 'Checkout' },
+  { fn: 'getPaymentRef(cartPayload?)', page: 'Payment__c', state: 'd', notes: 'Encoded cart+draft handoff (checkoutService.encodeHandoff)' },
+  { fn: 'getOrderConfirmationRef(orderId?)', page: 'Order_Confirmation__c', state: 'orderId', notes: 'Order Confirmation' },
+  { fn: 'getAccountRef()', page: 'My_Account__c', state: '—', notes: 'My Account (login/signup + dashboard)' },
+  { fn: 'getOrderHistoryRef()', page: 'Order_History__c', state: '—', notes: 'Order History' },
+  { fn: 'getOrderTrackingRef(orderId?)', page: 'Order_Tracking__c', state: 'orderId', notes: 'Order Tracking' },
+  { fn: 'getContactRef()', page: 'Contact_Us__c', state: '—', notes: 'Contact Us' },
+  { fn: 'getSignUpRef()', page: 'Sign_Up_c', state: '—', notes: 'Sign Up' },
+  { fn: 'getLoginRef()', page: 'comm__loginPage (special)', state: '—', notes: 'Salesforce’s built-in secure login page' },
+];
+
+const LWC_PAGES = [
+  { name: 'techBasketHome', route: 'Home', tag: 'lwc', desc: 'Homepage — hero slideshow, stats, brand selector, category grid, featured "Top Picks", why-us cards, testimonials, newsletter.',
+    children: ['techBasketWelcomePopup', 'techBasketProductCard (×featured)'], apex: [], services: ['navigationService', 'productDataService', 'toastService', 'categoryService', 'formValidators'] },
+  { name: 'techBasketAboutUs', route: 'About__c', tag: 'lwc', desc: 'Company story, stats, values, "Meet the Developers" section, Shop Now CTA.',
+    children: [], apex: [], services: ['navigationService'] },
+  { name: 'techBasketProductCatalog', route: 'Product_Catalog__c', tag: 'lwc', desc: 'Browse / filter / sort / paginate the product catalog; grid and list views.',
+    children: ['techBasketProductCard (grid)'], apex: [], services: ['navigationService', 'productDataService', 'cartService', 'toastService'] },
+  { name: 'techBasketProductDetail', route: 'Product_Detail__c', tag: 'lwc', desc: 'Apple-style PDP — gallery, info panel, tabs (Description / Reviews / FAQs — reviews & FAQs are mocked), related products.',
+    children: ['techBasketQuantitySelector', 'techBasketProductCard (×related)'], apex: [], services: ['productDataService', 'cartService', 'toastService', 'wishlistService', 'brandService', 'navigationService', 'authService'] },
+  { name: 'techBasketCart', route: 'Shopping_Cart__c', tag: 'lwc', desc: 'List cart items, totals, coupon preview, clear-cart confirmation, and a category-based "You May Also Like" cross-sell strip.',
+    children: ['techBasketCartItem (×items)', 'techBasketCartCoupon', 'techBasketOrderSummary', 'techBasketModal'], apex: [], services: ['navigationService', 'cartService', 'toastService', 'productDataService'] },
+  { name: 'techBasketCartCoupon', route: '(child of Cart)', tag: 'lwc', desc: 'Lets a shopper preview a coupon discount right on the Cart page, using the exact same server pricing engine (CheckoutController.previewOrderTotals) as the Payment page — not a frontend guess. The applied code is carried forward via couponService so Payment pre-fills it automatically.',
+    children: [], apex: ['CheckoutController.previewOrderTotals', 'DiscountService.getAvailableCoupons'], services: ['cartService', 'authService', 'couponService'] },
+  { name: 'techBasketMiniCart', route: '(mounted globally, opened from Header)', tag: 'lwc', desc: 'Slide-in drawer opened from the header cart icon — review/adjust quantities (enforcing real tracked stock) and jump straight to Checkout, without a full page navigation to the Cart page for a quick glance. Closes via its own × button, the dark overlay, or Escape.',
+    children: [], apex: [], services: ['navigationService', 'cartService', 'authService', 'productDataService', 'toastService'] },
+  { name: 'techBasketCartItem', route: '(child of Cart)', tag: 'lwc', desc: 'One row in the cart — image, name, price, quantity, subtotal, remove.',
+    children: ['techBasketQuantitySelector'], apex: [], services: ['navigationService', 'brandService'] },
+  { name: 'techBasketOrderSummary', route: '(shared: Cart + Checkout)', tag: 'lwc', desc: 'Totals panel (subtotal / shipping / tax / total) with optional "Proceed to Checkout" button.',
+    children: [], apex: [], services: ['navigationService', 'cartCalculations'] },
+  { name: 'techBasketCheckout', route: 'Checkout__c', tag: 'lwc', desc: 'Multi-step checkout flow (Shipping → Billing (optional) → Shipping Method), then hands off to Payment. Requires login.',
+    children: ['techBasketShippingForm', 'techBasketBillingForm', 'techBasketShippingMethod', 'techBasketOrderSummary'], apex: [], services: ['navigationService', 'cartService', 'checkoutService', 'addressService', 'authService'] },
+  { name: 'techBasketShippingForm', route: '(child of Checkout)', tag: 'lwc', desc: 'Shipping address form; can prefill from saved addresses.',
+    children: [], apex: [], services: ['addressService', 'formValidators'] },
+  { name: 'techBasketBillingForm', route: '(child of Checkout, conditional)', tag: 'lwc', desc: 'Billing address form, shown only if "use same address" is unchecked.',
+    children: [], apex: [], services: ['formValidators'] },
+  { name: 'techBasketShippingMethod', route: '(child of Checkout)', tag: 'lwc', desc: 'Standard / Express / Overnight shipping method picker. Emits its selection live on every click (not just when "Next" is pressed), so the Checkout sidebar total updates immediately — the actual price is always re-derived server-side from the method id, never trusted from this static client list.',
+    children: [], apex: [], services: [] },
+  { name: 'techBasketPayment', route: 'Payment__c', tag: 'lwc', desc: 'Standalone payment page — reads the checkout draft handoff, shows the real server-calculated total (GST, coupon, loyalty redemption, shipping — see the Pricing Engine), Online (Razorpay redirect) or Cash on Delivery, submits the order.',
+    children: ['techBasketPaymentMethod'], apex: ['CheckoutController.submitOrder', 'CheckoutController.createRazorpayPaymentLink', 'CheckoutController.previewOrderTotals', 'DiscountService.getAvailableCoupons'], services: ['navigationService', 'cartService', 'cartCalculations', 'checkoutService', 'orderService', 'couponService'] },
+  { name: 'techBasketPaymentMethod', route: '(child of Payment)', tag: 'lwc', desc: 'Online Payment / Cash on Delivery selector.',
+    children: [], apex: [], services: [] },
+  { name: 'techBasketOrderConfirmation', route: 'Order_Confirmation__c', tag: 'lwc', desc: 'Post-checkout summary — items, payment, shipping, progress tracker, invoice download.',
+    children: ['techBasketOrderProgress'], apex: [], services: ['orderService', 'navigationService', 'toastService'] },
+  { name: 'techBasketOrderProgress', route: '(shared: Order Confirmation + Tracking)', tag: 'lwc', desc: '5-step horizontal fulfillment tracker (Placed → Payment → Shipped → Out for Delivery → Delivered), purely presentational.',
+    children: [], apex: [], services: [] },
+  { name: 'techBasketOrderHistory', route: 'Order_History__c', tag: 'lwc', desc: 'List every website order for this shopper (by remembered email), with View/Cancel actions.',
+    children: [], apex: [], services: ['orderService', 'navigationService', 'toastService'] },
+  { name: 'techBasketOrderTracking', route: 'Order_Tracking__c', tag: 'lwc', desc: 'Shows tracking info for an order — via nav-state orderId or manual order-number lookup.',
+    children: ['techBasketOrderProgress'], apex: [], services: ['orderService'] },
+  { name: 'techBasketMyAccount', route: 'My_Account__c', tag: 'lwc', desc: 'Custom login/signup (Login_Credentials__c backed) + logged-in sidebar dashboard: Dashboard summary, Profile, Orders, Addresses, Wishlist, Payment Methods info, Settings.',
+    children: [], apex: ['LoginCredentialsController.signUp', 'LoginCredentialsController.logIn', 'LoginCredentialsController.requestPasswordReset', 'CheckoutController.getOrdersByEmail'],
+    services: ['authService', 'orderService', 'navigationService', 'toastService', 'addressService', 'wishlistService', 'productDataService', 'accountSettingsService', 'cartService', 'brandService', 'formValidators'] },
+  { name: 'techBasketSignUp', route: 'Sign_Up_c', tag: 'lwc', desc: 'Real Salesforce Experience Cloud registration — distinct from the custom My-Account login system.',
+    children: [], apex: ['RegistrationController.registerUser'], services: ['navigationService', 'formValidators'] },
+  { name: 'techBasketContactUs', route: 'Contact_Us__c', tag: 'lwc', desc: 'Contact form, support info, FAQs, live-chat placeholder.',
+    children: [], apex: ['ContactController.submitMessage'], services: ['toastService', 'formValidators'] },
+  { name: 'techBasketHeader', route: '(global layout)', tag: 'lwc', desc: 'Top navigation bar — logo, Shop dropdown, About/Contact links, search toggle, account, theme toggle, cart badge, mobile drawer.',
+    children: ['techBasketSearch'], apex: [], services: ['navigationService', 'cartService', 'categoryService', 'themeService'] },
+  { name: 'techBasketFooter', route: '(global layout)', tag: 'lwc', desc: 'Bottom footer — brand info, quick links, customer service links, social icons, copyright.',
+    children: [], apex: [], services: ['navigationService'] },
+  { name: 'techBasketSearch', route: '(child of Header)', tag: 'lwc', desc: 'Reusable search box with live autocomplete (in-memory filter, no extra Apex per keystroke).',
+    children: [], apex: [], services: ['productDataService'] },
+  { name: 'techBasketWelcomePopup', route: '(mounted inside Home)', tag: 'lwc', desc: 'One-time lead-capture modal (name/email/laptop-type), localStorage-gated to show once per browser.',
+    children: [], apex: ['WelcomeLeadController.submitWelcomeLead'], services: ['categoryService', 'toastService', 'formValidators'] },
+  { name: 'techBasketToast', route: '(global, mounted once)', tag: 'lwc', desc: 'Global toast notification renderer; subscribes to toastService so any component can trigger a toast.',
+    children: [], apex: [], services: ['toastService'] },
+  { name: 'techBasketModal', route: '(generic reusable)', tag: 'lwc', desc: 'Generic confirm/cancel modal, fully controlled by parent via @api props. Used by Cart for "Clear Cart" confirmation.',
+    children: [], apex: [], services: [] },
+  { name: 'techBasketCategoryCard', route: '(standalone reusable)', tag: 'lwc', desc: 'Clickable category tile. Not directly instantiated by any page read in this audit — Home renders category buttons inline instead. Available for ad-hoc Experience Builder placement.',
+    children: [], apex: [], services: [] },
+  { name: 'techBasketQuantitySelector', route: '(shared: Cart Item + Product Detail)', tag: 'lwc', desc: 'Shared [−][qty][+] control, clamped between 1 and maxQuantity.',
+    children: [], apex: [], services: [] },
+  { name: 'techBasketRating', route: '(standalone reusable)', tag: 'lwc', desc: '0–5 star display with optional review count. Not directly wired into any parent read in this audit — available for ad-hoc placement.',
+    children: [], apex: [], services: [] },
+  { name: 'techBasketProductCard', route: '(shared: Home, Catalog, Product Detail)', tag: 'lwc', desc: 'Product tile — image cycling, wishlist heart, add-to-cart/qty stepper, Buy Now.',
+    children: [], apex: [], services: ['navigationService', 'cartService', 'toastService', 'brandService', 'wishlistService', 'authService'] },
+  { name: 'orderPaymentDashboard', route: '(internal Lightning — Order record page)', tag: 'lwc', desc: 'Read-only Order + Payment history dashboard embedded on the internal Order record page (Lightning Experience). NOT part of the LWR storefront.',
+    children: [], apex: ['OrderPaymentController.getOrderDetails', 'OrderPaymentController.getPayments'], services: [] },
+  { name: 'firstComponents', route: '(scratch/demo)', tag: 'dead', desc: 'Trivial placeholder component, not part of the storefront’s functional tree — a learning/demo artifact.',
+    children: [], apex: [], services: [] },
+];
+
+const LWC_SERVICES = [
+  { name: 'navigationService', desc: 'Centralized LWR page-reference factory — single source of truth for every page API name.', fns: ['getHomeRef()', 'getAboutRef()', 'getShopRef(searchOrCategory?)', 'getShopRefByCategory(categoryName)', 'getProductRef(productId)', 'getCartRef()', 'getCheckoutRef()', 'getPaymentRef(cartPayload?)', 'getOrderConfirmationRef(orderId?)', 'getAccountRef()', 'getOrderHistoryRef()', 'getOrderTrackingRef(orderId?)', 'getContactRef()', 'getSignUpRef()', 'getLoginRef()'] },
+  { name: 'authService', desc: 'Client-side, localStorage-backed session for the custom Login_Credentials__c login system (not real Salesforce auth).', fns: ['getSession()', 'isLoggedIn()', 'setSession(session)', 'clearSession()', 'subscribe(callback)'] },
+  { name: 'cartService', desc: 'localStorage-backed shopping cart; mirrors state to Login_Credentials__c via Apex (best-effort, fire-and-forget).', fns: ['getCart()', 'getCartCount()', 'getItemQuantity(productId)', 'addItem(product, quantity)', 'updateQuantity(productId, quantity)', 'removeItem(productId)', 'clearCart()', 'subscribe(callback)'] },
+  { name: 'cartCalculations', desc: 'Pure order-total arithmetic shared by Order Summary and Payment.', fns: ['calculateSubtotal(items)', 'calculateTax(subtotal) — 5% flat, rounded', 'calculateTotals(items, {shippingCost, discountAmount})'] },
+  { name: 'checkoutService', desc: 'Bridges the Checkout page and the standalone Payment page via localStorage and URL-state handoff.', fns: ['saveDraft(draft)', 'getDraft()', 'clearDraft()', 'encodeHandoff(cart, draft)', 'decodeHandoff(raw)'] },
+  { name: 'orderService', desc: 'Tracks which Order Ids / emails this browser has placed orders under; bridges to CheckoutController.', fns: ['rememberOrder(orderId)', 'rememberEmail(email)', 'getMyOrders()', 'cancelOrder(orderId)', 'getOrder(orderId)'] },
+  { name: 'addressService', desc: 'localStorage-backed saved address book, shared between Checkout and My Account.', fns: ['getAddresses()', 'saveAddress(address)', 'deleteAddress(id)'] },
+  { name: 'wishlistService', desc: 'localStorage-backed wishlist (array of product ids).', fns: ['getWishlist()', 'isWishlisted(productId)', 'toggleWishlist(productId)'] },
+  { name: 'accountSettingsService', desc: 'localStorage-backed notification preferences for My Account › Account Settings.', fns: ['getSettings()', 'saveSettings(settings)'] },
+  { name: 'productDataService', desc: 'Loads and caches the real Apex-backed product catalog once per page session.', fns: ['loadProducts()', 'findById(products, productId)', 'filterByCategory(products, category)', 'filterBySearch(products, term)', 'extractCategories(products)'] },
+  { name: 'mockProductData', desc: 'Standalone frontend-only mock catalog (12 hardcoded non-laptop products) — legacy/demo data, separate from the real Apex-backed catalog.', fns: ['PRODUCTS', 'getAllProducts()', 'getProductById(productId)', 'getProductsByCategory(category)', 'searchProducts(term)', 'getCategories()'] },
+  { name: 'brandService', desc: 'Source of truth for the 7 laptop brand definitions and deterministic product-photo resolution from brand-scoped static resources.', fns: ['getBrands()', 'getBrandForProduct(productName)', 'getProductImages(productName)'] },
+  { name: 'categoryService', desc: 'Infers a real shopping category (Gaming, Business, Ultrabook & Slim, 2-in-1 & Convertible, Chromebook, Everyday) from a product name, since Apex always returns "Laptops".', fns: ['getCategories()', 'getCategoryForProduct(productName)'] },
+  { name: 'themeService', desc: 'Site-wide light/dark theme engine — writes --lk-* CSS custom properties onto <html>.', fns: ['getTheme()', 'setTheme(theme)', 'toggleTheme()', 'subscribe(callback)'] },
+  { name: 'toastService', desc: 'Pub/sub bridge letting any component trigger a toast without a DOM reference to techBasketToast.', fns: ['showToast(message, variant)', 'subscribe(callback)'] },
+  { name: 'formValidators', desc: 'Shared field-format rules/regex/sanitizers used by every form on the site.', fns: ['PHONE_PATTERN / EMAIL_PATTERN / NAME_PATTERN / POSTAL_PATTERN (+ *_ERROR constants)', 'isValidPhone / isValidEmail / isValidName / isValidPostalCode', 'sanitizePhoneInput(value)', 'sanitizePostalInput(value)'] },
+  { name: 'couponService', desc: 'Carries a coupon code applied on the Cart page forward to the Payment page (localStorage) so it doesn’t have to be retyped — both pages independently re-validate it for real via CheckoutController.previewOrderTotals; this module only ever stores the raw string.', fns: ['getAppliedCoupon()', 'setAppliedCoupon(code)'] },
+];
+
+const ISSUES = [
+  { severity: 'design', title: 'Plaintext password storage on Login_Credentials__c', body: 'The custom storefront login stores Password_Text__c unencrypted. This is an explicit, deliberate project decision, not an oversight — documented here for anyone auditing the object later.' },
+  { severity: 'design', title: 'Two independent authentication systems', body: 'The custom Login_Credentials__c system (My Account, cart gating) and the real Salesforce Experience Cloud login (Sign Up → RegistrationController → Site.createExternalUser) are completely separate — a shopper can have an account in one without the other. See the Auth Systems diagram.' },
+  { severity: 'resolved', title: 'Shipping cost was never actually charged, on any order (fixed 2026-09-18)', body: 'OrderPricingService.calculate took no shipping parameter at all, so the real, server-computed amountPayable never included it, regardless of Standard/Express/Overnight being selected — the shopper picked a delivery method, but was charged the same either way. Fixed by adding Shipping_Cost__c/Shipping_Method__c on Order and a server-side method-id→price lookup, wired through the preview, the real charge, the Razorpay payment-link amount, the confirmation email/page, and the invoice. See the Pricing Engine diagram and Changelog for the full fix.' },
+  { severity: 'resolved', title: 'The downloadable invoice PDF showed the wrong total, on every order (fixed 2026-09-19)', body: 'OrderInvoiceController.getBalanceDue used raw Order.TotalAmount (the pre-tax, pre-discount product sum) instead of the real Amount_Payable__c — including in the Cash-on-Delivery "keep ₹X ready" notice, meaning every COD customer was told to have less cash ready than they actually owed, short by the full 18% GST (and now shipping too). Fixed to show the real GST-inclusive total with a full Subtotal/Discount/GST/Shipping breakdown.' },
+  { severity: 'resolved', title: "Checkout's own sidebar didn't update as you compared shipping options (fixed 2026-09-18)", body: 'techBasketShippingMethod only told its parent what was selected when "Next" was clicked, not live as the shopper compared Standard/Express/Overnight — the sidebar total stayed flat regardless of what was clicked, right up until landing on the Payment page. Fixed to emit on every click (and once on load for the default).' },
+  { severity: 'resolved', title: 'Cart/Checkout showed a placeholder 5% tax instead of the real 18% GST (fixed 2026-09-18)', body: 'Every one of the 54 real products in the catalog falls back to the 18% default GST rate (none override Product2.GST_Rate__c), but cartCalculations.js — the frontend estimate shown before the real server pricing loads — used a hardcoded 5%, roughly a 5× understatement of tax shown on every cart view. Corrected the constant to match the real default.' },
+  { severity: 'resolved', title: 'Quantity selectors had no real stock ceiling (fixed 2026-09-18)', body: 'On Product Detail, the Cart page, and the mini-cart drawer, the +/− control defaulted to a flat cap of 99 regardless of Product2.Stock_Quantity__c — a shopper could select 10 of an item with 2 left and only find out at the very last step of checkout, where InventoryService.validateStock would reject the whole order. All three now enforce the product’s real tracked stock live.' },
+  { severity: 'limitation', title: 'Razorpay test-mode hard limit: 30 Payment Links', body: 'Razorpay’s test-mode account caps Payment Link creation at exactly 30 (confirmed via a direct 429 RATE_LIMIT_EXCEEDED response, description "test mode limit of 30 reached for payment_link"). Purely external to this codebase — not a bug. Once the account moves to live keys this cap does not apply.' },
+  { severity: 'limitation', title: 'Razorpay UPI does not reliably redirect back in test mode', body: 'Documented Razorpay Payment Links behaviour: UPI payments don’t redirect to callback_url on Android, and don’t work reliably in Test Mode at all — full end-to-end auto-redirect UPI testing isn’t achievable in test mode regardless of this app’s code.' },
+  { severity: 'resolved', title: 'Embedded Razorpay Checkout.js blocked by Lightning Web Security', body: 'The original embedded-popup approach failed because LWS blocks dynamic <script> injection into the page, and this org has no CSP Trusted Site "script-src" option at all (confirmed absent from both metadata and the Setup UI). Resolved by switching to a full-page redirect to Razorpay’s hosted Payment Link page — no third-party script ever loads inside the Salesforce page.' },
+  { severity: 'resolved', title: 'Apex "uncommitted work pending" callout error', body: 'Apex disallows an HTTP callout after DML has run in the same transaction. The Razorpay verification callout was moved to the very start of submitOrder, before any of the pipeline’s DML steps run.' },
+  { severity: 'bug', title: 'Typo in a live field: Tracking_NUmber__c', body: 'Order_Tracking__c’s tracking-number field has a casing typo baked into both its API name and label (capital U in "NUmber"). Documented as-is since renaming a live field API name would break every reference to it across Apex and LWC.' },
+  { severity: 'design', title: 'Dead trigger bodies: accountTrigger and contactTrigger', body: 'Both triggers exist as deployed metadata but their entire bodies are commented out — they compile and are active on their objects, but execute no logic on any event.' },
+  { severity: 'design', title: 'Disconnected/placeholder boilerplate controllers', body: 'Roughly a third of the Apex classes in this org (CommunitiesSelfRegController, SiteRegisterController, MicrobatchSelfRegController, ContactSharing, contactSharingClass, Objs, OpprtunityClosedWonHandler, AccountTriggerHandler, and others) are either standard Salesforce Sites/Experience Cloud boilerplate never wired up, or scratch/practice code with unfilled placeholders. None are called from the live automation chain. See the Apex Reference for the full "Boilerplate / Unused" group.' },
+  { severity: 'limitation', title: 'Reconciliation batch is not auto-scheduled', body: 'OrderPaymentReconciliationScheduler exists and correctly calls the batch, but no System.schedule(...) call or CronTrigger metadata is deployed anywhere — the nightly safety-net reconciliation does not currently run on its own and must be scheduled manually in Setup.' },
+];
+</script>
+<script>
+/* LaptopKart Project Documentation — interactivity + data-driven rendering. */
+(function () {
+  'use strict';
+
+  function el(tag, className, html) {
+    const e = document.createElement(tag);
+    if (className) e.className = className;
+    if (html !== undefined) e.innerHTML = html;
+    return e;
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  }
+  const TAG_LABEL = { live: 'Live', dead: 'Unused', limitation: 'Limitation', object: 'Object' };
+
+  /* ---------------- Navigation / tab switching ---------------- */
+  function initNav() {
+    const btns = Array.from(document.querySelectorAll('.nav-btn'));
+    const pages = Array.from(document.querySelectorAll('section.page'));
+
+    function activate(id, push) {
+      let found = false;
+      pages.forEach((p) => {
+        const on = p.id === id;
+        p.classList.toggle('active', on);
+        if (on) found = true;
+      });
+      if (!found && pages.length) { pages[0].classList.add('active'); id = pages[0].id; }
+      btns.forEach((b) => b.classList.toggle('active', b.dataset.target === id));
+      window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+      if (push) history.replaceState(null, '', '#' + id);
+    }
+
+    btns.forEach((b) => {
+      b.addEventListener('click', () => activate(b.dataset.target, true));
+    });
+
+    const initial = (window.location.hash || '').replace('#', '') || (pages[0] && pages[0].id);
+    activate(initial, false);
+  }
+
+  /* ---------------- Sidebar search (filters nav items by label) ---------------- */
+  function initSidebarSearch() {
+    const input = document.getElementById('navSearch');
+    if (!input) return;
+    const items = Array.from(document.querySelectorAll('.nav-list li'));
+    input.addEventListener('input', () => {
+      const q = input.value.trim().toLowerCase();
+      items.forEach((li) => {
+        const text = li.textContent.toLowerCase();
+        li.style.display = !q || text.includes(q) ? '' : 'none';
+      });
+      document.querySelectorAll('.nav-group-label').forEach((label) => {
+        const group = label.nextElementSibling;
+        const anyVisible = group && Array.from(group.children).some((li) => li.style.display !== 'none');
+        label.style.display = anyVisible ? '' : 'none';
+      });
+    });
+  }
+
+  /* ---------------- Accordion (event delegation) ---------------- */
+  function initAccordions() {
+    document.addEventListener('click', (e) => {
+      const head = e.target.closest('.ref-card-head');
+      if (!head) return;
+      head.closest('.ref-card').classList.toggle('open');
+    });
+  }
+
+  /* ---------------- Generic reference-list filter wiring ---------------- */
+  function wireFilter(inputId, listId, countId) {
+    const input = document.getElementById(inputId);
+    const list = document.getElementById(listId);
+    const count = document.getElementById(countId);
+    if (!input || !list) return;
+    function apply() {
+      const q = input.value.trim().toLowerCase();
+      let visible = 0;
+      let total = 0;
+      Array.from(list.querySelectorAll('[data-search]')).forEach((card) => {
+        total++;
+        const match = !q || card.dataset.search.includes(q);
+        card.style.display = match ? '' : 'none';
+        if (match) visible++;
+      });
+      if (count) count.textContent = q ? `${visible} of ${total}` : `${total} total`;
+    }
+    input.addEventListener('input', apply);
+    apply();
+  }
+
+  /* ---------------- Renderers ---------------- */
+
+  function fieldRow(f) {
+    return `<tr>
+      <td class="fname">${esc(f.api)}</td>
+      <td>${esc(f.label)}</td>
+      <td class="ftype">${esc(f.type)}</td>
+      <td class="fnotes">${esc(f.notes)}${f.required ? ' <span class="tag tag-trigger" style="margin-left:6px;">Required</span>' : ''}</td>
+    </tr>`;
+  }
+
+  function renderObjects() {
+    const wrap = document.getElementById('objectsList');
+    if (!wrap) return;
+    OBJECTS.forEach((o) => {
+      const card = el('div', 'ref-card');
+      card.dataset.search = (o.name + ' ' + o.label + ' ' + o.desc + ' ' + o.fields.map((f) => f.api + ' ' + f.label).join(' ')).toLowerCase();
+      const vr = (o.validationRules || []).map((v) => `<li><span class="node-mono" style="color:var(--danger)">${esc(v.name)}</span><span class="m-desc">${esc(v.formula)} → “${esc(v.message)}”</span></li>`).join('');
+      card.innerHTML = `
+        <div class="ref-card-head">
+          <div class="ref-card-title">
+            <span class="ref-name">${esc(o.name)}</span>
+            <span class="ref-label">${esc(o.label)}</span>
+          </div>
+          <div class="ref-tags">
+            <span class="tag tag-object">Object</span>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg>
+          </div>
+        </div>
+        <div class="ref-card-body">
+          <p class="ref-desc">${o.desc}</p>
+          <dl class="kv-list">
+            <dt>Sharing</dt><dd>${esc(o.sharing)}</dd>
+            <dt>Name field</dt><dd>${esc(o.namePattern)}</dd>
+            <dt>Field count</dt><dd>${o.fields.length}</dd>
+          </dl>
+          <div class="table-wrap">
+            <table class="schema">
+              <thead><tr><th>API Name</th><th>Label</th><th>Type</th><th>Notes</th></tr></thead>
+              <tbody>${o.fields.map(fieldRow).join('')}</tbody>
+            </table>
+          </div>
+          ${vr ? `<p class="ref-desc" style="margin-top:14px;"><strong>Validation rules</strong></p><ul class="method-list">${vr}</ul>` : ''}
+        </div>`;
+      wrap.appendChild(card);
+    });
+  }
+
+  function renderApex() {
+    const wrap = document.getElementById('apexList');
+    if (!wrap) return;
+    const groups = [];
+    APEX.forEach((c) => { if (!groups.includes(c.group)) groups.push(c.group); });
+    groups.forEach((g) => {
+      wrap.appendChild(el('h3', 'section-h', esc(g)));
+      APEX.filter((c) => c.group === g).forEach((c) => {
+        const card = el('div', 'ref-card');
+        card.dataset.search = (c.name + ' ' + c.desc + ' ' + c.methods.map((m) => m.sig).join(' ')).toLowerCase();
+        const tagClass = c.tag === 'dead' ? 'tag-dead' : c.tag === 'limitation' ? 'tag-service' : 'tag-live';
+        const tagText = c.tag === 'dead' ? 'Unused' : c.tag === 'limitation' ? 'Limitation' : 'Live';
+        const methods = c.methods.map((m) => `<li><span class="node-mono">${esc(m.sig)}</span>${m.desc ? `<span class="m-desc">${esc(m.desc)}</span>` : ''}</li>`).join('');
+        const calls = (c.calls || []).map((x) => `<span class="chip">→ ${esc(x)}</span>`).join('');
+        const calledBy = (c.calledBy || []).map((x) => `<span class="chip">← ${esc(x)}</span>`).join('');
+        card.innerHTML = `
+          <div class="ref-card-head">
+            <div class="ref-card-title">
+              <span class="ref-name">${esc(c.name)}</span>
+              <span class="ref-label">${esc(c.sharing)}</span>
+            </div>
+            <div class="ref-tags">
+              <span class="tag tag-apex">Apex</span>
+              <span class="tag ${tagClass}">${tagText}</span>
+              <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg>
+            </div>
+          </div>
+          <div class="ref-card-body">
+            <p class="ref-desc">${c.desc}</p>
+            ${methods ? `<ul class="method-list">${methods}</ul>` : ''}
+            ${calls || calledBy ? `<div class="calls-row">${calls}${calledBy}</div>` : ''}
+          </div>`;
+        wrap.appendChild(card);
+      });
+    });
+  }
+
+  function renderTriggers() {
+    const tbody = document.getElementById('triggersTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = TRIGGERS.map((t) => `<tr>
+      <td class="fname">${esc(t.name)}</td>
+      <td class="ftype">${esc(t.object)}</td>
+      <td>${esc(t.events)}</td>
+      <td class="fnotes">${esc(t.handler)}<br><span style="color:var(--ink-subtle);font-size:11.5px;">${esc(t.note)}</span></td>
+      <td><span class="tag ${t.tag === 'dead' ? 'tag-dead' : 'tag-live'}">${t.tag === 'dead' ? 'Unused' : 'Live'}</span></td>
+    </tr>`).join('');
+  }
+
+  function renderRoutes() {
+    const tbody = document.getElementById('routesTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = ROUTES.map((r) => `<tr>
+      <td class="fname">${esc(r.fn)}</td>
+      <td class="ftype">${esc(r.page)}</td>
+      <td class="fname">${esc(r.state)}</td>
+      <td class="fnotes">${esc(r.notes)}</td>
+    </tr>`).join('');
+  }
+
+  function renderLwcPages() {
+    const wrap = document.getElementById('lwcPagesList');
+    if (!wrap) return;
+    LWC_PAGES.forEach((c) => {
+      const card = el('div', 'ref-card');
+      card.dataset.search = (c.name + ' ' + c.desc + ' ' + c.route).toLowerCase();
+      const tagClass = c.tag === 'dead' ? 'tag-dead' : 'tag-lwc';
+      const children = c.children.length ? `<dt>Children</dt><dd>${c.children.map((x) => `<span class="chip">${esc(x)}</span>`).join(' ')}</dd>` : '';
+      const apex = c.apex.length ? `<dt>Apex calls</dt><dd>${c.apex.map((x) => `<span class="chip">${esc(x)}</span>`).join(' ')}</dd>` : '';
+      const services = c.services.length ? `<dt>Services used</dt><dd>${c.services.map((x) => `<span class="chip">${esc(x)}</span>`).join(' ')}</dd>` : '';
+      card.innerHTML = `
+        <div class="ref-card-head">
+          <div class="ref-card-title">
+            <span class="ref-name">${esc(c.name)}</span>
+            <span class="ref-label">${esc(c.route)}</span>
+          </div>
+          <div class="ref-tags">
+            <span class="tag ${tagClass}">${c.tag === 'dead' ? 'Unused' : 'LWC'}</span>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg>
+          </div>
+        </div>
+        <div class="ref-card-body">
+          <p class="ref-desc">${esc(c.desc)}</p>
+          <dl class="kv-list" style="grid-template-columns: 120px 1fr;">${children}${apex}${services}</dl>
+        </div>`;
+      wrap.appendChild(card);
+    });
+  }
+
+  function renderLwcServices() {
+    const wrap = document.getElementById('lwcServicesList');
+    if (!wrap) return;
+    LWC_SERVICES.forEach((s) => {
+      const card = el('div', 'ref-card');
+      card.dataset.search = (s.name + ' ' + s.desc + ' ' + s.fns.join(' ')).toLowerCase();
+      const fns = s.fns.map((f) => `<li><span class="node-mono">${esc(f)}</span></li>`).join('');
+      card.innerHTML = `
+        <div class="ref-card-head">
+          <div class="ref-card-title">
+            <span class="ref-name">${esc(s.name)}</span>
+          </div>
+          <div class="ref-tags">
+            <span class="tag tag-service">Service</span>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg>
+          </div>
+        </div>
+        <div class="ref-card-body">
+          <p class="ref-desc">${esc(s.desc)}</p>
+          <ul class="method-list">${fns}</ul>
+        </div>`;
+      wrap.appendChild(card);
+    });
+  }
+
+  function renderIssues() {
+    const wrap = document.getElementById('issuesList');
+    if (!wrap) return;
+    const sevLabel = { bug: 'Bug', design: 'Design Decision', limitation: 'Limitation', resolved: 'Resolved' };
+    ISSUES.forEach((i) => {
+      const card = el('div', 'issue-card');
+      card.innerHTML = `
+        <div class="issue-head">
+          <span class="tag tag-severity-${esc(i.severity)}">${sevLabel[i.severity]}</span>
+          <span class="issue-title">${esc(i.title)}</span>
+        </div>
+        <div class="issue-body">${esc(i.body)}</div>`;
+      wrap.appendChild(card);
+    });
+  }
+
+  function renderStats() {
+    const stats = [
+      { num: OBJECTS.length, label: 'Objects documented' },
+      { num: APEX.filter((c) => c.tag !== 'dead').length, label: 'Active Apex classes' },
+      { num: TRIGGERS.filter((t) => t.tag === 'live').length + '/' + TRIGGERS.length, label: 'Live triggers' },
+      { num: LWC_PAGES.length, label: 'LWC components' },
+      { num: LWC_SERVICES.length, label: 'Service modules' },
+      { num: ROUTES.length, label: 'Site routes' },
+    ];
+    const wrap = document.getElementById('overviewStats');
+    if (!wrap) return;
+    stats.forEach((s) => {
+      const c = el('div', 'stat-card');
+      c.innerHTML = `<div class="stat-num">${s.num}</div><div class="stat-label">${s.label}</div>`;
+      wrap.appendChild(c);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    renderStats();
+    renderObjects();
+    renderApex();
+    renderTriggers();
+    renderRoutes();
+    renderLwcPages();
+    renderLwcServices();
+    renderIssues();
+
+    wireFilter('objectsFilter', 'objectsList', 'objectsCount');
+    wireFilter('apexFilter', 'apexList', 'apexCount');
+    wireFilter('lwcPagesFilter', 'lwcPagesList', 'lwcPagesCount');
+    wireFilter('lwcServicesFilter', 'lwcServicesList', 'lwcServicesCount');
+
+    initAccordions();
+    initSidebarSearch();
+    initNav();
+  });
+})();
+</script>
 <script>
   document.addEventListener('click', function (e) {
     var jump = e.target.closest('[data-jump]');
